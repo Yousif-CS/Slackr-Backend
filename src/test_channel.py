@@ -82,6 +82,7 @@ def test_messages_unauthorized_user():
     channel_id = channel_create(owner_info['token'], 'test_channel8', True)
     with pytest.raises(AccessError):
         msgs = messages('I am an invalid token', channel_id['channel_id'], 0)
+
 '''------------------testing channel_leave--------------------'''
 
 #testing leaving an existing channel with a valid owner
@@ -123,11 +124,30 @@ def test_leave_general_member():
     with pytest.raises(AccessError):
         details(user_info['token'], channel_id['channel_id'])
 
+def test_leave_unauthorized_user():
+    #logging in users
+    owner_info = login("Yousif@unsw.com", "13131")
+    #creating a public channel
+    channel_id = channel_create(owner_info['token'], 'test_channel9', True)
+    
+    with pytest.raises(AccessError):
+        leave('I am an invalid token', channel_id['channel_id'])
+
+
 '''------------------testing channel_join--------------------'''
 
-
-
-
+#joining a valid channel with valid permissions
+def test_join_public_valid():
+    #logging in users
+    owner_info = login("Yousif@unsw.com", "13131")
+    user_info = login("member@unsw.com","12321", "John", "Wick") 
+    #creating a public channel
+    channel_id = channel_create(owner_info['token'], 'test_channel6', True)
+    channel_join(user_info['token'], channel_id['channel_id'])
+    #make sure user can view channel details as member
+    with pytest.raises(Exception):
+        try:
+            details(user_info['token'])
 
 
 
