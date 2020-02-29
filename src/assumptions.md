@@ -5,7 +5,7 @@ The structure of this file involves functions as headers and the assumptions as 
 # H3 Channel functions:
 
 # H4 channels_messages():
-
+    1. Assuming that the email addresses provided exists for registration
 # H4 channel_leave():
 
 # H4 channel_join():
