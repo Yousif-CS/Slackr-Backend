@@ -12,11 +12,12 @@ The structure of this file involves functions as headers and the assumptions as 
 5. Assuming the function throws an 'AccessError' exception when dealing with invalid tokens
 
 # H4 channel_leave():
-3. Assuming big ints such as 123123 are considered invalid channel id
+3. Assuming big ints such as 123123 are considered invalid channel id's (at least initially)
 4. Assuming 'I am an invalid token' string to be an invalid token
 5. Assuming the function throws an 'AccessError' exception when dealing with invalid tokens
 
 # H4 channel_join():
+1. Assuming big ints such as 1232123 are considered invalid channel id's
 
 # H4 channel_addowner():
 

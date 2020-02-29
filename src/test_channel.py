@@ -145,9 +145,46 @@ def test_join_public_valid():
     channel_id = channel_create(owner_info['token'], 'test_channel6', True)
     channel_join(user_info['token'], channel_id['channel_id'])
     #make sure user can view channel details as member
+    try:
+        details(user_info['token'], channel_id['channel_id'])
+    except AccessError as exception
+        assert (AccessError not exception)
+
+#joining an invalid channel
+def test_join_invalid_channel():
+    #logging in users
+    owner_info = login("Yousif@unsw.com", "13131")
+    with pytest.raises(InputError):
+        channel_join(owner_info['token'], 1231212)
+
+#joining a private channel as a general user(not an admin)
+def test_join_private_member():
+    #logging in users
+    owner_info = login("Yousif@unsw.com", "13131")
+    user_info = login("member@unsw.com","12321", "John", "Wick") 
+    #creating a private channel
+    channel_id = channel_create(owner_info['token'], 'test_channel6', False)
+    with pytest.raises(AccessError):
+        channel_join(user_info['token'], channel_id['channel_id'])
+    
+#joining a private channel as an admin
+def test_join_private_admin():
+    pass
+
+#double joining a channel
+def test_join_already_joined():
+    #logging in users
+    owner_info = login("Yousif@unsw.com", "13131")
+    user_info = login("member@unsw.com","12321", "John", "Wick") 
+    #creating a public channel
+    channel_id = channel_create(owner_info['token'], 'test_channel6', True)
+    channel_join(user_info['token'], channel_id['channel_id'])
+    #Here I am assuming that double joining should raise any kind of exception
     with pytest.raises(Exception):
-        try:
-            details(user_info['token'])
+            channel_join(user_info['token'], channel_id['channel_id'])
+
+
+
 
 
 
