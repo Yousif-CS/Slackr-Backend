@@ -5,7 +5,6 @@ The structure of this file involves functions as headers and the assumptions as 
 # H3 Channel functions:
 
 # H4 channels_messages():
-    1.
 
 # H4 channel_leave():
 
