@@ -18,7 +18,7 @@ The structure of this file involves functions as headers and the assumptions as 
 
 # H4 channel_join():
 1. Assuming big ints such as 1232123 are considered invalid channel id's
-
+2. Assuming that double joining raises some kind of exception
 # H4 channel_addowner():
 
 # H4 channel_removeowner():
