@@ -6,8 +6,10 @@ The structure of this file involves functions as headers and the assumptions as 
 
 # H4 channels_messages():
     1. Assuming that the email addresses provided exists for registration
-# H4 channel_leave():
+    2. Assuming that 'owner' in this context refers only to a channel owner but not workspace owner as a global permission
 
+# H4 channel_leave():
+    
 # H4 channel_join():
 
 # H4 channel_addowner():

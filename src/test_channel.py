@@ -1,6 +1,6 @@
 #please edit this file for channels functions
 from auth import login, register
-from channel import messages, leave, channel_join, addowner, removeowner
+from channel import messages, leave, channel_join, addowner, removeowner, invite, details
 from channels import channel_create
 from message import send
 import pytest
@@ -95,7 +95,25 @@ def test_leave_non_member():
     with pytest.raises(AccessError):
         #I used an index 0 assuming that there is only one id for each channel name
         leave(user_info['token'], channel5_id[0])
-    
+def test_leave_invalid_channel_id():
+    #logging in users
+    owner_info = login("Yousif@unsw.com", "13131")
+    with pytest.raises(InputError):
+        leave(owner_info['token'], 1321231)
+
+def test_leave_general_member():
+    #logging in users
+    owner_info = login("Yousif@unsw.com", "13131")
+    user_info = login("member@unsw.com","12321", "John", "Wick") 
+    #creating a private channel
+    channel_id = channel_create(owner_info['token'], 'test_channel6', False)
+    invite(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
+    leave(user_info['token'], channel_id['channel_id'])
+    #trying to access channel details as a non-member
+    with pytest.raises(AccessError):
+        details(user_info['token'], channel_id['channel_id'])
+
+
 
 
 
