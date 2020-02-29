@@ -9,6 +9,9 @@ import pytest
     Under the assumption that auth_register, auth_login
     channel_create, channel_invite, message_send work properly
 '''
+
+'''------------------testing channel_messages--------------------'''
+
 def test_messages_empty_public(): 
    
     #creating user
@@ -72,6 +75,13 @@ def test_messages_public_non_member():
         msgs = messages(user_info['token'], channel_id['channel_id'], 0)
         assert(msgs['end'] == -1)   #indicating the end of the messages list
 
+def test_messages_unauthorized_user():
+    #logging in users
+    owner_info = login("Yousif@unsw.com", "13131")
+    #creating a public channel
+    channel_id = channel_create(owner_info['token'], 'test_channel8', True)
+    with pytest.raises(AccessError):
+        msgs = messages('I am an invalid token', channel_id['channel_id'], 0)
 '''------------------testing channel_leave--------------------'''
 
 #testing leaving an existing channel with a valid owner
@@ -113,6 +123,7 @@ def test_leave_general_member():
     with pytest.raises(AccessError):
         details(user_info['token'], channel_id['channel_id'])
 
+'''------------------testing channel_join--------------------'''
 
 
 
