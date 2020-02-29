@@ -75,12 +75,29 @@ def test_messages_public_non_member():
 '''------------------testing channel_leave--------------------'''
 
 #testing leaving an existing channel with a valid owner
-def test_leave_owner():
+def test_leave_owner_good():
     #logging in users
     owner_info = login("Yousif@unsw.com", "13131")
-#creating a public channel
-    channel_id = channel_create(owner_info['token'], 'test_channel4', True)
+    #creating a public channel
+    channel_id = channel_create(owner_info['token'], 'test_channel5', True)
+    leave(owner_info['token'], channel_id['channel_id'])
+    #checking owner is not a member anymore
+    with pytest.raises(AccessError):
+        channel_details(owner_info['token'], channel_id['channel_id'])
+
+#testing leaving a channel as a non-member
+def test_leave_non_member():
+    #logging in users
+    owner_info = login("Yousif@unsw.com", "13131")
+    user_info = login("member@unsw.com","12321", "John", "Wick") 
+    channel_list = channels.list(owner_info['token'])
+    channel5_id = [channel.get('channel_id') for channel in channel_list if channel.get('name') == 'test_channel5']
+    with pytest.raises(AccessError):
+        #I used an index 0 assuming that there is only one id for each channel name
+        leave(user_info['token'], channel5_id[0])
     
+
+
 
 
 
