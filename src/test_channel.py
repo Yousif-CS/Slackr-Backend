@@ -3,11 +3,12 @@ from auth import auth_login, auth_register
 from channel import channel_messages, channel_leave, channel_join, channel_addowner, channel_removeowner, channel_invite, channel_details
 from channels import channels_create
 from message import message_send
+from error import AccessError, InputError
 import pytest
 
 '''
     Under the assumption that auth_register, auth_login
-    channels_create, channel_invite, message_send work properly
+    channels_create, channel_invite, message_send, message_remove work properly
 '''
 
 '''------------------testing channel_messages--------------------'''
@@ -195,4 +196,12 @@ def test_channel_addowner_good():
     channel_id = channel_create(owner_info['token'], 'test_channel11', True)    
     #sending a message that we will test deleting afterwards
     msg_id = message_send(owner_info['token'], channel_id['channel_id'], "Owner1's Message!")
-    channel_add
+    #adding general user as an owner to the channel
+    channel_addowner(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
+    #trying to remove a message as a new owner; if it fails, addowner is buggy
+    try:
+        message_remove(user_info['token'], msg_id['message_id'])
+    except AccessError as exception:
+        assert AccessError not exception
+
+
