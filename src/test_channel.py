@@ -106,6 +106,8 @@ def test_channel_leave_non_member():
     channel_list = channels_list(owner_info['token'])
     channel5_id = [channel.get('channel_id') for channel in channel_list['channels'] if channel.get('name') == 'test_channel5']
     with pytest.raises(AccessError):
+        #under the assumption that channels created in previous tests still exist
+        assert channel5_id #making sure channel5_id is not empty
         #I used an index 0 assuming that there is only one id for each channel name
         channel_leave(user_info['token'], channel5_id[0])
 def test_channel_leave_invalid_channel_id():
