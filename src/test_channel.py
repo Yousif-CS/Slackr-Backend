@@ -1,8 +1,8 @@
 #please edit this file for channels functions
-from auth import login, register
-from channel import messages, leave, channel_join, addowner, removeowner, invite, details
+from auth import auth_login, auth_register
+from channel import channel_messages, channel_leave, channel_join, channel_addowner, channel_removeowner, channel_invite, channel_details
 from channels import channel_create
-from message import send
+from message import message_send
 import pytest
 
 '''
@@ -163,7 +163,7 @@ def test_join_private_member():
     owner_info = login("Yousif@unsw.com", "13131")
     user_info = login("member@unsw.com","12321", "John", "Wick") 
     #creating a private channel
-    channel_id = channel_create(owner_info['token'], 'test_channel6', False)
+    channel_id = channel_create(owner_info['token'], 'test_channel7', False)
     with pytest.raises(AccessError):
         channel_join(user_info['token'], channel_id['channel_id'])
     
@@ -177,15 +177,22 @@ def test_join_already_joined():
     owner_info = login("Yousif@unsw.com", "13131")
     user_info = login("member@unsw.com","12321", "John", "Wick") 
     #creating a public channel
-    channel_id = channel_create(owner_info['token'], 'test_channel6', True)
+    channel_id = channel_create(owner_info['token'], 'test_channel10', True)
     channel_join(user_info['token'], channel_id['channel_id'])
     #Here I am assuming that double joining should raise any kind of exception
     with pytest.raises(Exception):
             channel_join(user_info['token'], channel_id['channel_id'])
 
 
+'''------------------testing channel_join--------------------'''
 
 
-
-
-
+def test_channel_addowner_good():
+    #logging in users
+    owner_info = login("Yousif@unsw.com", "13131")
+    user_info = login("member@unsw.com","12321", "John", "Wick") 
+    #creating a public channel
+    channel_id = channel_create(owner_info['token'], 'test_channel11', True)    
+    #sending a message that we will test deleting afterwards
+    msg_id = message_send(owner_info['token'], channel_id['channel_id'], "Owner1's Message!")
+    channel_add
