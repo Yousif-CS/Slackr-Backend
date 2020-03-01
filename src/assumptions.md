@@ -1,7 +1,8 @@
-This file contains assumptions made while testing backend functions
-===================================================================
-The structure of this file involves functions as headers and the assumptions as bullet points
-------------------------------------------------------------------
+# Assumptions
+##### This file contains assumptions made while testing backend functions
+===================================================================================================
+##### The structure of this file involves functions as headers and the assumptions as bullet points
+---------------------------------------------------------------------------------------------------
 # H3 Channel functions:
 
 # H4 channels_messages():
@@ -22,3 +23,4 @@ The structure of this file involves functions as headers and the assumptions as 
 # H4 channel_addowner():
 
 # H4 channel_removeowner():
+
