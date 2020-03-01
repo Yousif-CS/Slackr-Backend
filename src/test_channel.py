@@ -150,7 +150,9 @@ def test_join_public_valid():
     channel_join(user_info['token'], channel_id['channel_id'])
     #make sure user can view channel channel_details as member
     try:
-        channel_details(user_info['token'], channel_id['channel_id'])
+        test_details = channel_details(user_info['token'], channel_id['channel_id'])
+        assert test_details != None
+        assert test_details['name'] == 'test_channel6' 
     except AccessError as exception:
         assert AccessError != exception
 
@@ -215,7 +217,7 @@ def test_channel_addowner_invalid_channel():
         #adding general user as an owner to the channel
         channel_addowner(owner_info['token'],22222, user_info['u_id'])
 
-def test_channel_addowner_invalid_channel():
+def test_channel_addowner_again():
     #logging in users
     owner_info = auth_login("Yousif@gmail.com", "13131ABC")
     user_info = auth_login("member@gmail.com","12321AB") 
