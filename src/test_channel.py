@@ -1,8 +1,8 @@
 #please edit this file for channels functions
 from auth import auth_login, auth_register
 from channel import channel_messages, channel_leave, channel_join, channel_addowner, channel_removeowner, channel_invite, channel_details
-from channels import channels_create
-from message import message_send
+from channels import channels_create, channels_list
+from message import message_send, message_remove
 from error import AccessError, InputError
 import pytest
 
@@ -14,15 +14,15 @@ import pytest
 '''------------------testing channel_messages--------------------'''
 
 def test_channel_messages_empty_public(): 
-   
     #creating user
     user_info = auth_register("Yousif@gmail.com", "13131ABC", "Yousif", "Khalid")
     #creating public channel
     channel_id = channels_create(user_info['token'], 'test_channel0', True)    
     msgs = channel_messages(user_info['token'], channel_id['channel_id'], 0)
-    assert(msgs['messages'] == [])
-    assert(msgs['start'] == 0)
-    assert(msgs['end'] == -1)
+    #here I assume that the channel is empty once it is created(no messages)
+    assert msgs['messages'] == []
+    assert msgs['start'] == 0
+    assert msgs['end'] == -1
 
 #testing whether it raises an exception given a start index > number of channel_messages
 def test_channel_messages_empty_public_bad():
@@ -70,11 +70,12 @@ def test_channel_messages_public_non_member():
     #creating a public channel
     channel_id = channels_create(owner_info['token'], 'test_channel4', True)
     #message_sending channel_messages
-    message_send(owner_info['token'], channel_id['channel_id'], "First Message!")
+    msg_id = message_send(owner_info['token'], channel_id['channel_id'], "First Message!")
     #access channel_messages as a non-member to a public channel
-     with pytest.raises(AccessError):
+    with pytest.raises(AccessError):
         msgs = channel_messages(user_info['token'], channel_id['channel_id'], 0)
-        assert(msgs['end'] == -1)   #indicating the end of the channel_messages list
+        assert msgs['end'] == -1   #indicating the end of the channel_messages list
+        assert msg_id['message_id'] in [message.get('message_id') for message in msgs['messages']]
 
 def test_channel_messages_unauthorized_user():
     #logging in users
@@ -102,8 +103,8 @@ def test_channel_leave_non_member():
     #logging in users
     owner_info = auth_login("Yousif@gmail.com", "13131ABC")
     user_info = auth_login("member@gmail.com","12321AB") 
-    channel_list = channels.channels_list(owner_info['token'])
-    channel5_id = [channel.get('channel_id') for channel in channel_list if channel.get('name') == 'test_channel5']
+    channel_list = channels_list(owner_info['token'])
+    channel5_id = [channel.get('channel_id') for channel in channel_list['channels'] if channel.get('name') == 'test_channel5']
     with pytest.raises(AccessError):
         #I used an index 0 assuming that there is only one id for each channel name
         channel_leave(user_info['token'], channel5_id[0])
@@ -148,8 +149,8 @@ def test_join_public_valid():
     #make sure user can view channel channel_details as member
     try:
         channel_details(user_info['token'], channel_id['channel_id'])
-    except AccessError as exception
-        assert (AccessError not exception)
+    except AccessError as exception:
+        assert AccessError != exception
 
 #joining an invalid channel
 def test_join_invalid_channel():
@@ -202,7 +203,7 @@ def test_channel_addowner_good():
     try:
         message_remove(user_info['token'], msg_id['message_id'])
     except AccessError as exception:
-        assert AccessError not exception
+        assert AccessError != exception
 
 def test_channel_addowner_invalid_channel():
     #logging in users
