@@ -24,5 +24,6 @@
 1. Assuming an int like 22222 is considered an invalid channel id
 2. Assuming 'I am an invalid token' string to be an invalid token
 3. Assuming the function throws at least a general 'Exception' when dealing with invalid tokens
-#### H4 channel_removeowner():
+#### channel_removeowner():
+1. Assuming an int like 22222 is considered an invalid channel id
 
