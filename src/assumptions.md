@@ -3,7 +3,7 @@
 ## The structure of this file involves functions as headers and the assumptions as bullet points
 ---------------------------------------------------------------------------------------------------
 ### Channel functions:
-
+The main assumption is that we only need to register the user once, and afterwards, we can log them in each time we test a certain function, that is, we assume that there is a database storing login details 
 #### channels_messages():
 1. Assuming that the email addresses provided exists for registration
 2. Assuming that the channel is empty once it is created (contains no messages)
