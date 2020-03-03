@@ -31,7 +31,8 @@
 
 #### user_profile(token, u_id):
 1. Assume that the returned value will be a dictionary of the following form:
-    {'user': {
+    ```python
+	{'user': {
         	'u_id': 1,
         	'email': 'cs1531@cse.unsw.edu.au',
         	'name_first': 'Hayden',
@@ -39,4 +40,5 @@
         	'handle_str': 'hjacobs',
         }
     }
+	```
 2. 
