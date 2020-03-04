@@ -4,7 +4,7 @@
 import pytest
 import channels
 from error import InputError
-from channel import channel_invite
+from channel import channel_invite, channel_details
 from auth import auth_login, auth_register
 
 
@@ -133,3 +133,19 @@ def test_channels_listall_private():
         ]
 
 '''------------------testing channels_create--------------------'''
+# input: (token, name, is_public); output: {channel_id}
+# throws InputError when name is more than 20 chars long
+# assume: 
+# 1. duplicate names allowed since IDs are different
+# 2. NoName allowed ('name': '')
+
+# testing for correct details (use channel_details)
+
+# testing for correct output (as int)
+
+# testing that 2 different channels (maybe with same name) does not have same ID
+
+# testing for raised exception if len(name) > 20
+
+# testing for valid if empty name ?
+
