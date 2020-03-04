@@ -113,13 +113,14 @@ def test_user_profile_setname_invalid(get_user_kli):
         user_profile_setname(kli_token, "       ", "Li")
         user_profile_setname(kli_token, "Ken", "        ")
 
-# test that authorised user can update their email address so long as it is valid and unique
+# test that authorised user can update their email address so long as it is valid
 def test_user_profile_setemail(get_user_kli):
     kli_token, kli_u_id = get_user_kli
 
-# test that invalid emails throw input error
-def test_invalid_email(get_user_kli):
+# test that invalid but unique emails throw input error
+def test_invalid_email(get_user_kli, get_user_jwang):
     kli_token, kli_u_id = get_user_kli
+    wang_token, jwang_u_id = get_user_jwang 
     pass
 
 # test that existing emails throw input error
