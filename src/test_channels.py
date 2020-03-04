@@ -7,13 +7,11 @@ from error import InputError
 from channel import channel_invite, channel_details
 from auth import auth_login, auth_register
 
-
-# creating users
 # need to re-create users from scratch for each test
 
 # creating and registering users
-user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
-user_cd = auth_register("charlie@gmail.com", "pw321ABC", "Charlie", "Dragon")
+# user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
+# user_cd = auth_register("charlie@gmail.com", "pw321ABC", "Charlie", "Dragon")
 
 '''------------------testing channels_list--------------------'''
 
@@ -42,7 +40,7 @@ def test_channels_list_creator_public_channel():
     assert ab_list['channels'] == \
         [
             {
-                'channel_id': 1
+                'channel_id': new_public_channel['channel_id']
                 'name': 'public_test_1'
             }
         ]
@@ -58,7 +56,7 @@ def test_channels_list_creator_private_channel():
     assert ab_list['channels'] == \
         [
             {
-                'channel_id': 1
+                'channel_id': new_private_channel['channel_id']
                 'name': 'private_test'
             }
         ]
@@ -139,13 +137,45 @@ def test_channels_listall_private():
 # 1. duplicate names allowed since IDs are different
 # 2. NoName allowed ('name': '')
 
-# testing for correct details (use channel_details)
+# testing for correct output (channel_id as int)
+def test_channels_create_id_int():
+    # creating and registering user
+    user_kli = auth_register("ken@gmail.com", "new_pass", "Ken", "L")
+    # creating a public channel
+    new_channel_id = channels_create(user_kli['token'], "new_channel", True)
+    assert type(new_channel_id['channel_id']) == int 
 
-# testing for correct output (as int)
+# testing for correct details (using channel_details)
+def test_channels_create_id_int():
+    # creating and registering user
+    user_kli = auth_register("ken@gmail.com", "new_pass", "Ken", "L")
+    user_bwang = auth_register("bobw@gmail.com", "password123", "Bob", "Wang") 
+    # creating a public channel
+    new_channel_id = channels_create(user_kli['token'], "some_channel_name", True)
+    # user_kli invites user_bwang to the channel
+    channel_invite(user_kli['token'], new_channel_id['token'], user_bwang['u_id'])
+    print_details = channel_details(user_kli['token'], new_channel_id['channel_id'])
+    assert print_details['name'] == "some_channel_name"
+    assert print_details['all_members'] == \
+        [
+            {'u_id': user_kli['u_id'], 'name_first': 'Ken', 'name_last': 'L'},
+            {'u_id': user_bwang['u_id'], 'name_first': 'Bob', 'name_last': 'Wang'}
+        ]
 
 # testing that 2 different channels (maybe with same name) does not have same ID
+def test_channels_create_unique_id():
+    # creating and registering user
+    user_kli = auth_register("ken@gmail.com", "new_pass", "Ken", "L")
+    # creating 2 channels that have the same name and is_public status
+    new_channel_1 = channels_create(user_kli['token'], "generic_name", True)
+    new_channel_2 = channels_create(user_kli['token'], "generic_name", True)
+    # checking for uniqueness of channel_id
+    assert new_channel_1['channel_id'] != new_channel_1['channel_id']
 
 # testing for raised exception if len(name) > 20
-
-# testing for valid if empty name ?
-
+def test_channels_create_invalid_name():
+    # creating and registering user
+    user_kli = auth_register("ken@gmail.com", "new_pass", "Ken", "L")
+    with pytest.raises(InputError):
+        bad_channel = channels_create(user_kli['token'], "verylongchannelnameamiat20charsyet", True)
+        another_one = channels_create(user_kli['token'], "soyesterdayigotkickedbyareallybigduck", False) 

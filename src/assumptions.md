@@ -44,6 +44,7 @@ The main assumption is that we only need to register the user once, and afterwar
 
 #### channels_create():
 1. Assuming channel_id begins indexing from 1
+2. Assuming that empty strings are allowed for channel names, which may have some 'NoName' placeholder in frontend
 
 ### User functions
 1. Assuming that auth_login functions as per the spec.
