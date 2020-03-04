@@ -54,75 +54,78 @@ def create_private_channel(create_owner):
     channel_id = channels_create(owner_info['token'], 'test_channel', False)    
     return (channel_id, owner_info)
 
-def test_channel_messages_empty_public(): 
-    #creating user
-    user_info = auth_register("Yousif@gmail.com", "13131ABC", "Yousif", "Khalid")
-    #creating public channel
-    channel_id = channels_create(user_info['token'], 'test_channel0', True)    
-    msgs = channel_messages(user_info['token'], channel_id['channel_id'], 0)
+
+def test_channel_messages_empty_public(create_public_channel): 
+    '''
+    Testing requesting messages from an empty channel using a correct start index (0)
+    '''
+    #create a public channel using fixture and return its details and the owner's
+    channel_id, owner_info = create_public_channel
+    msgs = channel_messages(owner_info['token'], channel_id['channel_id'], 0)
     #here I assume that the channel is empty once it is created(no messages)
     assert msgs['messages'] == []
     assert msgs['start'] == 0
     assert msgs['end'] == -1
 
-#testing whether it raises an exception given a start index > number of channel_messages
-def test_channel_messages_empty_public_bad():
-    #creating user
-    user_info = auth_register("Yousif@gmail.com", "13131ABC", "Yousif", "Khalid")
-    #creating public channel
-    channel_id = channels_create(user_info['token'], 'test_channel1', True)
+def test_channel_messages_empty_public_bad(create_public_channel):
+    '''
+    testing whether it raises an exception given a start index > number of channel_messages
+    '''
+    #create a public channel using fixture and return its details and the owner's
+    channel_id, owner_info = create_public_channel
     with pytest.raises(InputError):
         msgs = channel_messages(user_info['token'], channel_id['channel_id'], 10)
 
-#testing accessing channel_messages as an non-member of the channel
-def test_channel_messages_private_non_member():
-    #creating and logging in users
-    owner_info = auth_login("Yousif@gmail.com", "13131ABC")
-    user_info = auth_register("member@gmail.com","12321AB", "John", "Wick") 
+def test_channel_messages_private_non_member(create_private_channel, create_user1):
+    '''
+    testing accessing channel_messages as an non-member of the channel
+    '''
+    #creating channel and retrieving its details and the owner's
+    channel_id, owner_info = create_public_channel
+    #creating a general user
+    user_info = create_user1
     #creating private channel
     channel_id = channels_create(owner_info['token'], 'test_channel2', False)
     message_send(owner_info['token'], channel_id['channel_id'], "First Message!")
     with pytest.raises(AccessError):
          msgs = channel_messages(user_info['token'], channel_id['channel_id'], 0)
 
-#testing obtaining channel_messages from an invalid channel
-def test_channel_messages_invalid_channel():
-    #creating and logging in users
-    owner_info = auth_login("Yousif@gmail.com", "13131ABC") 
+
+def test_channel_messages_invalid_channel(create_owner):
+    '''
+    testing obtaining channel_messages from an invalid channel
+    '''
+    #creating and logging in owner
+    owner_info = create_owner 
     with pytest.raises(InputError):
         msgs = channel_messages(owner_info['token'], 131123, 0)
 
-def test_channel_messages_invalid_index():
-    #creating and logging in users
-    owner_info = auth_login("Yousif@gmail.com", "13131ABC")
-    user_info = auth_login("member@gmail.com","12321AB") 
-    #creating a public channel
-    channel_id = channels_create(owner_info['token'], 'test_channel3', False)
+def test_channel_messages_invalid_index(create_public_channel):
+    #creating channel and retrieving its details and the owner's
+    channel_id, owner_info = create_public_channel
+    #sending messages
     message_send(owner_info['token'], channel_id['channel_id'], "First Message!")
     message_send(owner_info['token'], channel_id['channel_id'], "Second Message!")
     message_send(owner_info['token'], channel_id['channel_id'], "Third Message!")
     with pytest.raises(InputError):
         msgs = channel_messages(user_info['token'], channel_id['channel_id'], 4)
 
-def test_channel_messages_public_non_member():
-    #logging in users
-    owner_info = auth_login("Yousif@gmail.com", "13131ABC")
-    user_info = auth_login("member@gmail.com","12321AB") 
-    #creating a public channel
-    channel_id = channels_create(owner_info['token'], 'test_channel4', True)
+def test_channel_messages_public_non_member(create_public_channel, create_user1):
+    #creating channel and retrieving its details and the owner's
+    channel_id, owner_info = create_public_channel
+    #creating general user
+    user_info = create_user1
     #message_sending channel_messages
     msg_id = message_send(owner_info['token'], channel_id['channel_id'], "First Message!")
     #access channel_messages as a non-member to a public channel
     with pytest.raises(AccessError):
         msgs = channel_messages(user_info['token'], channel_id['channel_id'], 0)
-        assert msgs['end'] == -1   #indicating the end of the channel_messages list
-        assert msg_id['message_id'] in [message.get('message_id') for message in msgs['messages']]
+        
 
-def test_channel_messages_unauthorized_user():
-    #logging in users
-    owner_info = auth_login("Yousif@gmail.com", "13131ABC")
-    #creating a public channel
-    channel_id = channels_create(owner_info['token'], 'test_channel8', True)
+def test_channel_messages_unauthorized_user(create_private_channel):
+    #creating channel and retrieving its details and the owner's
+    channel_id, owner_info = create_public_channel
+    #using an invalid token
     with pytest.raises(AccessError):
         msgs = channel_messages('I am an invalid token', channel_id['channel_id'], 0)
 
@@ -130,10 +133,9 @@ def test_channel_messages_unauthorized_user():
 
 #testing leaving an existing channel with a valid owner
 def test_channel_leave_owner_good():
-    #logging in users
-    owner_info = auth_login("Yousif@gmail.com", "13131ABC")
-    #creating a public channel
-    channel_id = channels_create(owner_info['token'], 'test_channel5', True)
+    #creating channel and retrieving its details and the owner's
+    channel_id, owner_info = create_public_channel
+    #leaving channel
     channel_leave(owner_info['token'], channel_id['channel_id'])
     #checking owner is not a member anymore
     with pytest.raises(AccessError):
