@@ -1,4 +1,4 @@
-`#please edit this file for channels functions
+#please edit this file for channels functions
 from auth import auth_login, auth_register
 from channel import channel_leave, channel_join, channel_addowner, channel_removeowner, channel_invite, channel_messages, channel_details
 from channels import channels_create, channels_list
@@ -11,7 +11,6 @@ import pytest
     channels_create, channel_invite, message_send, message_remove work properly
 '''
 
-'''------------------testing channel_messages--------------------'''
 @pytest.fixture
 def create_owner():
     '''
@@ -21,7 +20,7 @@ def create_owner():
     return user_info
 
 @pytest.fixture
-def create_user1()
+def create_user1():
     '''
     Create a general user and return its details
     '''
@@ -42,7 +41,7 @@ def create_public_channel(create_owner):
     Create a public channel using the owner fixture and return their details
     '''
     owner_info = create_owner
-    channel_id = channels_create(user_info['token'], 'test_channel', True)    
+    channel_id = channels_create(owner_info['token'], 'test_channel', True)    
     return (channel_id, owner_info)
 
 @pytest.fixture
@@ -55,6 +54,25 @@ def create_private_channel(create_owner):
     return (channel_id, owner_info)
 
 
+'''------------------testing channel_messages--------------------'''
+def test_channel_messages_good(create_public_channel):
+    #create a public channel using fixture and return its details and the owner's
+    channel_id, owner_info = create_public_channel
+    #sending messages
+    msg1 = message_send(owner_info['token'], channel_id['channel_id'], "message 1")
+    msg2 = message_send(owner_info['token'], channel_id['channel_id'], "message 2")
+    msg3 = message_send(owner_info['token'], channel_id['channel_id'], "message 3")
+    msg4 = message_send(owner_info['token'], channel_id['channel_id'], "message 4")
+    msg5 = message_send(owner_info['token'], channel_id['channel_id'], "message 5")
+    #retrieving message list
+    msgs = channel_messages(owner_info['token'], channel_id['channel_id'], 0)
+    assert len(msgs['messages']) == 5
+    assert msgs['start'] == 0
+    assert msgs['end'] == -1
+    u_ids = [u_id for message['u_id'] in msgs['messages']]
+    for user in u_ids:
+        assert user == owner_info['u_id']
+    
 def test_channel_messages_empty_public(create_public_channel): 
     '''
     Testing requesting messages from an empty channel using a correct start index (0)
@@ -74,14 +92,14 @@ def test_channel_messages_empty_public_bad(create_public_channel):
     #create a public channel using fixture and return its details and the owner's
     channel_id, owner_info = create_public_channel
     with pytest.raises(InputError):
-        msgs = channel_messages(user_info['token'], channel_id['channel_id'], 10)
+        msgs = channel_messages(owner_info['token'], channel_id['channel_id'], 10)
 
 def test_channel_messages_private_non_member(create_private_channel, create_user1):
     '''
     testing accessing channel_messages as an non-member of the channel
     '''
     #creating channel and retrieving its details and the owner's
-    channel_id, owner_info = create_public_channel
+    channel_id, owner_info = create_private_channel
     #creating a general user
     user_info = create_user1
     #creating private channel
@@ -113,7 +131,7 @@ def test_channel_messages_invalid_index(create_public_channel):
     message_send(owner_info['token'], channel_id['channel_id'], "Second Message!")
     message_send(owner_info['token'], channel_id['channel_id'], "Third Message!")
     with pytest.raises(InputError):
-        msgs = channel_messages(user_info['token'], channel_id['channel_id'], 4)
+        msgs = channel_messages(owner_info['token'], channel_id['channel_id'], 4)
 
 def test_channel_messages_public_non_member(create_public_channel, create_user1):
     '''
