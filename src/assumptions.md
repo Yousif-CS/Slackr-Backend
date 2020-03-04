@@ -27,3 +27,15 @@ The main assumption is that we only need to register the user once, and afterwar
 #### channel_removeowner():
 1. Assuming an int like 22222 is considered an invalid channel id
 
+### Channels functions():
+
+#### channels_list():
+1. Assuming that newly registered users are not part of any channel
+
+#### channels_listall():
+1. Assuming that both public and private channels are visible when this function is called 
+2. 
+
+#### channels_create():
+1. Assuming channel_id begins indexing from 1
+
