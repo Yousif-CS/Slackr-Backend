@@ -14,7 +14,7 @@ def test_register_invalid_email():
 #Only domain given for email 
 def test_register_wrong_email():
 	with pytest.raises(InputError) as e:
-		auth_register('@gmail.com', 'passwordian', 'Max' 'Smith')
+		auth_register('@gmail.com', 'passwordian1', 'Max' 'Smith')
 
 #Password is too short 
 def test_register_invalid_password():
@@ -41,4 +41,4 @@ def test_register_existing_user():
 	
 	
 	 
-	
+
