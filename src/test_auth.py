@@ -58,7 +58,7 @@ def test_login_password():
 	user = auth_register('max.smith@gmail.com', 'great_password101', 'Max', 'Smith')  
 	
 	with pytest.raises(InputError) as e:
-		user_loggingin = auth_login('max.smith@gmail.com', 'bad_password') 
+		user_loggingin = auth_login('max.smith@gmail.com', 'poor_password') 
 
 #No users registered with email 
 
