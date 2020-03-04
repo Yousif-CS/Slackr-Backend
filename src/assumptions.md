@@ -1,36 +1,52 @@
-# Assumptions
-##### This file contains assumptions made while testing backend functions
+# This file contains assumptions made while testing backend functions
 ===================================================================================================
-##### The structure of this file involves functions as headers and the assumptions as bullet points
+## The structure of this file involves functions as headers and the assumptions as bullet points
 ---------------------------------------------------------------------------------------------------
 # Overarching assumptions
 1. The handle is a lower case concatenation of the first-name initial and the last-name. If this handle is already taken, an integer is concatenated to the end, ascending from 1.
 2. Assume that names that are purely whitespaces are not valid.
 
 ### Channel functions:
+The main assumption is that we only need to register the user once, and afterwards, we can log them in each time we test a certain function, that is, we assume that there is a database storing login details 
 
 #### channels_messages():
 1. Assuming that the email addresses provided exists for registration
-2. Assuming that 'owner' in this context refers only to a channel owner but not workspace owner as a global permission 
-3. Assuming big ints such as 123123 are considered invalid channel id
-4. Assuming 'I am an invalid token' string to be an invalid token
-5. Assuming the function throws an 'AccessError' exception when dealing with invalid tokens
+2. Assuming that the channel is empty once it is created (contains no messages)
+3. Assuming that 'owner' in this context refers only to a channel owner but not workspace owner as a global permission 
+4. Assuming big ints such as 123123 are considered invalid channel id
+5. Assuming 'I am an invalid token' string to be an invalid token
+6. Assuming the function throws an 'AccessError' exception when dealing with invalid tokens
 
 #### channel_leave():
-3. Assuming big ints such as 123123 are considered invalid channel id's (at least initially)
-4. Assuming 'I am an invalid token' string to be an invalid token
-5. Assuming the function throws an 'AccessError' exception when dealing with invalid tokens
+1. Assuming big ints such as 123123 are considered invalid channel id's (at least initially)
+2. Assuming 'I am an invalid token' string to be an invalid token
+3. Assuming the function throws at least a general 'Exception' when dealing with invalid tokens
 
 #### channel_join():
 1. Assuming big ints such as 1232123 are considered invalid channel id's
 2. Assuming that double joining raises some kind of exception
+
 #### channel_addowner():
+1. Assuming an int like 22222 is considered an invalid channel id
+2. Assuming 'I am an invalid token' string to be an invalid token
+3. Assuming the function throws at least a general 'Exception' when dealing with invalid tokens
 
 #### channel_removeowner():
+1. Assuming an int like 22222 is considered an invalid channel id
+
+### Channels functions():
+
+#### channels_list():
+1. Assuming that newly registered users are not part of any channel
+
+#### channels_listall():
+1. Assuming that both public and private channels are visible when this function is called 
+
+#### channels_create():
+1. Assuming channel_id begins indexing from 1
 
 ### User functions
 1. Assuming that auth_login functions as per the spec.
-
 
 #### user_profile(token, u_id):
 1. Assume that the returned value will be a dictionary of the following form:
