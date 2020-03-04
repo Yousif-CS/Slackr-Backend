@@ -100,7 +100,12 @@ def test_channel_messages_invalid_channel(create_owner):
     with pytest.raises(InputError):
         msgs = channel_messages(owner_info['token'], 131123, 0)
 
+
 def test_channel_messages_invalid_index(create_public_channel):
+    '''
+    Another test to check exception throwing while giving invalid start index
+    '''
+    
     #creating channel and retrieving its details and the owner's
     channel_id, owner_info = create_public_channel
     #sending messages
@@ -111,6 +116,9 @@ def test_channel_messages_invalid_index(create_public_channel):
         msgs = channel_messages(user_info['token'], channel_id['channel_id'], 4)
 
 def test_channel_messages_public_non_member(create_public_channel, create_user1):
+    '''
+    Testing a non-member access to channel_messages
+    '''
     #creating channel and retrieving its details and the owner's
     channel_id, owner_info = create_public_channel
     #creating general user
@@ -122,7 +130,10 @@ def test_channel_messages_public_non_member(create_public_channel, create_user1)
         msgs = channel_messages(user_info['token'], channel_id['channel_id'], 0)
         
 
-def test_channel_messages_unauthorized_user(create_private_channel):
+def test_channel_messages_unauthorized_user(create_public_channel):
+    '''
+    Testing unauthorized access(not a member of slackr) to channel_messages
+    '''
     #creating channel and retrieving its details and the owner's
     channel_id, owner_info = create_public_channel
     #using an invalid token
@@ -131,8 +142,11 @@ def test_channel_messages_unauthorized_user(create_private_channel):
 
 '''------------------testing channel_leave--------------------'''
 
-#testing leaving an existing channel with a valid owner
-def test_channel_leave_owner_good():
+
+def test_channel_leave_owner_good(create_public_channel):
+    '''
+    testing leaving an existing channel with a valid owner
+    '''
     #creating channel and retrieving its details and the owner's
     channel_id, owner_info = create_public_channel
     #leaving channel
@@ -141,41 +155,48 @@ def test_channel_leave_owner_good():
     with pytest.raises(AccessError):
         channel_details(owner_info['token'], channel_id['channel_id'])
 
-#testing leaving a channel as a non-member
-def test_channel_leave_non_member():
-    #logging in users
-    owner_info = auth_login("Yousif@gmail.com", "13131ABC")
-    user_info = auth_login("member@gmail.com","12321AB") 
-    channel_list = channels_list(owner_info['token'])
-    channel5_id = [channel.get('channel_id') for channel in channel_list['channels'] if channel.get('name') == 'test_channel5']
+
+def test_channel_leave_non_member(create_public_channel, create_user1):
+    '''
+    Testing leaving a channel as a non-member
+    '''
+    #creating channel and retrieving its details and the owner's
+    channel_id, owner_info = create_public_channel
+    #creating another user
+    user_info = create_user1
+    #leaving as a non-member
     with pytest.raises(AccessError):
-        #under the assumption that channels created in previous tests still exist
-        assert channel5_id #making sure channel5_id is not empty
-        #I used an index 0 assuming that there is only one id for each channel name
-        channel_leave(user_info['token'], channel5_id[0])
-def test_channel_leave_invalid_channel_id():
-    #logging in users
-    owner_info = auth_login("Yousif@gmail.com", "13131ABC")
+        channel_leave(user_info['token'], channel_id['channel_id'])
+
+def test_channel_leave_invalid_channel_id(create_owner):
+    '''
+    Assuming 1321231 is not a valid channel id 
+    '''
+    owner_info = create_owner
     with pytest.raises(InputError):
         channel_leave(owner_info['token'], 1321231)
 
-def test_channel_leave_general_member():
-    #logging in users
-    owner_info = auth_login("Yousif@gmail.com", "13131ABC")
-    user_info = auth_login("member@gmail.com","12321AB") 
+def test_channel_leave_general_member(create_private_channel, create_user1):
+    '''
+    Testing leaving a channel as a general member and trying to access its details
+    '''
     #creating a private channel
-    channel_id = channels_create(owner_info['token'], 'test_channel6', False)
+    channel_id, owner_info = create_private_channel
+    #creating a normal user
+    user_info = create_user1
+    #inviting a user
     channel_invite(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
+    #leaving
     channel_leave(user_info['token'], channel_id['channel_id'])
-    #trying to access channel channel_details as a non-member
+    #trying to access channel_details as a non-member
     with pytest.raises(AccessError):
         channel_details(user_info['token'], channel_id['channel_id'])
 
-def test_channel_leave_unauthorized_user():
-    #logging in users
-    owner_info = auth_login("Yousif@gmail.com", "13131ABC")
-    #creating a public channel
-    channel_id = channels_create(owner_info['token'], 'test_channel9', True)
+def test_channel_leave_unauthorized_user(create_public_channel):
+    '''
+    Testing leaving a channel as a user with an invalid token
+    '''
+    channel_id, owner_info = create_public_channel
     #assuming an invalid token results in an exception
     with pytest.raises(Exception):
         channel_leave('I am an invalid token', channel_id['channel_id'])
