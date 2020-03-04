@@ -204,61 +204,66 @@ def test_channel_leave_unauthorized_user(create_public_channel):
 
 '''------------------testing channel_join--------------------'''
 
-#joining a valid channel with valid permissions
-def test_channel_join_public_valid():
-    #logging in users
-    owner_info = auth_login("Yousif@gmail.com", "13131ABC")
-    user_info = auth_login("member@gmail.com","12321AB") 
+def test_channel_join_public_valid(create_public_channel, create_user1):
+    '''
+    Join a channel with valid conditions
+    '''
     #creating a public channel
-    channel_id = channels_create(owner_info['token'], 'test_channel6', True)
+    channel_id, owner_info = create_public_channel
+    #creating a normal user
+    user_info = create_user1
+    #joining as general user
     channel_join(user_info['token'], channel_id['channel_id'])
     #make sure user can view channel channel_details as member
     try:
         test_details = channel_details(user_info['token'], channel_id['channel_id'])
-        assert test_details != None
-        assert test_details['name'] == 'test_channel6' 
+        assert test_details
+        assert test_details['name'] == 'test_channel' 
     except AccessError as exception:
         assert AccessError != exception
 
-#joining an invalid channel
-def test_channel_join_invalid_channel():
+
+def test_channel_join_invalid_channel(create_owner):
+    '''
+    Joining an invalid channel
+    '''
     #logging in users
-    owner_info = auth_login("Yousif@gmail.com", "13131ABC")
+    owner_info = create_owner
     with pytest.raises(InputError):
         channel_join(owner_info['token'], 1231212)
 
-#joining a private channel as a general user(not an admin)
 def test_channel_join_private_member():
-    #logging in users
-    owner_info = auth_login("Yousif@gmail.com", "13131ABC")
-    user_info = auth_login("member@gmail.com","12321AB") 
+    '''
+    joining a private channel as a general user(not an admin)
+    '''
     #creating a private channel
-    channel_id = channels_create(owner_info['token'], 'test_channel6', False)
+    channel_id, owner_info = create_private_channel
+    #creating a normal user
+    user_info = create_user1
+
     with pytest.raises(AccessError):
         channel_join(user_info['token'], channel_id['channel_id'])
     
 #joining a private channel as an admin
-def test_channel_join_private_admin():
-    pass
+#def test_channel_join_private_admin():
+#    pass
 
-#double joining a channel
-def test_channel_join_already_joined():
-    #logging in users
-    owner_info = auth_login("Yousif@gmail.com", "13131ABC")
-    user_info = auth_login("member@gmail.com","12321AB") 
+def test_channel_join_already_joined(create_public_channel, create_user1):
+    '''
+    Testing double joining a channel
+    '''
     #creating a public channel
-    channel_id = channels_create(owner_info['token'], 'test_channel6', True)
+    channel_id, owner_info = create_public_channel
+    #creating a normal user and joining
+    user_info = create_user1
     channel_join(user_info['token'], channel_id['channel_id'])
     #Here I am assuming that double joining should raise any kind of exception
     with pytest.raises(Exception):
             channel_join(user_info['token'], channel_id['channel_id'])
 
-def test_channel_join_invalid_token():
-    #logging in users
-    owner_info = auth_login("Yousif@gmail.com", "13131ABC")
-    user_info = auth_login("member@gmail.com","12321AB")
+def test_channel_join_invalid_token(create_public_channel):
     #creating a public channel
-    channel_id = channels_create(owner_info['token'], 'test_channel18', True)
+    channel_id, owner_info = create_public_channel
     #testing using an invalid token raises an exception
     with pytest.raises(Exception):
         channel_join('I am not a valid token', channel_id['channel_id'])
