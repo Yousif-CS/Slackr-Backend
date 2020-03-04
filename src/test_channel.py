@@ -12,6 +12,47 @@ import pytest
 '''
 
 '''------------------testing channel_messages--------------------'''
+@pytest.fixture
+def create_owner():
+    '''
+    Just a fixture to register an owner and return its details
+    '''
+    user_info = auth_register("Yousif@gmail.com", "13131ABC", "Yousif", "Khalid")
+    return user_info
+
+@pytest.fixture
+def create_user1()
+    '''
+    Create a general user and return its details
+    '''
+    user_info = auth_register("member@gmail.com","12321AB", "John", "Wick") 
+    return user_info
+
+@pytest.fixture
+def create_user2():
+    '''
+    Create a general user and return its details
+    '''
+    user_info = auth_register("holaAmigos@gmail.com", "123A456!", "Banana", "Guy")
+    return user_info
+
+@pytest.fixture
+def create_public_channel(create_owner):
+    '''
+    Create a public channel using the owner fixture and return their details
+    '''
+    owner_info = create_owner
+    channel_id = channels_create(user_info['token'], 'test_channel', True)    
+    return (channel_id, owner_info)
+
+@pytest.fixture
+def create_private_channel(create_owner):
+    '''
+    Create a private channel using the owner fixture and return their details
+    '''
+    owner_info = create_owner
+    channel_id = channels_create(owner_info['token'], 'test_channel', False)    
+    return (channel_id, owner_info)
 
 def test_channel_messages_empty_public(): 
     #creating user
