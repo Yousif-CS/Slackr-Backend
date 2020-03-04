@@ -232,7 +232,7 @@ def test_channel_join_invalid_channel(create_owner):
     with pytest.raises(InputError):
         channel_join(owner_info['token'], 1231212)
 
-def test_channel_join_private_member():
+def test_channel_join_private_member(create_private_channel, create_user1):
     '''
     joining a private channel as a general user(not an admin)
     '''
@@ -262,6 +262,9 @@ def test_channel_join_already_joined(create_public_channel, create_user1):
             channel_join(user_info['token'], channel_id['channel_id'])
 
 def test_channel_join_invalid_token(create_public_channel):
+    '''
+    Providing an invalid token
+    '''
     #creating a public channel
     channel_id, owner_info = create_public_channel
     #testing using an invalid token raises an exception
@@ -271,12 +274,14 @@ def test_channel_join_invalid_token(create_public_channel):
 '''------------------testing channel_addowner--------------------'''
 
 
-def test_channel_addowner_good():
-    #logging in users
-    owner_info = auth_login("Yousif@gmail.com", "13131ABC")
-    user_info = auth_login("member@gmail.com","12321AB") 
+def test_channel_addowner_good(create_public_channel, create_user1):
+    '''
+    Testing adding an owner, and allowing them to delete a message by another user
+    '''
     #creating a public channel
-    channel_id = channels_create(owner_info['token'], 'test_channel11', True)    
+    channel_id, owner_info = create_public_channel
+    #creating a normal user
+    user_info = create_user1
     #sending a message that we will test deleting afterwards
     msg_id = message_send(owner_info['token'], channel_id['channel_id'], "Owner1's Message!")
     #adding general user as an owner to the channel
@@ -287,55 +292,65 @@ def test_channel_addowner_good():
     except AccessError as exception:
         assert AccessError != exception
 
-def test_channel_addowner_invalid_channel():
+def test_channel_addowner_invalid_channel(create_owner, create_user1):
+    '''
+    Under the assumption that 22222 is an invalid channel id
+    '''
     #logging in users
-    owner_info = auth_login("Yousif@gmail.com", "13131ABC")
-    user_info = auth_login("member@gmail.com","12321AB")
+    owner_info = create_owner
+    user_info = create_user1
     with pytest.raises(InputError):
-        #adding general user as an owner to the channel
+        #adding general user as an owner to an invalid channel
         channel_addowner(owner_info['token'],22222, user_info['u_id'])
 
-def test_channel_addowner_again():
-    #logging in users
-    owner_info = auth_login("Yousif@gmail.com", "13131ABC")
-    user_info = auth_login("member@gmail.com","12321AB") 
+def test_channel_addowner_again(create_public_channel, create_user1):
+    '''
+    Testing double adding
+    '''
     #creating a public channel
-    channel_id = channels_create(owner_info['token'], 'test_channel12', True)
+    channel_id, owner_info = create_public_channel
+    #creating a normal user
+    user_info = create_user1
     #adding general user as an owner to the channel
     channel_addowner(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
     with pytest.raises(InputError):
         #adding owner again
         channel_addowner(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
 
-def test_channel_addowner_as_non_owner():
-    #logging in users
-    owner_info = auth_login("Yousif@gmail.com", "13131ABC")
-    user_info = auth_login("member@gmail.com","12321AB") 
-    another_user = auth_register("holaAmigos@gmail.com", "123A456!", "Banana", "Guy")
+def test_channel_addowner_as_non_owner(create_public_channel, create_user1, create_user2):
+    '''
+    being a general member, trying to add a user as an owner
+    '''
     #creating a public channel
-    channel_id = channels_create(owner_info['token'], 'test_channel13', True)
+    channel_id, owner_info = create_public_channel
+    #creating a normal user
+    user_info = create_user1
+    another_user = create_user2
     #joining as a general member and trying to add another user as an owner
     channel_join(another_user['token'], channel_id['channel_id'])
     with pytest.raises(AccessError):
         channel_addowner(another_user['token'], channel_id['channel_id'], user_info['u_id'])
     
-def test_channel_addowner_as_non_member():
-    #logging in users
-    owner_info = auth_login("Yousif@gmail.com", "13131ABC")
-    user_info = auth_login("member@gmail.com","12321AB") 
-    another_user = auth_login("holaAmigos@gmail.com", "123A456!")
+def test_channel_addowner_as_non_member(create_public_channel, create_user1, create_user2):
     #creating a public channel
-    channel_id = channels_create(owner_info['token'], 'test_channel14', True)
+    channel_id, owner_info = create_public_channel
+    #creating normal users
+    user_info = create_user1
+    channel_join(user_info['token'], channel_id['channel_id'])
+    another_user = create_user2
     #trying to make a user an owner as a non member
     with pytest.raises(Exception):
         channel_addowner(another_user['token'], channel_id['channel_id'], user_info['u_id'])
 
-def test_channel_addowner_invalid_token():
-    #logging in users
-    owner_info = auth_login("Yousif@gmail.com", "13131ABC")
-    user_info = auth_login("member@gmail.com","12321AB")
+def test_channel_addowner_invalid_token(create_public_channel, create_user1):
+    '''
+    Unauthorized user trying to add a member as an owner
+    '''
     #creating a public channel
-    channel_id = channels_create(owner_info['token'], 'test_channel14', True)
+    channel_id, owner_info = create_public_channel
+    #creating normal users
+    user_info = create_user1
+    channel_join(user_info['token'], channel_id['channel_id'])
     #testing using an invalid token raises an exception
     with pytest.raises(Exception):
         channel_addowner('I am not a valid token', channel_id['channel_id'], user_info['u_id'])
