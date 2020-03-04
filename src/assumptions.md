@@ -60,11 +60,11 @@ The main assumption is that we only need to register the user once, and afterwar
         }
     }
 	```
-2. Assume that a correct token will always be provided
+2. Assume that a correct token will always be provided.
 
 #### user_profile_setname(token, name_first, name_last):
-1. Assume that the 'user_profile' function behaves correctly
-2. Assume that 'name_*' containing white spaces only is invalid
+1. Assume that the 'user_profile' function behaves correctly.
+2. Assume that 'name_*' containing white spaces only is invalid.
 
 #### user_profile_setemail(token, email):
 1. Assume that the email provided exists.
