@@ -29,6 +29,8 @@
 #### channel_removeowner():
 
 ### User functions
+1. Assuming that auth_login functions as per the spec.
+
 
 #### user_profile(token, u_id):
 1. Assume that the returned value will be a dictionary of the following form:
@@ -42,4 +44,15 @@
         }
     }
 	```
-2. 
+2. Assume that a correct token will always be provided
+
+#### user_profile_setname(token, name_first, name_last):
+1. Assume that the 'user_profile' function behaves correctly
+2. Assume that 'name_*' containing white spaces only is invalid
+
+#### user_profile_setemail(token, email):
+1. Assume that the email provided exists.
+
+#### user_profile_sethandle(token, handle_str):
+
+#### users_all(token)
