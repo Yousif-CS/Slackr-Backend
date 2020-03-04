@@ -1,4 +1,4 @@
-#please edit this file for channels functions
+`#please edit this file for channels functions
 from auth import auth_login, auth_register
 from channel import channel_leave, channel_join, channel_addowner, channel_removeowner, channel_invite, channel_messages, channel_details
 from channels import channels_create, channels_list
@@ -357,71 +357,88 @@ def test_channel_addowner_invalid_token(create_public_channel, create_user1):
 
 '''------------------testing channel_removeowner--------------------'''
 
-def test_channel_removeowner_good():
-    #logging in users
-    owner_info = auth_login("Yousif@gmail.com", "13131ABC")
-    user_info = auth_login("member@gmail.com","12321AB") 
+def test_channel_removeowner_good(create_public_channel, create_user1):
+    '''
+    Assuming addowner works fine, we test removing a message after ownership is removed
+    '''
     #creating a public channel
-    channel_id = channels_create(owner_info['token'], 'test_channel15', True)    
+    channel_id, owner_info = create_public_channel
+    #creating normal users
+    user_info = create_user1
     #sending a message that we will test deleting afterwards
-    msg_id = message_send(owner_info['token'], channel_id['channel_id'], "Owner1's Message!")
+    msg_id = message_send(owner_info['token'], channel_id['channel_id'], "First owner's Message 1!")
+    msg_id2 = message_send(owner_info['token'], channel_id['channel_id'], "First owner's  Message 2!")
     #adding general user as an owner to the channel
     channel_addowner(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
+    #trying to remove a message to check if addowner works
+    message_remove(user_info['token'], msg_id2['message_id'])
+    messages = channel_messages(owner_info['token'], channel_id['channel_id'], 0)
+    assert len(messages['messages']) == 1
     #removing user from being an owner
     channel_removeowner(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
     #trying to remove a message as a user, it should produce AccessError
     with pytest.raises(AccessError):
         message_remove(user_info['token'], msg_id['message_id'])
 
-def test_channel_removeowner_invalid_channel():
-    #logging in users
-    owner_info = auth_login("Yousif@gmail.com", "13131ABC")
-    user_info = auth_login("member@gmail.com","12321AB")
+def test_channel_removeowner_invalid_channel(create_public_channel, create_user1):
+    '''
+    Assuming 22222 is an invalid channel id
+    '''
     #creating a public channel
-    channel_id = channels_create(owner_info['token'], 'test_channel16', True)
+    channel_id, owner_info = create_public_channel
+    #creating normal users
+    user_info = create_user1
     channel_addowner(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
     with pytest.raises(InputError):
         #removing a user from an invalid channel
         channel_removeowner(owner_info['token'],22222, user_info['u_id'])
 
-#trying to remove ownership from a user who is not an owner
-def test_channel_removeowner_no_owner():
-    #logging in users
-    owner_info = auth_login("Yousif@gmail.com", "13131ABC")
-    user_info = auth_login("member@gmail.com","12321AB")
+def test_channel_removeowner_no_owner(create_public_channel, create_user1):
+    '''
+    trying to remove ownership from a user who is not an owner
+    '''
     #creating a public channel
-    channel_id = channels_create(owner_info['token'], 'test_channel17', True)
+    channel_id, owner_info = create_public_channel
+    #creating normal users
+    user_info = create_user1
+    
     with pytest.raises(InputError):
         #removing a user from an invalid channel
         channel_removeowner(owner_info['token'],channel_id['channel_id'], user_info['u_id'])
 
-def test_channel_removeowner_as_non_owner():
-    #logging in users
-    owner_info = auth_login("Yousif@gmail.com", "13131ABC")
-    user_info = auth_login("member@gmail.com","12321AB") 
+def test_channel_removeowner_as_non_owner(create_public_channel, create_user1):
+    '''
+    Removing an owner as a general member
+    '''
+    
     #creating a public channel
-    channel_id = channels_create(owner_info['token'], 'test_channel21', True)
+    channel_id, owner_info = create_public_channel
+    #creating normal users
+    user_info = create_user1
     #joining as a general member and trying to removing another user as an owner
     channel_join(user_info['token'], channel_id['channel_id'])
     with pytest.raises(AccessError):
         channel_removeowner(user_info['token'], channel_id['channel_id'], owner_info['u_id'])
     
-def test_channel_removeowner_as_non_member():
-    #logging in users
-    owner_info = auth_login("Yousif@gmail.com", "13131ABC")
-    user_info = auth_login("member@gmail.com","12321AB") 
+def test_channel_removeowner_as_non_member(create_public_channel, create_user1):
+    '''
+    Removing an owner without a member of the channel
+    '''
+    
     #creating a public channel
-    channel_id = channels_create(owner_info['token'], 'test_channel20', True)
+    channel_id, owner_info = create_public_channel
+    #creating normal users
+    user_info = create_user1
     #trying to make a remove a user as a non member
     with pytest.raises(Exception):
         channel_removeowner(user_info['token'], channel_id['channel_id'], owner_info['u_id'])
 
-def test_channel_removeowner_invalid_token():
-    #logging in users
-    owner_info = auth_login("Yousif@gmail.com", "13131ABC")
-    user_info = auth_login("member@gmail.com","12321AB")
+def test_channel_removeowner_invalid_token(create_public_channel):
+    '''
+    Removing an owner as an unauthorized user
+    '''
     #creating a public channel
-    channel_id = channels_create(owner_info['token'], 'test_channel19', True)
+    channel_id, owner_info = create_public_channel
     #testing using an invalid token raises an exception
     with pytest.raises(Exception):
         channel_removeowner('I am not a valid token', channel_id['channel_id'], user_info['u_id'])
