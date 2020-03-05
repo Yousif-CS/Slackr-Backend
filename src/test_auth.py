@@ -119,7 +119,7 @@ def test_logout_join_fails():
 	assert message['is_success'] == True 
 	
 	with pytest.raises(InputError) as e: 
-		channel_join(user_token, 10)
+		channel_join(user_token, 1)
 	
 		
 	
