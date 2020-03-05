@@ -56,7 +56,6 @@ def test_access_other_profiles(get_user_jwang, get_user_kli):
             }
         }
 
-#TODO change this
 # test that an invalid u_id's will throw an InputError
 def test_user_profile_invalid_string_id(get_user_kli):
     kli_token, kli_u_id = get_user_kli
@@ -84,92 +83,60 @@ def test_user_profile_setname(get_user_kli, get_user_jwang):
     kli_token, kli_u_id = get_user_kli
     
     user_profile_setname(kli_token, "Kenneth", "Lithium")
-    assert user_profile(kli_token, kli_u_id) == \
-        {"user": {
-        	"u_id": kli_u_id,
-        	"email": "ken@gmail.com",
-        	"name_first": "Kenneth",
-        	"name_last": "Lithium",
-        	"handle_str": "kli",
-            }
-        }
+    kli_profile = user_profile(kli_token, kli_u_id)["user"]
+
+    assert kli_profile["name_first"] == "Kenneth"
+    assert kli_profile["name_last"] == "Lithium"
 
 # check that a name can contain upper and lower case letters in any combination
 def test_setname_upperlower(get_user_jwang):
     jwang_token, jwang_u_id = get_user_jwang
 
     user_profile_setname(jwang_token, "jOnaThAn", "WeMbleYeYEYEY")
-    assert user_profile(jwang_token, jwang_u_id) == \
-        {"user": {
-        	"u_id": jwang_u_id,
-        	"email": "joshua@gmail.com",
-        	"name_first": "jOnaThAn",
-        	"name_last": "WeMbleYeYEYEY",
-        	"handle_str": "jwang",
-            }
-        }
+    jwang_profile = user_profile(jwang_token, jwang_u_id)["user"]
+
+    assert jwang_profile["name_first"] == "jOnaThAn"
+    assert jwang_profile["name_last"] == "WeMbleYeYEYEY"
     
 # Check that white spaces are allowed in first- and last-names
 def test_setname_whitespaces(get_user_jwang):
     jwang_token, jwang_u_id = get_user_jwang
     
     user_profile_setname(jwang_token, "Sue Anne", "Stein Holmes")
-    assert user_profile(jwang_token, jwang_u_id) == \
-        {"user": {
-        	"u_id": jwang_u_id,
-        	"email": "joshua@gmail.com",
-        	"name_first": "Sue Anne",
-        	"name_last": "Stein Holmes",
-        	"handle_str": "jwang",
-            }
-        }
+    jwang_profile = user_profile(jwang_token, jwang_u_id)["user"]
+
+    assert jwang_profile["name_first"] == "Sue Anne"
+    assert jwang_profile["name_last"] == "Stein Holmes"
 
 # Check that symbols are allowed within names
 def test_setname_symbols(get_user_kli):
     kli_token, kli_u_id = get_user_kli
 
     user_profile_setname(kli_token, "Sue-Anne", "Stein-Holmes")
-    assert user_profile(kli_token, kli_u_id) == \
-        {"user": {
-        	"u_id": kli_u_id,
-        	"email": "ken@gmail.com",
-        	"name_first": "Sue-Anne",
-        	"name_last": "Stein-Holmes",
-        	"handle_str": "kli",
-            }
-        }
+    kli_profile = user_profile(kli_token, kli_u_id)["user"]
+
+    assert kli_profile["name_first"] == "Sue-Anne"
+    assert kli_profile["name_last"] == "Stein-Holmes"
 
 # Check that names can be entirely symbols
 def test_setname_allsymbols(get_user_kli):
     kli_token, kli_u_id = get_user_kli
 
     user_profile_setname(kli_token, "@#$%^&*(", ")(*&^%$#$%")
-    assert user_profile(kli_token, kli_u_id) == \
-        {"user": {
-        	"u_id": kli_u_id,
-        	"email": "ken@gmail.com",
-        	"name_first": "@#$%^&*(",
-        	"name_last": ")(*&^%$#$%",
-        	"handle_str": "kli",
-            }
-        }
+    kli_profile = user_profile(kli_token, kli_u_id)["user"]
+
+    assert kli_profile["name_first"] == "@#$%^&*("
+    assert kli_profile["name_last"] == ")(*&^%$#$%"
 
 # Test that names can contain white spaces as long as they contain other characters
 def test_setname_manywhitespaces(get_user_kli):
     kli_token, kli_u_id = get_user_kli
 
     user_profile_setname(kli_token, "   _D_   ", "    ?E-utschl@nd      ")
-    assert user_profile(kli_token, kli_u_id) == \
-        {"user": {
-        	"u_id": kli_u_id,
-        	"email": "ken@gmail.com",
-        	"name_first": "   _D_   ",
-        	"name_last": "    ?E-utschl@nd      ",
-        	"handle_str": "kli",
-            }
-        }
+    kli_profile = user_profile(kli_token, kli_u_id)["user"]
 
-#TODO: trailing white spaces?
+    assert kli_profile["name_first"] == "   _D_   "
+    assert kli_profile["name_last"] == "    ?E-utschl@nd      "
 
 # test that an input error is thrown for each of:
 # 1. name_first empty
@@ -177,15 +144,28 @@ def test_setname_manywhitespaces(get_user_kli):
 # 3. name_first over 50 char
 # 4. name_last over 50 char
 # names that are purely whitespaces are counted as invalid
-def test_user_profile_setname_invalid(get_user_kli):
+def test_user_profile_setname_invalid_empty(get_user_kli):
     kli_token, kli_u_id = get_user_kli
 
     with pytest.raises(InputError):
         user_profile_setname(kli_token, "", "Lithium")
+    with pytest.raises(InputError):
         user_profile_setname(kli_token, "Kenneth", "")
+
+def test_user_profile_setname_invalid_toolong(get_user_kli):
+    kli_token, kli_u_id = get_user_kli
+
+    with pytest.raises(InputError):
         user_profile_setname(kli_token, "K" * 51, "Lithium")
+    with pytest.raises(InputError):
         user_profile_setname(kli_token, "Kenneth", "L" * 51)
+
+def test_user_profile_setname_invalid_whitespaces_only(get_user_kli):
+    kli_token, kli_u_id = get_user_kli
+
+    with pytest.raises(InputError):
         user_profile_setname(kli_token, "       ", "Li")
+    with pytest.raises(InputError):
         user_profile_setname(kli_token, "Ken", "        ")
 
 # test that authorised user can update their email address so long as it is valid
