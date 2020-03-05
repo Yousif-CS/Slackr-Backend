@@ -1,6 +1,7 @@
 import pytest 
 import user 
-from auth import auth_register, auth_login, auth_logout 
+from auth import auth_register, auth_login, auth_logout\
+from channel import channel_join()	 
 from error import InputError 
 
 #Test Valid Registration details 
