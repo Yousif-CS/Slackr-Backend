@@ -18,7 +18,7 @@ def get_user_kli():
 
 '''------------------testing user_profile--------------------'''
 # tests that 'user_profile' returns the information of the authorised user.
-def test_access_own_profile(get_user_jwang, get_user_kli):
+def test_access_own_profile(get_user_jwang):
     jwang_token, jwang_u_id = get_user_jwang
     assert user_profile(jwang_token, jwang_u_id) == \
         {"user": {
@@ -26,18 +26,7 @@ def test_access_own_profile(get_user_jwang, get_user_kli):
         	"email": "joshua@gmail.com",
         	"name_first": "Joshua",
         	"name_last": "Wang",
-        	"handle_str": "jwang",
-            }
-        }
-    
-    kli_token, kli_u_id = get_user_kli
-    assert user_profile(kli_token, kli_u_id) == \
-        {"user": {
-        	"u_id": kli_u_id,
-        	"email": "ken@gmail.com",
-        	"name_first": "Ken",
-        	"name_last": "Li",
-        	"handle_str": "kli",
+        	"handle_str": "joshuawang",
             }
         }
 
@@ -53,7 +42,7 @@ def test_access_other_profiles(get_user_jwang, get_user_kli):
         	"email": "joshua@gmail.com",
         	"name_first": "Joshua",
         	"name_last": "Wang",
-        	"handle_str": "jwang",
+        	"handle_str": "joshuawang",
             }
         }
 
@@ -63,21 +52,30 @@ def test_access_other_profiles(get_user_jwang, get_user_kli):
         	"email": "ken@gmail.com",
         	"name_first": "Ken",
         	"name_last": "Li",
-        	"handle_str": "kli",
+        	"handle_str": "kenli",
             }
         }
 
+#TODO change this
 # test that an invalid u_id's will throw an InputError
-def test_user_profile_invalid_u_id(get_user_kli):
+def test_user_profile_invalid_string_id(get_user_kli):
+    kli_token, kli_u_id = get_user_kli
+
+    with pytest.raises(InputError):
+        user_profile(kli_token, "abc")
+
+def test_user_profile_invalid_float_id(get_user_kli):
+    kli_token, kli_u_id = get_user_kli
+
+    with pytest.raises(InputError):
+        user_profile(kli_token, 2.75)
+
+def test_user_profile_invalid_int_id(get_user_kli, get_user_jwang):
     kli_token, kli_u_id = get_user_kli
     jwang_token, jwang_u_id = get_user_jwang
 
     with pytest.raises(InputError):
-        user_profile(kli_token, "abc")
-        user_profile(jwang_token, "abc")
-        user_profile(kli_token, 2.75)
-        user_profile(jwang_token, 1.89)
-        user_profile(jwang_token, jwang_u_id + kli_u_id + 1)
+        user_profile(jwang_token, (jwang_u_id) ** 2 + (kli_u_id) ** 2 + 1)
 
 '''------------------testing user_profile_setname--------------------'''
 
