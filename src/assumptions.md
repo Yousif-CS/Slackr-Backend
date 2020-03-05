@@ -46,7 +46,7 @@ The main assumption is that we only need to register the user once, and afterwar
 1. Assuming channel_id begins indexing from 1
 
 ### User functions
-1. Assuming that auth_login functions as per the spec.
+1. Assuming that auth_login works as per the spec.
 
 #### user_profile(token, u_id):
 1. Assume that the returned value will be a dictionary of the following form:
@@ -65,6 +65,9 @@ The main assumption is that we only need to register the user once, and afterwar
 #### user_profile_setname(token, name_first, name_last):
 1. Assume that the 'user_profile' function behaves correctly.
 2. Assume that 'name_*' containing white spaces only is invalid.
+3. First- and last-names can be more than one word each. E.g. Sue Anne is a valid name_first.
+4. Names can contain and consist only of symbols.
+5. Assume that names can contain whitespaces as long as they also contain other characters.
 
 #### user_profile_setemail(token, email):
 1. Assume that the email provided exists.
