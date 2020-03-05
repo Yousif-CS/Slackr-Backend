@@ -1,7 +1,7 @@
 import pytest 
 import user 
-from auth import auth_register, auth_login, auth_logout\
-from channel import channel_join()	 
+from auth import auth_register, auth_login, auth_logout
+from channel import channel_join	 
 from error import InputError 
 
 #Test Valid Registration details 
@@ -102,7 +102,7 @@ def test_logout_unsuccessful():
 	assert user['u_id'] == user_logging_in['u_id'] 
 	user_token = user_logging_in['token'] 
 	
-	rand_token = 'Not a valid token'
+	rand_token = user_token + 'a' 
 		
 	assert user_token != rand_token 
 	message = auth_logout(rand_token) 
