@@ -26,7 +26,8 @@ def test_channels_list_no_channels():
     user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
     # assuming users are not part of any channel after registration
     # and that no channels have been created
-    assert channels_list(user_ab['token']) == {}
+    ab_list = channels_list(user_ab['token'])
+    assert ab_list['channels'] == []
 
 # testing that channels_list returns a channel that the user created
 def test_channels_list_creator_public_channel():
