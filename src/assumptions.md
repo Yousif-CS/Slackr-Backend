@@ -74,5 +74,6 @@ The main assumption is that we only need to register the user once, and afterwar
 2. Assumes that the validity of the email is accurately determined by is_valid_email.py
 
 #### user_profile_sethandle(token, handle_str):
+1. Assumes that handles may contain upper case letters, numbers and symbols.
 
 #### users_all(token)

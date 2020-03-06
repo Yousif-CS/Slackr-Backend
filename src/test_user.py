@@ -158,6 +158,20 @@ def test_setname_info_updates_for_other_users(get_user_kli, get_user_jwang):
     assert kli_profile["name_first"] == "   _D_   "
     assert kli_profile["name_last"] == "    ?E-utschl@nd      "
 
+def test_setname_exactly_one(get_user_jwang):
+    jwang_token, jwang_u_id = get_user_jwang
+
+    user_profile_setname(jwang_token, "f", "l")
+    assert user_profile(jwang_token, jwang_u_id)["user"]["name_first"] == "f"
+    assert user_profile(jwang_token, jwang_u_id)["user"]["name_last"] == "l"
+
+def test_set_name_exactly_fifty(get_user_jwang):
+    jwang_token, jwang_u_id = get_user_jwang
+
+    user_profile_setname(jwang_token, "f" * 50, "l" * 50)
+    assert user_profile(jwang_token, jwang_u_id)["user"]["name_first"] == "f" * 50
+    assert user_profile(jwang_token, jwang_u_id)["user"]["name_last"] == "l" * 50
+
 # test that an input error is thrown for each of:
 # 1. name_first empty
 # 2. name_last empty
@@ -244,9 +258,62 @@ def test_nonunique_email(get_user_kli, get_user_jwang):
 def test_user_profile_sethandle(get_user_kli):
     kli_token, kli_u_id = get_user_kli
 
-    user_profile_sethandle(kli_token, "")
+    user_profile_sethandle(kli_token, "KenLi")
+    assert user_profile(kli_token, kli_u_id)["user"]["handle_str"] == "KenLi"
+
+def test_user_profile_sethandle_nums_and_symbols(get_user_jwang):
+    jwang_token, jwang_u_id = get_user_jwang
+
+    user_profile_sethandle(jwang_token, "Joshua1-Wang1~!")
+    assert user_profile(jwang_token, jwang_u_id)["user"]["handle_str"] == "Joshua1-Wang1~!"
+
+def test_user_profile_sethandle_exactly_three(get_user_jwang):
+    jwang_token, jwang_u_id = get_user_jwang
+
+    user_profile_sethandle(jwang_token, "abc")
+    assert user_profile(jwang_token, jwang_u_id)["user"]["handle_str"] == "abc"
+    
+def test_user_profile_sethandle_exactly_twenty(get_user_jwang):
+    jwang_token, jwang_u_id = get_user_jwang
+
+    user_profile_sethandle(jwang_token, "a" * 20)
+    assert user_profile(jwang_token, jwang_u_id)["user"]["handle_str"] == "a" * 20
 
 # test that handles too short <3 throw InputError
+def test_user_profile_sethandle_too_short(get_user_jwang):
+    jwang_token, jwang_u_id = get_user_jwang
+
+    with pytest.raises(InputError):
+        user_profile_sethandle(jwang_token, "ab")
+
 # test that handles too long >20 throw InputError
+def test_user_profile_sethandle_too_long(get_user_jwang):
+    jwang_token, jwang_u_id = get_user_jwang
+
+    with pytest.raises(InputError):
+        user_profile_sethandle(jwang_token, "ab" * 20)
+
+# test empty
+def test_user_profile_sethandle_empty(get_user_jwang):
+    jwang_token, jwang_u_id = get_user_jwang
+
+    with pytest.raises(InputError):
+        user_profile_sethandle(jwang_token, "")
+
 # test that non-unique handles throw InputError
-    pass
+def test_user_profile_sethandle_nonunique(get_user_jwang, get_user_kli):
+    jwang_token, jwang_u_id = get_user_jwang
+    kli_token, kli_u_id = get_user_kli
+
+    user_profile_sethandle(jwang_token, "JoshuaWang")
+    assert user_profile(jwang_token, jwang_u_id)["user"]["handle_str"] == "JoshuaWang"
+
+    with pytest.raises(InputError):
+        user_profile_sethandle(kli_token, "JoshuaWang")
+
+# test invalid token
+def test_user_profile_sethandle_invalid_token(get_user_kli):
+    kli_token, kli_u_id = get_user_kli
+
+    with pytest.raises(AccessError):
+        user_profile_sethandle(kli_token + "invalid", "handlehandle")
