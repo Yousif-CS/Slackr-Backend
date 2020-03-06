@@ -101,8 +101,8 @@ def test_channels_listall_public():
     # user_ab creates a public channel
     new_public_channel = channels_create(user_ab['token'], 'public_test', True)
     # user_ab and user_cd call channels_listall
-    ab_list = channels_list(user_ab['token'])
-    cd_list = channels_list(user_cd['token'])
+    ab_list = channels_listall(user_ab['token'])
+    cd_list = channels_listall(user_cd['token'])
     assert ab_list['channels'] == cd_list['channels'] == \
         [
             {
@@ -120,8 +120,8 @@ def test_channels_listall_private():
     # user_cd creates a private channel
     new_private_channel = channels_create(user_ab['token'], 'private_test', False)
     # user_ab and user_cd call channels_listall
-    ab_list = channels_list(user_ab['token'])
-    cd_list = channels_list(user_cd['token'])
+    ab_list = channels_listall(user_ab['token'])
+    cd_list = channels_listall(user_cd['token'])
     assert cd_list['channels'] == ab_list['channels'] == \
         [
             {
@@ -153,7 +153,7 @@ def test_channels_create_correct_details():
     # creating a public channel
     new_channel_id = channels_create(user_kli['token'], "some_channel_name", True)
     # user_kli invites user_bwang to the channel
-    channel_invite(user_kli['token'], new_channel_id['token'], user_bwang['u_id'])
+    channel_invite(user_kli['token'], new_channel_id['channel_id'], user_bwang['u_id'])
     print_details = channel_details(user_kli['token'], new_channel_id['channel_id'])
     assert print_details['name'] == "some_channel_name"
     assert print_details['all_members'] == \
