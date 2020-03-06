@@ -131,11 +131,54 @@ def test_message_send_owner_removed_send(create_private_channel, make_user_cd):
 # testing for Exception: when channel_id is invalid and the channel does not actually exist
 def test_message_send_channel_not_found(make_user_ab):
     user_ab = make_user_ab
-    
+
     with pytest.raises(Exception):
         message_send(user_ab['token'], 22222, "Hello world!")
 
 '''------------------testing message_remove--------------------'''
 
-# reminder:
+# TODO:
+# add assumptions: 
+# 1. Specs: InputError 'message (based on ID) no longer exists' i.e. refers to message_id being invalid
+# 2. Indexing: removing a message DOES NOT affect the indexing of the other messages
+# - reasoned from specs (e.g. message with ID of 3 removed; next time when attemping to remove message with ID 3 return error)
+# 3. 
+# testing for this function relies on correct functionality of message_send and channel_messages
+
+# no errors
+# owner of channel removes their own message (check length is 1 less)
+def test_message_remove_owner_remove_own(create_public_channel):
+    pass
+
+# member of channel added by owner removes their own message
+def test_message_remove_user_remove_own(create_private_channel, make_user_cd):
+    pass
+
+# owner of channel removes message of member they added 
+def test_message_remove_owner_remove_user_msg(create_public_channel, make_user_cd):
+    pass
+
+# InputError (when message_id invalid)
+# a previously removed message 
+def test_message_remove_nolonger_exist_id(create_public_channel):
+    pass
+
+# attempting to remove messages with ID of 22222, -1, etc.
+def test_message_remove_invalid_id(create_public_channel):
+    pass
+
+#
+
+
+# AccessError
+# owner of channel removed as owner, tries to remove messages (now as user)
+def test_message_remove_old_owner(create_public_channel, make_user_cd):
+    pass
+
+# user of channel attempts to remove owner message
+def test_message_remove_user_remove_msg(create_public_channel, make_user_cd):
+    pass
+
 # 
+
+# Exception
