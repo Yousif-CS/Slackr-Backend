@@ -72,6 +72,7 @@ The main assumption is that we only need to register the user once, and afterwar
 #### user_profile_setemail(token, email):
 1. Assume that the email provided exists.
 2. Assumes that the validity of the email is accurately determined by is_valid_email.py
+3. Assumes that if an InputError is thrown for a non-unique email, then the authorised user's email remains unchanged
 
 #### user_profile_sethandle(token, handle_str):
 

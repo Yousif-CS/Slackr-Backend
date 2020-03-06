@@ -212,31 +212,75 @@ def test_user_profile_setemail_updates_for_other_users(get_user_kli, get_user_jw
 
 def test_user_profile_setemail_contains_nums_symbols(get_user_jwang):
     jwang_token, jwang_u_id = get_user_jwang
+
+    user_profile_setemail(jwang_token, "joshua_wang2@gmail.cc")
+    assert user_profile(jwang_token, jwang_uid)["user"]["email"] == "joshua_wang2@gmail.cc"
+
+    user_profile_setemail(jwang_token, "joshua.wang_2@mail-archive.com")
+    assert user_profile(jwang_token, jwang_u_id)["user"]["email"] == "joshua.wa-ng_23@mail-archive.com"
+
+def test_user_profile_setemail_unique_changes(get_user_jwang, get_user_kli):
+    jwang_token, jwang_u_id = get_user_jwang
     kli_token, kli_u_id = get_user_kli
 
-    user_profile_setemail(jwang_token, "joshua_wang2@gmail.com")
-    assert user_profile(jwang_token, jwang_uid)["user"]["email"] == "joshua_wang2@gmail.com"
-
-    user_profile_setemail(jwang_token, "joshua.wang_2@gmail.com")
-    assert user_profile(jwang_token, jwang_u_id)["user"]["email"] == "joshua.wa-ng_23@gmail.com"
-
-def test_user_profile_setemail_unique_changes():
-    pass
+    user_profile_setemail(kli_token, "kenligordon@gmail.com")
+    user_profile_setemail(jwang_token, "kenligordon1@gmail1.com")
+    assert user_profile(jwang_token, kli_u_id)["user"]["email"] == "kenligordon@gmail.com"
+    assert user_profile(kli_token, jwang_u_id)["user"]["email"] == "kenligordon1@gmail1.com"
 
 # test that invalid but unique emails throw input error
-def test_invalid_email(get_user_kli, get_user_jwang):
+def test_invalid_email_prefix(get_user_kli):
     kli_token, kli_u_id = get_user_kli
-    wang_token, jwang_u_id = get_user_jwang 
-    pass
-    #TODO: figure out all the ways an email could be invalid
+    
+    with pytest.raises(InputError):
+        user_profile_setemail(kli_token, "ken-@gmail.ab")
+
+    with pytest.raises(InputError):
+        user_profile_setemail(kli_token, "ken.-li@gmail.ab")
+
+    with pytest.raises(InputError):
+        user_profile_setemail(kli_token, ".ken@gmail.ab")
+
+    with pytest.raises(InputError):
+        user_profile_setemail(kli_token, "ken#li@gmail.ab")
+
+def test_invalid_email_domain(get_user_kli):
+    kli_token, kli_u_id = get_user_kli
+    
+    with pytest.raises(InputError):
+        user_profile_setemail(kli_token, "ken@gmail.a")
+    
+    with pytest.raises(InputError):
+        user_profile_setemail(kli_token, "kenli@google#mail.com")
+
+    with pytest.raises(InputError):
+        user_profile_setemail(kli_token, "kenli@google.mail")
+
+    with pytest.raises(InputError):
+        user_profile_setemail(kli_token, "ken@gmail..com")
+
 
 # test that existing emails throw input error
 def test_nonunique_email(get_user_kli, get_user_jwang):
     kli_token, kli_u_id = get_user_kli
     jwang_token, jwang_u_id = get_user_jwang
-    pass
+    
+    kli_email = user_profile(kli_token, kli_u_id)["user"]["email"]
+    with pytest.raises(InputError):
+        user_profile_setemail(jwang_token, kli_email)
+
+    assert user_profile(jwang_token, jwang_u_id)["user"]["email"] == "joshua@gmail.com"
+
+    user_profile_setemail(kli_token, "abc.def@ghijk.lmn")
+    with pytest.raises(InputError):
+        user_profile_setemail(jwang_token, "abc.def@ghijk.lmn")
 
 # test invalid token
+def test_setemail_invalid_token(get_user_kli):
+    kli_token, kli_u_id = get_user_kli
+
+    with pytest.raises(AccessError):
+        user_profile_setemail(kli_token + "invalid", "abc.def@ghijk.lmn")
 
 '''------------------testing user_profile_sethandle--------------------'''
 
