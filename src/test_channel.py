@@ -180,12 +180,11 @@ def test_channel_leave_owner_private(create_private_channel):
     '''
     #creating channel and retrieving its details and the owner's
     channel_id, owner_info = create_private_channel
-    #leaving channel
-    channel_leave(owner_info['token'], channel_id['channel_id'])
+   
     #checking owner is not a member anymore
-    with pytest.raises(AccessError):
-        channel_details(owner_info['token'], channel_id['channel_id'])
-
+    with pytest.raises(Exception):
+        #leaving channel
+        channel_leave(owner_info['token'], channel_id['channel_id'])
 
 
 def test_channel_leave_non_member(create_public_channel, create_user1):
