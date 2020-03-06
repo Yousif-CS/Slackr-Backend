@@ -77,3 +77,17 @@ The main assumption is that we only need to register the user once, and afterwar
 1. Assumes that handles may contain upper case letters, numbers and symbols.
 
 #### users_all(token)
+1. Assumes that returned dictionaries will be of the following form:
+	```python
+	{
+		'users': [
+            {
+                'u_id': 1,
+                'email': 'cs1531@cse.unsw.edu.au',
+                'name_first': 'Hayden',
+                'name_last': 'Jacobs',
+                'handle_str': 'hjacobs',
+            },
+        ],
+    }
+	```
