@@ -3,7 +3,7 @@
 ## The structure of this file involves functions as headers and the assumptions as bullet points
 ---------------------------------------------------------------------------------------------------
 # Overarching assumptions
-1. The handle is a lower case concatenation of the first-name initial and the last-name. If this handle is already taken, an integer is concatenated to the end, ascending from 1.
+1. The handle is a lower case concatenation of the first-name and the last-name. If this handle is already taken, an integer is concatenated to the end, ascending from 1.
 2. Assume that names that are purely whitespaces are not valid.
 
 ### Channel functions:

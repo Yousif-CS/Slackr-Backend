@@ -9,12 +9,12 @@ from is_valid_email import is_valid_email
 @pytest.fixture
 def get_user_jwang():
     user_jwang = auth_register("joshua@gmail.com", "3.14159", "Joshua", "Wang")
-    return (user_jwang["u_id"], user_jwang["token"])
+    return (user_jwang["token"], user_jwang["u_id"])
 
 @pytest.fixture
 def get_user_kli():
     user_kli = auth_register("ken@gmail.com", "2.71828", "Ken", "Li")
-    return (user_kli["u_id"], user_kli["token"])
+    return (user_kli["token"], user_kli["u_id"])
 
 '''------------------testing user_profile--------------------'''
 # tests that 'user_profile' returns the information of the authorised user.
@@ -241,8 +241,10 @@ def test_nonunique_email(get_user_kli, get_user_jwang):
 '''------------------testing user_profile_sethandle--------------------'''
 
 # test that authorised user can update their handle so long as it is valid and unique (3 char and 20 char)
-def test_user_profile_sethandle():
-    #TODO: all different kinds of valid handles
+def test_user_profile_sethandle(get_user_kli):
+    kli_token, kli_u_id = get_user_kli
+
+    user_profile_sethandle(kli_token, "")
 
 # test that handles too short <3 throw InputError
 # test that handles too long >20 throw InputError
