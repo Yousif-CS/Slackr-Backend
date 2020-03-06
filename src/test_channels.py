@@ -1,8 +1,9 @@
 # please edit this file for channels functions
 # TODO: import functions from other modules if needed
+# TODO: write fixtures for creating channel, creating / registering users
 # register users for each individual test function
 import pytest
-import channels
+from channels import channels_list, channels_listall, channels_create
 from error import InputError
 from channel import channel_invite, channel_details
 from auth import auth_login, auth_register
@@ -37,13 +38,12 @@ def test_channels_list_creator_public_channel():
     ab_list = channels_list(user_ab['token'])
     cd_list = channels_list(user_cd['token'])
     # assuming channel_id begins indexing from 1?
-    assert ab_list['channels'] == \
-        [
-            {
-                'channel_id': new_public_channel['channel_id']
-                'name': 'public_test_1'
-            }
-        ]
+    assert ab_list['channels'] == [
+        {
+            'channel_id': new_public_channel['channel_id'], 
+            'name': 'public_test_1'
+        }
+    ]
     assert cd_list['channels'] == []
 
 # testing that private channels also shows up when channel_id is called by a user in channel
@@ -56,7 +56,7 @@ def test_channels_list_creator_private_channel():
     assert ab_list['channels'] == \
         [
             {
-                'channel_id': new_private_channel['channel_id']
+                'channel_id': new_private_channel['channel_id'], 
                 'name': 'private_test'
             }
         ]
@@ -75,7 +75,7 @@ def test_channels_list_added_by_creator():
     assert cd_list['channels'] == \
         [
             {
-                'channel_id': new_channel['channel_id']
+                'channel_id': new_channel['channel_id'], 
                 'name': 'test_add'
             }
         ]
@@ -106,7 +106,7 @@ def test_channels_listall_public():
     assert ab_list['channels'] == cd_list['channels'] == \
         [
             {
-                'channel_id': 1
+                'channel_id': 1, 
                 'name': 'public_test'
             }
         ]
@@ -125,7 +125,7 @@ def test_channels_listall_private():
     assert cd_list['channels'] == ab_list['channels'] == \
         [
             {
-                'channel_id': 1
+                'channel_id': 1, 
                 'name': 'private_test'
             }
         ]
@@ -146,7 +146,7 @@ def test_channels_create_id_int():
     assert type(new_channel_id['channel_id']) == int 
 
 # testing for correct details (using channel_details)
-def test_channels_create_id_int():
+def test_channels_create_correct_details():
     # creating and registering user
     user_kli = auth_register("ken@gmail.com", "new_pass", "Ken", "L")
     user_bwang = auth_register("bobw@gmail.com", "password123", "Bob", "Wang") 
