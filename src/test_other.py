@@ -1,5 +1,4 @@
 # please write tests for users_all and search here
-# josh merge your stuff xd
 
 import pytest 
 from other import users_all, search
