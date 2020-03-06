@@ -3,7 +3,7 @@
 ## The structure of this file involves functions as headers and the assumptions as bullet points
 ---------------------------------------------------------------------------------------------------
 # Overarching assumptions
-1. The handle is a lower case concatenation of the first-name initial and the last-name. If this handle is already taken, an integer is concatenated to the end, ascending from 1.
+1. The handle is a lower case concatenation of the first-name and the last-name. If this handle is already taken, an integer is concatenated to the end, ascending from 1.
 2. Assume that names that are purely whitespaces are not valid.
 
 ### Channel functions:
@@ -75,5 +75,6 @@ The main assumption is that we only need to register the user once, and afterwar
 3. Assumes that if an InputError is thrown for a non-unique email, then the authorised user's email remains unchanged
 
 #### user_profile_sethandle(token, handle_str):
+1. Assumes that handles may contain upper case letters, numbers and symbols.
 
 #### users_all(token)
