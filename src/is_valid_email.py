@@ -14,7 +14,26 @@ def is_valid_email(email):
     # pass the regualar expression 
     # and the string in search() method 
     if(re.search(regex,email)):  
-        return True
+        print("valid")
           
     else:  
-        return False
+        print("invalid")
+
+if __name__ == "__main__":
+    is_valid_email("kenli@gmail.com")
+    is_valid_email("joshua_wang2@gmail.cc")
+    is_valid_email("joshua.wa-ng_23@mail-archive.com")
+    is_valid_email("kenligordon@gmail.com")
+    is_valid_email("kenligordon1@gmail1.com")
+
+    print("Below should be invalid")
+
+    is_valid_email("ken-@gmail.ab")
+    is_valid_email("ken.-li@gmail.ab")
+    is_valid_email(".ken@gmail.ab")
+    is_valid_email("ken#li@gmail.ab")
+    is_valid_email("ken@gmail.a")
+    is_valid_email("kenli@google#mail.com")
+    is_valid_email("kenli@google.mail")
+    is_valid_email("ken@gmail..com")
+    
