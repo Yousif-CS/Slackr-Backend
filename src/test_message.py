@@ -129,7 +129,11 @@ def test_message_send_owner_removed_send(create_private_channel, make_user_cd):
 
 
 # testing for Exception: when channel_id is invalid and the channel does not actually exist
-
+def test_message_send_channel_not_found(make_user_ab):
+    user_ab = make_user_ab
+    
+    with pytest.raises(Exception):
+        message_send(user_ab['token'], 22222, "Hello world!")
 
 '''------------------testing message_remove--------------------'''
 
