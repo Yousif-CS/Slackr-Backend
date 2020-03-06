@@ -178,4 +178,3 @@ def test_channels_create_invalid_name():
     user_kli = auth_register("ken@gmail.com", "new_pass", "Ken", "L")
     with pytest.raises(InputError):
         bad_channel = channels_create(user_kli['token'], "verylongchannelnameamiat20charsyet", True)
-        another_one = channels_create(user_kli['token'], "soyesterdayigotkickedbyareallybigduck", False) 
