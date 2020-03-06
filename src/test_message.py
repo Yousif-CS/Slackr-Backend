@@ -240,7 +240,3 @@ def test_message_remove_user_remove_msg(create_public_channel, make_user_cd):
 
     with pytest.raises(AccessError):
         message_remove(user_cd['token'], msg2['message_id'])
-
-# 
-
-# Exception
