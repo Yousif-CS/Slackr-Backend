@@ -175,7 +175,8 @@ def test_channel_leave_owner_good(create_public_channel):
 
 def test_channel_leave_owner_private(create_private_channel):
     '''
-    testing leaving an existing private channel as the owner.
+    testing leaving an existing private channel as the owner. This is to test if 
+    it is okay since the private channel would have no members that can invite people later on
     '''
     #creating channel and retrieving its details and the owner's
     channel_id, owner_info = create_private_channel
