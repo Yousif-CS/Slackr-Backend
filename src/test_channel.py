@@ -307,8 +307,8 @@ def test_channel_addowner_good(create_public_channel, create_user1):
     #trying to remove a message as a new owner; if it fails, addowner is buggy
     try:
         message_remove(user_info['token'], msg_id['message_id'])
-    except AccessError as exception:
-        assert AccessError != exception
+    except AccessError:
+        assert False
 
 def test_channel_addowner_invalid_channel(create_owner, create_user1):
     '''
@@ -459,4 +459,4 @@ def test_channel_removeowner_invalid_token(create_public_channel):
     channel_id, owner_info = create_public_channel
     #testing using an invalid token raises an exception
     with pytest.raises(Exception):
-        channel_removeowner('I am not a valid token', channel_id['channel_id'], user_info['u_id'])
+        channel_removeowner('I am not a valid token', channel_id['channel_id'], owner_info['u_id'])
