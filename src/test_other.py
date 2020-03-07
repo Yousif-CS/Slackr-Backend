@@ -30,6 +30,7 @@ def create_private_channel(make_user_ab):
     channel_id = channels_create(user_ab['token'], 'test_channel_private', False) 
     return (channel_id, user_ab)
 
+
 '''------------------testing users_all--------------------'''
 # returns a dictionary of a list containing all the users
 
@@ -37,8 +38,6 @@ def create_private_channel(make_user_ab):
 # reminder
 # input: (token, query_str); output: {messages}
 # returns messages in ALL channels that user is in 
-# TODO:
-# nothing at the moment
 
 # Search string tests: 
 # testing that empty search string should return empty dictionary
@@ -47,6 +46,7 @@ def test_search_empty_string(create_public_channel):
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Hello world!")
 
     assert search(user_ab['token'], "")['messages'] == []
+
 
 # spaces in search string
 def test_search_space_string(create_public_channel):
@@ -58,6 +58,7 @@ def test_search_space_string(create_public_channel):
     assert result_list[0]['message_id'] == msg1['message_id']
     assert result_list[0]['u_id'] == user_ab['u_id']
     assert result_list[0]['message'] == "A message with spaces!"
+
 
 # letters and symbols in search string (combination of above) 
 def test_search_normal_string(create_public_channel): 
@@ -73,6 +74,7 @@ def test_search_normal_string(create_public_channel):
     assert result_list[0]['message'] == 'Symbols & words'
     assert result_list[1]['message'] == '& with more stuff'
 
+
 # search string is exactly message
 def test_search_exact_string(create_public_channel):
     new_public_channel, user_ab = create_public_channel
@@ -83,6 +85,7 @@ def test_search_exact_string(create_public_channel):
     
     assert len(result_list) == 1
     assert result_list[0]['message'] == "This is a very generic message"
+
 
 # search string longer than message (should be no match) 
 def test_search_string_too_long(create_public_channel): 
@@ -126,6 +129,7 @@ def test_search_string_in_unjoined_channel(create_public_channel, make_user_cd):
 
     assert result_list == []
 
+
 # Exceptions
 # 1000 + long search string gives error
 def test_search_invalid_search_string(create_public_channel):
@@ -135,6 +139,7 @@ def test_search_invalid_search_string(create_public_channel):
     with pytest.raises(Exception): 
         result = search(user_ab['token'], "My first message" + "a" * 999)
     
+
 # invalid token 
 # assuming the token with string "invalid" is an invalid token
 def test_search_invalid_token(create_public_channel):
