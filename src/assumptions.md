@@ -104,3 +104,8 @@ The main assumption is that we only need to register the user once, and afterwar
 	```
 2. Assumes users appear in the user dictionary in the order in which they were registered.
 3. Assumes that handle_str is generated as expected.
+
+#### search(token, query_str):
+1. Assume that valid search strings are no longer than 1000 characters in length 
+2. Assume that the list 'messages' orders the results from oldest to newest (e.g. time_created in ascending order) 
+3. Assume that empty search strings return empty 'messages' list

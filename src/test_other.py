@@ -7,6 +7,7 @@ from auth import auth_register, auth_login, auth_logout
 from channels import channels_create
 from message import message_send
 from error import InputError, AccessError
+from channel import channel_invite
 
 @pytest.fixture
 def make_user_ab():
@@ -183,11 +184,7 @@ def test_users_all_invalid_token_error(make_user_ef):
 # input: (token, query_str); output: {messages}
 # returns messages in ALL channels that user is in 
 # TODO:
-# add invalid token checks for all functions
-# add @pytext_fixtures to all
-
-# assume:
-# 1. Search string no longer than 1000 characters long
+# nothing at the moment
 
 # Search string tests: 
 # testing that empty search string should return empty dictionary
@@ -210,25 +207,84 @@ def test_search_space_string(create_public_channel):
 
 # letters and symbols in search string (combination of above) 
 def test_search_normal_string(create_public_channel): 
-    pass
+    new_public_channel, user_ab = create_public_channel
+    msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Symbols & words")
+    msg2 = message_send(user_ab['token'], new_public_channel['channel_id'], "& with more stuff")
+    # result_list is of type list (list of dictionaries) 
+    result_list = search(user_ab['token'], "& w")['messages']
+
+    assert result_list[0]['message_id'] == msg1['message_id']
+    assert result_list[1]['message_id'] == msg2['message_id']
+
+    assert result_list[0]['message'] == 'Symbols & words'
+    assert result_list[1]['message'] == '& with more stuff'
+
+# search string is exactly message
+def test_search_exact_string(create_public_channel):
+    new_public_channel, user_ab = create_public_channel
+    msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "This is a very generic message")
+    msg2 = message_send(user_ab['token'], new_public_channel['channel_id'], "generic message")
+    # search string matches a message exactly
+    result_list = search(user_ab['token'], "This is a very generic message")['messages']
+    
+    assert len(result_list) == 1
+    assert result_list[0]['message'] == "This is a very generic message"
 
 # search string longer than message (should be no match) 
 def test_search_string_too_long(create_public_channel): 
-    pass
+    new_public_channel, user_ab = create_public_channel
+    msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Short string")
+    # search string contains string but is longer than string
+    result_list = search(user_ab['token'], "& w")['messages']
+
+    # checking that the search returns nothing
+    assert result_list == []
+
 
 # Cross-channel tests
 # multiple matching messages in different channels a user is in
-def test_search_string_in_multiple_channels(create_public_channel): 
-    pass
+def test_search_string_in_multiple_channels(create_public_channel, make_user_cd): 
+    # user_ab creates public channel and sends a message to it
+    new_public_channel, user_ab = create_public_channel
+    msg1_pub = message_send(user_ab['token'], new_public_channel['channel_id'], "ab's public channel message")
+    # user_cd creates private channel and sends a message to it
+    user_cd = make_user_cd
+    new_private_channel = channels_create(user_cd['token'], "cd_private", False)
+    msg1_priv = message_send(user_cd['token'], new_private_channel['channel_id'], "cd's private channel message") 
+    # user_cd invites user_ab to private channel 
+    channel_invite(user_cd['token'], new_private_channel['channel_id'], user_ab['u_id'])
+    result_list = search(user_ab['token'], "channel message")['messages']
+    # assuming that search function returns oldest results first
+    assert result_list[0]['u_id'] == user_ab['i_id']
+    assert result_list[1]['u_id'] == user_cd['i_id']
+
+    assert result_list[0]['message'] == "ab's public channel message"
+    assert result_list[1]['message'] == "cd's private channel message"
+
 
 # matching messages in unjoined channel shold not show up
-def test_search_string_in_unjoined_channel(create_public_channel):
-    pass
+def test_search_string_in_unjoined_channel(create_public_channel, make_user_cd):
+    new_public_channel, user_ab = create_public_channel
+    user_cd = make_user_cd
+    msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "ab's new public channel")
+    # user_cd searches without joining the channel
+    result_list = search(user_cd['token'], "public channel")['messages']
+
+    assert result_list == []
 
 # Exceptions
-
 # 1000 + long search string gives error
-def test_search_invalid_string(create_public_channel):
-    pass
+def test_search_invalid_search_string(create_public_channel):
+    new_public_channel, user_ab = create_public_channel
+    msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "My first message")
+    
+    with pytest.raises(Exception): 
+        result = search(user_ab['token'], "My first message" + "a" * 999)
     
 # invalid token 
+# assuming the token with string "invalid" is an invalid token
+def test_search_invalid_token(create_public_channel):
+    new_public_channel, user_ab = create_public_channel
+
+    with pytest.raises(Exception):
+        result = search("invalid", "Search string")
