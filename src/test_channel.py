@@ -54,30 +54,43 @@ def create_private_channel(create_owner):
     return (channel_id, owner_info)
 
 
- 
 def test_channel_invite_valid(create_owner, create_user1, create_public_channel):
+	''' 
+	testing owner of a channel can invite a registered user
+	'''
 	owner_info = create_owner 
 	user_info = create_user1 
 	channel_id = create_public_channel1 	
 
 	assert owner_info['u_id'] != user_info['u_id']
-	channel_invite(owner_info['token'],channel_id['channel_id'], user_info['u_id'])
+	channel_invite(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
+
+
+''' -------------------------testing channel_invite -------------------------------- '''
 
 
 def test_channel_user_invite(create_owner, create_user1, create_user2, create_public_channel):
+	
+	''' 
+	testing if user can invite another user to a channel they belong to 
+	'''
 	owner_info = create_owner 
 	inviting_user_info = create_user1 
 	user_invited_info = create_user2
-	channel_id = create_public_channel1 	
+	channel_id = create_public_channel	
 
 	assert owner_info['u_id'] != inviting_user_info['u_id']
 	assert inviting_user_info['u_id'] != user_info['u_id']
 
-	channel_invite(owner_info['token'],channel_id['channel_id'], user_info['u_id'])
+	channel_invite(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
 	
 	channel_invite(inviting_user_info['token'],channel_id['channel_id'], user_invited_info['u_id'])	
 
 def test_channel_invite_non_user(create_owner,create_public_channel):
+	'''
+	Inviting a user id that doesn't belong to any registered user to a channel
+	'''
+ 
 	owner_info = create_owner 
 	channel_id = create_public_channel
 	rand_user_id = owner_info['u_id'] + 1 
@@ -87,10 +100,14 @@ def test_channel_invite_non_user(create_owner,create_public_channel):
 
 
 def test_channel_invite_unath_user(create_owner, create_user1, create_user2,  create_public_channel): 
+	
+	'''
+ 	Produces an input error when a user invites another registered user to a channel they don't belong to
+	'''
 	owner_info = create_owner 
 	user_info = create_user1 
 	invited_user = create_user2
-	channel_id = create_public_channel1 	
+	channel_id = create_public_channel 	
 
 	assert owner_info['u_id'] != user_info['u_id']
 	assert user_info['u_id'] != invited_user['u_id']
@@ -99,16 +116,58 @@ def test_channel_invite_unath_user(create_owner, create_user1, create_user2,  cr
 		channel_invite(user_info['token'], channel_id['channel_id'], invited_used['u_id'] )
 
 def test_channel_double_invite(create_owner, create_user1, create_public_channel):
+	'''
+	Access Error occurs when same member is invited to a channel they are already belong to
+	'''
+
 	owner_info = create_owner 
 	user_info = create_user1 
-	channel_id = create_public_channel1 	
+	channel_id = create_public_channel	
 
 	assert owner_info['u_id'] != user_info['u_id']
-	channel_invite(owner_info['token'],channel_id['channel_id'], user_info['u_id'])
+	channel_invite(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
 
 	with pytest.raises(AccessError) as e: 
-		channel_invite(owner_info['token'],channel_id['channel_id'], user_info['u_id'])
+		channel_invite(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
 
+
+''' -------------------Testing channel_details -------------------'''
+
+def test_channel_details_valid(create_owner, create_public_channel): 
+
+	owner_info = create_owner 
+	channel_details = create_public_channel 
+	
+	details = channel_details(owner_info['token'], channel_details['channel_id'])
+	owner_membs = details['owner_members']
+	channel_name = details['name'] 
+	total_members = details['all_members'] 
+	
+	assert owner_info['u_id'] in owner_membs 
+	assert channel_details['name'] == channel_name 
+	
+
+def test_channel_details_no_id(create_owner, create_private_channel):
+	owner_info = create_owner 
+	channel_id = create_private_channel 
+	
+	non_channel_id = channel_id['channel_id'] + 1 
+	
+	assert non_channel_id != channel_id['channel_id'] 
+	
+	with pytest.raises(InputError) as e: 
+		channel_details(owner_info['token'], non_channel_id) 
+	
+
+def test_channel_details_non_user(create_owner, create_user1, create_public_channel): 
+	owner_info = create_owner
+	user_info = create_user1 
+	channel_id = create_public_channel 
+	
+	assert owner_info['u_id'] != user_info['u_id'] 
+	
+	with pytest.raises(AccessError) as e: 
+		channel_details(user_info['token'], channel_id['channel_id']) 
 
 		
 '''------------------testing channel_messages--------------------'''
