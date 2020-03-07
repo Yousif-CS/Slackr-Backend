@@ -1,6 +1,6 @@
 # TODO: import more modules / functions as needed 
 
-from message import message_send, message_remove
+from message import message_send, message_remove, message_edit
 from error import AccessError, InputError
 from auth import auth_login, auth_register
 from channel import *
@@ -240,3 +240,12 @@ def test_message_remove_user_remove_msg(create_public_channel, make_user_cd):
 
     with pytest.raises(AccessError):
         message_remove(user_cd['token'], msg2['message_id'])
+
+
+'''------------------testing message_edit--------------------'''
+# updates the text of a message with new text
+# if new message is empty string, then new message is deleted
+# access error if message-id not sent by correct user: authorised user or admin or owner of channel or slackr
+
+def test_message_edit(create_public_channel):
+

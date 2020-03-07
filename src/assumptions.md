@@ -52,6 +52,8 @@ The main assumption is that we only need to register the user once, and afterwar
 1. Assuming that messages that are empty strings or white spaces are allowed
 2. Assuming that an invalid channel_id will also throw some error
 
+#### message_edit():
+1. 
 
 
 ### User functions
