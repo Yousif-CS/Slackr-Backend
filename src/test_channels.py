@@ -1,18 +1,12 @@
 # please edit this file for channels functions
-# TODO: import functions from other modules if needed
 # TODO: write fixtures for creating channel, creating / registering users
-# register users for each individual test function
+
 import pytest
 from channels import channels_list, channels_listall, channels_create
 from error import InputError
 from channel import channel_invite, channel_details
 from auth import auth_login, auth_register
 
-# need to re-create users from scratch for each test
-
-# creating and registering users
-# user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
-# user_cd = auth_register("charlie@gmail.com", "pw321ABC", "Charlie", "Dragon")
 
 '''------------------testing channels_list--------------------'''
 
@@ -80,6 +74,14 @@ def test_channels_list_added_by_creator():
             }
         ]
 
+# testing that invalid token throws exception
+# assuming token with string 'invalid' is an invalid token
+def test_channels_list_invalid_token():
+    user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
+
+    with pytest.raises(Exception):
+        ab_list = channels_list("invalid")
+
 '''------------------testing channels_listall--------------------'''
 # reminders
 # input: (token); output: {channels}
@@ -101,8 +103,8 @@ def test_channels_listall_public():
     # user_ab creates a public channel
     new_public_channel = channels_create(user_ab['token'], 'public_test', True)
     # user_ab and user_cd call channels_listall
-    ab_list = channels_list(user_ab['token'])
-    cd_list = channels_list(user_cd['token'])
+    ab_list = channels_listall(user_ab['token'])
+    cd_list = channels_listall(user_cd['token'])
     assert ab_list['channels'] == cd_list['channels'] == \
         [
             {
@@ -120,8 +122,8 @@ def test_channels_listall_private():
     # user_cd creates a private channel
     new_private_channel = channels_create(user_ab['token'], 'private_test', False)
     # user_ab and user_cd call channels_listall
-    ab_list = channels_list(user_ab['token'])
-    cd_list = channels_list(user_cd['token'])
+    ab_list = channels_listall(user_ab['token'])
+    cd_list = channels_listall(user_cd['token'])
     assert cd_list['channels'] == ab_list['channels'] == \
         [
             {
@@ -129,6 +131,14 @@ def test_channels_listall_private():
                 'name': 'private_test'
             }
         ]
+
+# testing that invalid token throws exception
+# assuming token with string 'invalid' is an invalid token
+def test_channels_listall_invalid_token():
+    user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
+
+    with pytest.raises(Exception):
+        ab_listall = channels_listall("invalid")
 
 '''------------------testing channels_create--------------------'''
 # input: (token, name, is_public); output: {channel_id}
@@ -178,3 +188,11 @@ def test_channels_create_invalid_name():
     user_kli = auth_register("ken@gmail.com", "new_pass", "Ken", "L")
     with pytest.raises(InputError):
         bad_channel = channels_create(user_kli['token'], "verylongchannelnameamiat20charsyet", True)
+
+# testing that invalid token throws exception
+# assuming token with string 'invalid' is an invalid token
+def test_channels_create_invalid_token():
+    user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
+
+    with pytest.raises(Exception):
+        invalid_channel = channels_create("invalid", "Invalid Token Channels suck", True)
