@@ -54,6 +54,75 @@ def create_private_channel(create_owner):
     return (channel_id, owner_info)
 
 
+ 
+def test_channel_invite_valid(create_owner, create_user1, create_public_channel):
+	owner_info = create_owner 
+	user_info = create_user1 
+	channel_id = create_public_channel1 	
+
+	assert owner_info['u_id'] != user_info['u_id']
+	channel_invite(owner_info['token'],channel_id['channel_id'], user_info['u_id'])
+
+
+def test_channel_user_invite(create_owner, create_user1, create_user2, create_public_channel):
+	owner_info = create_owner 
+	inviting_user_info = create_user1 
+	user_invited_info = create_user2
+	channel_id = create_public_channel1 	
+
+	assert owner_info['u_id'] != inviting_user_info['u_id']
+	assert inviting_user_info['u_id'] != user_info['u_id']
+
+	channel_invite(owner_info['token'],channel_id['channel_id'], user_info['u_id'])
+	
+	channel_invite(inviting_user_info['token'],channel_id['channel_id'], user_invited_info['u_id'])	
+
+def test_channel_invite_non_user(create_owner,create_public_channel):
+	owner_info = create_owner 
+	channel_id = create_public_channel
+	rand_user_id = owner_info['u_id'] + 1 
+	
+	with pytest.raises(InputError) as e: 
+		channel_invite(owner_info['token'], channel_id['channel_id'], rand_user_id)
+
+
+def test_channel_invite_unath_user(create_owner, create_user1, create_user2,  create_public_channel): 
+	owner_info = create_owner 
+	user_info = create_user1 
+	invited_user = create_user2
+	channel_id = create_public_channel1 	
+
+	assert owner_info['u_id'] != user_info['u_id']
+	assert user_info['u_id'] != invited_user['u_id']
+
+	with pytest.raises(InputError) as e: 
+		channel_invite(user_info['token'], channel_id['channel_id'], invited_used['u_id'] )
+
+def test_channel_double_invite(create_owner, create_user1, create_public_channel):
+	owner_info = create_owner 
+	user_info = create_user1 
+	channel_id = create_public_channel1 	
+
+	assert owner_info['u_id'] != user_info['u_id']
+	channel_invite(owner_info['token'],channel_id['channel_id'], user_info['u_id'])
+
+	with pytest.raises(AccessError) as e: 
+		channel_invite(owner_info['token'],channel_id['channel_id'], user_info['u_id'])
+
+
+		
+	
+		
+
+
+        
+
+
+
+
+      
+
+
 '''------------------testing channel_messages--------------------'''
 def test_channel_messages_good(create_public_channel):
     '''
