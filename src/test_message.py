@@ -1,10 +1,12 @@
 # TODO: import more modules / functions as needed 
 
-from message import message_send, message_remove
+from message import message_send, message_remove, message_edit
 from error import AccessError, InputError
 from auth import auth_login, auth_register
-from channel import *
+from channel import channel_invite, channel_details, channel_messages, channel_leave, \
+     channel_join, channel_addowner, channel_removeowner
 from channels import channels_create
+from other import search
 import pytest
 
 # reminders: white space / empty messages? 
@@ -157,7 +159,6 @@ def test_message_send_invalid_token(create_public_channel):
     with pytest.raises(Exception):
         message_send("invalid", new_public_channel['channel_id'], "Bad message")
 
-
 '''------------------testing message_remove--------------------'''
 # no errors
 # testing that owner of channel can remove their own message 
@@ -256,8 +257,7 @@ def test_message_remove_user_remove_msg(create_public_channel, make_user_cd):
 
     with pytest.raises(AccessError):
         message_remove(user_cd['token'], msg2['message_id'])
-
-
+        
 # testing that invalid token throws exception
 # assuming token with string 'invalid' is an invalid token
 def test_message_remove_invalid_token(create_public_channel):
@@ -267,3 +267,96 @@ def test_message_remove_invalid_token(create_public_channel):
 
     with pytest.raises(Exception):
         message_remove("invalid", msg1['message_id'])
+
+'''------------------testing message_edit--------------------'''
+# updates the text of a message with new text
+# if new message is empty string, then new message is deleted
+# access error if message-id not sent by correct user: authorised user or admin or owner of channel or slackr
+
+def test_message_edit_one_member_channel(create_public_channel):
+    new_ch, user_ab = create_public_channel # user_ab has a u_id and token is the owner of channel_id
+    msg_id = message_send(user_ab["token"], new_ch["channel_id"], "First message.")
+    
+    message_edit(user_ab["token"], msg_id, "Edited first message")
+    assert search(user_ab["token"], "Edited first message")["messages"][0]["message"] == \
+        "Edited first message"
+
+def test_message_edit_whitespaces(create_public_channel):
+    new_ch, user_ab = create_public_channel
+    msg_id = message_send(user_ab["token"], new_ch["channel_id"], "First message.")
+
+    message_edit(user_ab["token"], msg_id, "     ")
+    assert search(user_ab["token"], "     ")["messages"][0]["message"] == \
+        "     "
+
+def test_message_edit_empty(create_public_channel):
+    new_ch, user_ab = create_public_channel # user_ab has a u_id and token is the owner of channel_id
+    msg1_id = message_send(user_ab["token"], new_ch["channel_id"], "First message.")
+    msg2_id = message_send(user_ab["token"], new_ch["channel_id"], "Second message.")
+    
+    message_edit(user_ab["token"], msg2_id, "Edited second message")
+    message_edit(user_ab["token"], msg1_id, "") # should delete the first message
+
+    assert search(user_ab["token"], "message")["messages"][0]["message"] == \
+        "Edited second message"
+
+# non-owner sender edits own message
+def test_message_edit_sender_edit_self(create_public_channel, make_user_cd):
+    new_ch, user_ab = create_public_channel
+    user_cd = make_user_cd
+    channel_join(user_cd["token"], new_ch["channel_id"])
+
+    msg_id = message_send(user_cd["token"], new_ch["channel_id"], "This is the sender's message.")
+    message_edit(user_cd["token"], msg_id, 
+                 "This is the sender's message, and now the sender has edited it.")
+    
+    assert search(user_ab["token"], "message")["messages"][0]["message"] == \
+        "This is the sender's message, and now the sender has edited it."
+
+# owner edits sender's message
+def test_message_edit_owner_edits_another_sender(create_public_channel, make_user_cd):
+    new_ch, user_ab = create_public_channel
+    user_cd = make_user_cd
+    channel_join(user_cd["token"], new_ch["channel_id"])
+
+    msg_id = message_send(user_cd["token"], new_ch["channel_id"], "This is the sender's message.")
+    message_edit(user_ab["token"], msg_id, 
+                 "This is the sender's message, and now the owner has edited it.")
+    
+    assert search(user_ab["token"], "message")["messages"][0]["message"] == \
+        "This is the sender's message, and now the owner has edited it."
+
+# Access Error: edit from non-owner, non-sender
+def test_message_edit_unauthorised(create_public_channel, make_user_cd):
+    new_ch, user_ab = create_public_channel
+    user_cd = make_user_cd
+    channel_join(user_cd["token"], new_ch["channel_id"])
+
+    msg_id = message_send(user_ab["token"], new_ch["channel_id"], "Owner message")
+
+    with pytest.raises(AccessError):
+        message_edit(user_cd["token"], msg_id, "This should be an invalid edit")
+
+# Access Error: general invalid token test
+def test_message_edit_invalid_token(create_public_channel):
+    new_ch, user_ab = create_public_channel
+
+    msg_id = message_send(user_ab["token"], new_ch["channel_id"], "First message")
+
+    with pytest.raises(AccessError):
+        message_edit(user_ab["token"] + "invalid", msg_id, "This is an invalid edit")
+
+
+# when an owner leaves a channel, they can no longer edit messages in that channel
+def test_message_edit_owner_left_channel_invalid(create_public_channel, make_user_cd):
+    new_ch, user_ab = create_public_channel
+    user_cd = make_user_cd
+    channel_join(user_cd["token"], new_ch["channel_id"])
+    channel_addowner(user_ab["token"], new_ch["channel_id"], user_cd["u_id"])
+
+    msg_id = message_send(user_cd["token"], new_ch["channel_id"], "Second owner message")
+
+    channel_removeowner(user_cd["token"], new_ch["channel_id"], user_ab["u_id"])
+
+    with pytest.raises(AccessError):
+        message_edit(user_ab["token"], msg_id, "First owner should no longer be able to edit others' messages")

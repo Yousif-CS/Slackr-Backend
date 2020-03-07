@@ -56,6 +56,12 @@ The main assumption is that we only need to register the user once, and afterwar
 1. Assuming that 'message no longer exists' means that the message_id is not valid
 2. Assuming that removing a message does not affect the indexing of other messages
 
+#### message_edit():
+1. Assuming message_send and message_remove work as intended.
+2. Assume it is impossible for a user to use the edit message function if no messages have been sent.
+3. The search function behaves as described.
+4. channel_join and channel_leave work as per the spec.
+5. A user that has not joined a channel cannot see or access the messages in that channel, hence cannot edit the messages at all.
 
 ### User functions
 1. Assuming that auth_login works as per the spec.
