@@ -53,7 +53,11 @@ The main assumption is that we only need to register the user once, and afterwar
 2. Assuming that an invalid channel_id will also throw some error
 
 #### message_edit():
-1. 
+1. Assuming message_send and message_remove work as intended.
+2. Assume it is impossible for a user to use the edit message function if no messages have been sent.
+3. The search function behaves as described.
+4. channel_join and channel_leave work as per the spec.
+5. A user that has not joined a channel cannot see or access the messages in that channel, hence cannot edit the messages at all.
 
 
 ### User functions
