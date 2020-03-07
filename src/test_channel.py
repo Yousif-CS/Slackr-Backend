@@ -111,18 +111,6 @@ def test_channel_double_invite(create_owner, create_user1, create_public_channel
 
 
 		
-	
-		
-
-
-        
-
-
-
-
-      
-
-
 '''------------------testing channel_messages--------------------'''
 def test_channel_messages_good(create_public_channel):
     '''
