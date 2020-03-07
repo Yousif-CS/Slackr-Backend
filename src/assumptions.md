@@ -86,3 +86,9 @@ The main assumption is that we only need to register the user once, and afterwar
 1. Assumes that handles may contain upper case letters, numbers and symbols.
 
 #### users_all(token)
+
+
+#### search(token, query_str):
+1. Assume that valid search strings are no longer than 1000 characters in length 
+2. Assume that the list 'messages' orders the results from oldest to newest (e.g. time_created in ascending order) 
+3. Assume that empty search strings return empty 'messages' list
