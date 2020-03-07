@@ -21,6 +21,7 @@ The main assumption is that we only need to register the user once, and afterwar
 1. Assuming big ints such as 123123 are considered invalid channel id's (at least initially)
 2. Assuming 'I am an invalid token' string to be an invalid token
 3. Assuming the function throws at least a general 'Exception' when dealing with invalid tokens
+4. Assuming that the function throws an some sort of exception if the last user on a private channel tries to leave as there would be no one left to invite others
 
 #### channel_join():
 1. Assuming big ints such as 1232123 are considered invalid channel id's
@@ -44,6 +45,14 @@ The main assumption is that we only need to register the user once, and afterwar
 
 #### channels_create():
 1. Assuming channel_id begins indexing from 1
+2. Assuming that empty strings are allowed for channel names, which may have some 'NoName' placeholder in frontend
+
+### Message functions 
+#### message_send():
+1. Assuming that messages that are empty strings or white spaces are allowed
+2. Assuming that an invalid channel_id will also throw some error
+
+
 
 ### User functions
 1. Assuming that auth_login works as per the spec.
@@ -61,6 +70,7 @@ The main assumption is that we only need to register the user once, and afterwar
     }
 	```
 2. Assume that a correct token will always be provided.
+3. Assume that auth_logout behaves as expected.
 
 #### user_profile_setname(token, name_first, name_last):
 1. Assume that the 'user_profile' function behaves correctly.
@@ -72,6 +82,7 @@ The main assumption is that we only need to register the user once, and afterwar
 #### user_profile_setemail(token, email):
 1. Assume that the email provided exists.
 2. Assumes that the validity of the email is accurately determined by is_valid_email.py
+3. Assumes that if an InputError is thrown for a non-unique email, then the authorised user's email remains unchanged
 
 #### user_profile_sethandle(token, handle_str):
 1. Assumes that handles may contain upper case letters, numbers and symbols.
@@ -91,3 +102,5 @@ The main assumption is that we only need to register the user once, and afterwar
         ],
     }
 	```
+2. Assumes users appear in the user dictionary in the order in which they were registered.
+3. Assumes that handle_str is generated as expected.
