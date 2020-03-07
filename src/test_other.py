@@ -3,9 +3,10 @@
 import pytest 
 from other import users_all, search
 from user import user_profile
-from auth import auth_register, auth_login
+from auth import auth_register, auth_login, auth_logout
 from channels import channels_create
 from message import message_send
+from error import InputError, AccessError
 from channel import channel_invite
 
 @pytest.fixture
@@ -17,6 +18,24 @@ def make_user_ab():
 def make_user_cd():
     user_cd = auth_register("charlie@gmail.com", "comp1531pass", "Charlie", "Dee")
     return user_cd
+
+
+# These users are designed for the users_all function for Josh
+@pytest.fixture
+def make_user_ef():
+    user_ef = auth_register("edward@gmail.com", "12345687", "Edward", "Frankenstein")
+    return (user_ef["token"], user_ef["u_id"])
+
+@pytest.fixture
+def make_user_gh():
+    user_gh = auth_register("gregory@gmail.com", "ihaveadream", "Gregory", "Heidelberg")
+    return (user_gh["token"], user_ef["u_id"])
+
+@pytest.fixture
+def make_user_ij():
+    user_ij = auth_register("ian@hotmailcom", "stretchy0urh4mstrinG5thr1c3", "Ian", "Jacobs")
+    return (user_ij["token"], user_ij["u_id"])
+###
 
 @pytest.fixture
 def create_public_channel(make_user_ab):
@@ -32,6 +51,133 @@ def create_private_channel(make_user_ab):
 
 '''------------------testing users_all--------------------'''
 # returns a dictionary of a list containing all the users
+
+# start with only one user accessing all users
+
+def test_users_all_one_user(make_user_ef):
+    ef_token, ef_u_id = make_user_ef
+
+    assert users_all(ef_token)["users"] == [
+        {
+            'u_id': ef_u_id,
+            'email': 'edward@gmail.com',
+            'name_first': 'Edward',
+            'name_last': 'Frankenstein',
+            'handle_str': 'edwardfrankenstein'
+        }
+    ]
+
+def test_users_all_access_three_users_at_once_in_order(make_user_ef, make_user_gh, make_user_ij):
+    gh_token, gh_u_id = make_user_gh
+    ef_token, ef_u_id = make_user_ef
+    ij_token, ij_u_id = make_user_ij
+
+    assert users_all(ij_token)["users"] == [
+        {
+            'u_id': gh_u_id,
+            'email': 'gregory@gmail.com',
+            'name_first': 'Gregory',
+            'name_last': 'Heidelberg',
+            'handle_str': 'gregoryheidelberg'
+        }, 
+        {
+            'u_id': ef_u_id,
+            'email': 'edward@gmail.com',
+            'name_first': 'Edward',
+            'name_last': 'Frankenstein',
+            'handle_str': 'edwardfrankenstein'
+        },
+        {
+            'u_id': ij_u_id,
+            'email': 'ian@hotmail.com',
+            'name_first': 'Ian',
+            'name_last': 'Jacobs',
+            'handle_str': 'ianjacobs'
+        }
+    ]
+
+# register the users one at a time and access all the users
+def test_users_all_register_and_call_function_one_at_a_time(make_user_ef, make_user_gh, make_user_ij):
+    gh_token, gh_u_id = make_user_gh
+    ef_token, ef_u_id = make_user_ef
+
+    assert users_all(ef_token)["users"] == [
+        {
+            'u_id': gh_u_id,
+            'email': 'gregory@gmail.com',
+            'name_first': 'Gregory',
+            'name_last': 'Heidelberg',
+            'handle_str': 'gregoryheidelberg'
+        }, 
+        {
+            'u_id': ef_u_id,
+            'email': 'edward@gmail.com',
+            'name_first': 'Edward',
+            'name_last': 'Frankenstein',
+            'handle_str': 'edwardfrankenstein'
+        }
+    ]
+
+    ij_token, ij_u_id = make_user_ij
+    assert users_all(ij_token)["users"] == [
+        {
+            'u_id': gh_u_id,
+            'email': 'gregory@gmail.com',
+            'name_first': 'Gregory',
+            'name_last': 'Heidelberg',
+            'handle_str': 'gregoryheidelberg'
+        }, 
+        {
+            'u_id': ef_u_id,
+            'email': 'edward@gmail.com',
+            'name_first': 'Edward',
+            'name_last': 'Frankenstein',
+            'handle_str': 'edwardfrankenstein'
+        },
+        {
+            'u_id': ij_u_id,
+            'email': 'ian@hotmail.com',
+            'name_first': 'Ian',
+            'name_last': 'Jacobs',
+            'handle_str': 'ianjacobs'
+        }
+    ]
+    
+def test_users_all_users_remain_when_logout(make_user_ef, make_user_gh, make_user_ij):
+    gh_token, gh_u_id = make_user_gh
+    ef_token, ef_u_id = make_user_ef
+    ij_token, ij_u_id = make_user_ij
+    auth_logout(ef_token)
+
+    assert users_all(ij_token)["users"] == [
+        {
+            'u_id': gh_u_id,
+            'email': 'gregory@gmail.com',
+            'name_first': 'Gregory',
+            'name_last': 'Heidelberg',
+            'handle_str': 'gregoryheidelberg'
+        }, 
+        {
+            'u_id': ef_u_id,
+            'email': 'edward@gmail.com',
+            'name_first': 'Edward',
+            'name_last': 'Frankenstein',
+            'handle_str': 'edwardfrankenstein'
+        },
+        {
+            'u_id': ij_u_id,
+            'email': 'ian@hotmail.com',
+            'name_first': 'Ian',
+            'name_last': 'Jacobs',
+            'handle_str': 'ianjacobs'
+        }
+    ]
+
+def test_users_all_invalid_token_error(make_user_ef):
+    ef_token, ef_u_id = make_user_ef
+
+    with pytest.raises(AccessError):
+        users_all(ef_token + "invalid")
 
 '''------------------testing search--------------------'''
 # reminder

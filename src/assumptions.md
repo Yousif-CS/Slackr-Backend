@@ -70,6 +70,7 @@ The main assumption is that we only need to register the user once, and afterwar
     }
 	```
 2. Assume that a correct token will always be provided.
+3. Assume that auth_logout behaves as expected.
 
 #### user_profile_setname(token, name_first, name_last):
 1. Assume that the 'user_profile' function behaves correctly.
@@ -87,7 +88,22 @@ The main assumption is that we only need to register the user once, and afterwar
 1. Assumes that handles may contain upper case letters, numbers and symbols.
 
 #### users_all(token)
-
+1. Assumes that returned dictionaries will be of the following form:
+	```python
+	{
+		'users': [
+            {
+                'u_id': 1,
+                'email': 'cs1531@cse.unsw.edu.au',
+                'name_first': 'Hayden',
+                'name_last': 'Jacobs',
+                'handle_str': 'hjacobs',
+            },
+        ],
+    }
+	```
+2. Assumes users appear in the user dictionary in the order in which they were registered.
+3. Assumes that handle_str is generated as expected.
 
 #### search(token, query_str):
 1. Assume that valid search strings are no longer than 1000 characters in length 
