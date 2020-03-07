@@ -49,9 +49,12 @@ The main assumption is that we only need to register the user once, and afterwar
 
 ### Message functions 
 #### message_send():
-1. Assuming that messages that are empty strings or white spaces are allowed
+1. Assuming that messages that are empty strings or white spaces are not allowed
 2. Assuming that an invalid channel_id will also throw some error
 
+#### message_remove():
+1. Assuming that 'message no longer exists' means that the message_id is not valid
+2. Assuming that removing a message does not affect the indexing of other messages
 
 
 ### User functions

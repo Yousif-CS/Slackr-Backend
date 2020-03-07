@@ -76,16 +76,13 @@ def test_message_send_duplicate_msgs(create_public_channel, make_user_cd):
     
 # testing that messages of any length (from 0 to 1000 characters) are allowed but any longer strings will throw InputError
 # 1. messages with white space and symbols, as long as length is under 1000 characters
-# 2. messages that are 0 length 
 def test_message_send_msg_good(create_public_channel):
     new_public_channel, user_ab = create_public_channel
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "awf;lk#5)(*#&                #W*%*@#&(hi")
     msg2 = message_send(user_ab['token'], new_public_channel['channel_id'], "m" * 1000)
-    msg3 = message_send(user_ab['token'], new_public_channel['channel_id'], "")
-
     msgs_view = channel_messages(user_ab['token'], new_public_channel['channel_id'], 0)
     # checking that all the above messages sent successfully
-    assert len(msgs_view['messages']) == 3
+    assert len(msgs_view['messages']) == 2
 
 # testing for InputError when message length exceeds 1000 characters
 # 1. All symbols
@@ -134,6 +131,14 @@ def test_message_send_channel_not_found(make_user_ab):
 
     with pytest.raises(Exception):
         message_send(user_ab['token'], 22222, "Hello world!")
+
+# testing that empty strings as messages throws exception
+# assuming empty strings are bad
+def test_message_send_empty_string_bad(create_public_channel): 
+    new_public_channel, user_ab = create_public_channel
+
+    with pytest.raises(Exception):
+        message_send(user_ab['token'], new_public_channel['channel_id'], "")
 
 '''------------------testing message_remove--------------------'''
 
