@@ -134,6 +134,10 @@ def test_channel_double_invite(create_owner, create_user1, create_public_channel
 ''' -------------------Testing channel_details -------------------'''
 
 def test_channel_details_valid(create_owner, create_public_channel): 
+	'''
+	Test channel_details give intended information with valid inputs
+	
+	'''	
 
 	owner_info = create_owner 
 	channel_details = create_public_channel 
@@ -144,10 +148,14 @@ def test_channel_details_valid(create_owner, create_public_channel):
 	total_members = details['all_members'] 
 	
 	assert owner_info['u_id'] in owner_membs 
+	assert channel_details['name'] == channel_name
 	
 	
 
 def test_channel_details_no_id(create_owner, create_private_channel):
+	'''
+	Input error when channel_id does not exist
+	'''
 	owner_info = create_owner 
 	channel_id = create_private_channel 
 	
@@ -159,7 +167,10 @@ def test_channel_details_no_id(create_owner, create_private_channel):
 		channel_details(owner_info['token'], non_channel_id) 
 	
 
-def test_channel_details_non_user(create_owner, create_user1, create_public_channel): 
+def test_channel_details_non_user(create_owner, create_user1, create_public_channel):
+	''' 
+	Access Error occurs when a user that does not belong to a channel attempts to retrieve its details 
+	''' 
 	owner_info = create_owner
 	user_info = create_user1 
 	channel_id = create_public_channel 
