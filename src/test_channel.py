@@ -56,23 +56,50 @@ def create_private_channel(create_owner):
 
 '''------------------testing channel_messages--------------------'''
 def test_channel_messages_good(create_public_channel):
+    '''
+    General test to add 5 messages and checking returned dictionary
+    '''
     #create a public channel using fixture and return its details and the owner's
     channel_id, owner_info = create_public_channel
     #sending messages
-    msg1 = message_send(owner_info['token'], channel_id['channel_id'], "message 1")
-    msg2 = message_send(owner_info['token'], channel_id['channel_id'], "message 2")
-    msg3 = message_send(owner_info['token'], channel_id['channel_id'], "message 3")
-    msg4 = message_send(owner_info['token'], channel_id['channel_id'], "message 4")
-    msg5 = message_send(owner_info['token'], channel_id['channel_id'], "message 5")
+    sent_msgs_ids = []
+    sent_msgs_ids.append(message_send(owner_info['token'], channel_id['channel_id'], "message 1"))
+    sent_msgs_ids.append(message_send(owner_info['token'], channel_id['channel_id'], "message 2"))
+    sent_msgs_ids.append(message_send(owner_info['token'], channel_id['channel_id'], "message 3"))
+    sent_msgs_ids.append(message_send(owner_info['token'], channel_id['channel_id'], "message 4"))
+    sent_msgs_ids.append(message_send(owner_info['token'], channel_id['channel_id'], "message 5"))
     #retrieving message list
     msgs = channel_messages(owner_info['token'], channel_id['channel_id'], 0)
     assert len(msgs['messages']) == 5
     assert msgs['start'] == 0
     assert msgs['end'] == -1
-    u_ids = [u_id for message['u_id'] in msgs['messages']]
+    u_ids = [message['u_id'] for message in msgs['messages']]
+    retrieved_msgs_ids = [message['message_id'] for message in msgs['messages']]
     for user in u_ids:
         assert user == owner_info['u_id']
-    
+    for sent_msg, ret_msg in zip(sent_msgs_ids, retrieved_msgs_ids):
+        assert sent_msg == ret_msg 
+
+def test_channel_messages_more_than_fifty(create_public_channel):
+    '''
+    Testing sending more than 50 messages and checking the function returns only the first 50 (pagination)
+    Unfortunately, we have to use a for loop
+    '''
+    #create a public channel using fixture and return its details and the owner's
+    channel_id, owner_info = create_public_channel
+    sent_msgs_ids = []
+    #for loop to send messages
+    for i in range(60):
+        sent_msgs_ids.append(message_send(owner_info['token'], channel_id['channel_id'], "message " + str(i)))
+
+    #retrieving message list
+    msgs = channel_messages(owner_info['token'], channel_id['channel_id'], 0)
+
+    #asserting start and end are correct
+    assert msgs['start'] == 0
+    assert msgs['end'] == 50
+
+
 def test_channel_messages_empty_public(create_public_channel): 
     '''
     Testing requesting messages from an empty channel using a correct start index (0)
@@ -172,6 +199,19 @@ def test_channel_leave_owner_good(create_public_channel):
     #checking owner is not a member anymore
     with pytest.raises(AccessError):
         channel_details(owner_info['token'], channel_id['channel_id'])
+
+def test_channel_leave_owner_private(create_private_channel):
+    '''
+    testing leaving an existing private channel as the owner. This is to test if 
+    it is okay since the private channel would have no members that can invite people later on
+    '''
+    #creating channel and retrieving its details and the owner's
+    channel_id, owner_info = create_private_channel
+   
+    #checking owner is not a member anymore
+    with pytest.raises(Exception):
+        #leaving channel
+        channel_leave(owner_info['token'], channel_id['channel_id'])
 
 
 def test_channel_leave_non_member(create_public_channel, create_user1):
