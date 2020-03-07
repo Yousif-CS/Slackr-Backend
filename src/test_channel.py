@@ -85,7 +85,7 @@ def test_channel_user_invite(create_owner, create_user1, create_user2, create_pu
 
 def test_channel_invite_non_user(create_owner,create_public_channel):
 	'''
-	Inviting a user id that doesn't belong to any registered user
+	Inviting a user id that doesn't belong to any registered user to a channel
 	'''
  
 	owner_info = create_owner 
