@@ -256,7 +256,7 @@ def test_user_profile_setemail_contains_nums_symbols(get_user_jwang):
     jwang_token, jwang_u_id = get_user_jwang
 
     user_profile_setemail(jwang_token, "joshua_wang2@gmail.cc")
-    assert user_profile(jwang_token, jwang_uid)["user"]["email"] == "joshua_wang2@gmail.cc"
+    assert user_profile(jwang_token, jwang_u_id)["user"]["email"] == "joshua_wang2@gmail.cc"
 
     user_profile_setemail(jwang_token, "joshua.wang_2@mail-archive.com")
     assert user_profile(jwang_token, jwang_u_id)["user"]["email"] == "joshua.wa-ng_23@mail-archive.com"

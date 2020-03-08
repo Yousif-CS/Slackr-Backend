@@ -29,7 +29,7 @@ def make_user_ef():
 @pytest.fixture
 def make_user_gh():
     user_gh = auth_register("gregory@gmail.com", "ihaveadream", "Gregory", "Heidelberg")
-    return (user_gh["token"], user_ef["u_id"])
+    return (user_gh["token"], user_gh["u_id"])
 
 @pytest.fixture
 def make_user_ij():
