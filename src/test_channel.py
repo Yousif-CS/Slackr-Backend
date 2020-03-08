@@ -54,30 +54,30 @@ def create_private_channel(create_owner):
     return (channel_id, owner_info)
 
 
-def test_channel_invite_valid(create_owner, create_user1, create_public_channel):
-	''' 
-	testing owner of a channel can invite a registered user
-	'''
-	owner_info = create_owner 
-	user_info = create_user1 
-	channel_id = create_public_channel1 	
-
-	assert owner_info['u_id'] != user_info['u_id']
-	channel_invite(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
-
-
 ''' -------------------------testing channel_invite -------------------------------- '''
 
+
+def test_channel_invite_valid(create_user1, create_public_channel):
+	''' 
+	testing owner of a channel can invite a registered user
+    '''
+	user_info = create_user1 
+	channel_id, owner_info = create_public_channel 	
+
+	channel_invite(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
+    ch_details = channel_details(owner_info['token'], channel_id['channel_id'])
+    u_ids = [member['u_id'] for member in ch_details]
+    assert user_info['u_id'] in u_ids
+    assert len(ch_details) == 2
 
 def test_channel_user_invite(create_owner, create_user1, create_user2, create_public_channel):
 	
 	''' 
 	testing if user can invite another user to a channel they belong to 
 	'''
-	owner_info = create_owner 
 	inviting_user_info = create_user1 
 	user_invited_info = create_user2
-	channel_id = create_public_channel	
+	channel_id, owner_info = create_public_channel	
 
 	assert owner_info['u_id'] != inviting_user_info['u_id']
 	assert inviting_user_info['u_id'] != user_info['u_id']
