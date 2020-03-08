@@ -58,33 +58,34 @@ def create_private_channel(create_owner):
 
 
 def test_channel_invite_valid(create_user1, create_public_channel):
-	''' 
-	testing owner of a channel can invite a registered user
+    ''' 
+    testing owner of a channel can invite a registered user
     '''
-	user_info = create_user1 
-	channel_id, owner_info = create_public_channel 	
+    user_info = create_user1 
+    channel_id, owner_info = create_public_channel 	
 
-	channel_invite(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
-    ch_details = channel_details(owner_info['token'], channel_id['channel_id'])
+    channel_invite(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
+    ch_details = channel_details(owner_info['token'], channel_id['channel_id'])['all_members']
     u_ids = [member['u_id'] for member in ch_details]
     assert user_info['u_id'] in u_ids
     assert len(ch_details) == 2
 
 def test_channel_user_invite(create_user1, create_user2, create_public_channel):
-	''' 
-	testing if user can invite another user to a channel they belong to 
-	'''
-	inviting_user_info = create_user1 
-	user_invited_info = create_user2
-	channel_id, owner_info = create_public_channel	
+    ''' 
+    testing if user can invite another user to a channel they belong to 
+    '''
+
+    inviting_user_info = create_user1 
+    user_invited_info = create_user2
+    channel_id, owner_info = create_public_channel	
 
 	#assert owner_info['u_id'] != inviting_user_info['u_id']
 	#assert inviting_user_info['u_id'] != user_info['u_id']
 
-	channel_invite(owner_info['token'], channel_id['channel_id'], inviting_user_info['u_id'])
-	channel_invite(inviting_user_info['token'], channel_id['channel_id'], user_invited_info['u_id'])
-    
-    ch_details = channel_details(owner_info['token'], channel_id['channel_id'])
+    channel_invite(owner_info['token'], channel_id['channel_id'], inviting_user_info['u_id'])
+    channel_invite(inviting_user_info['token'], channel_id['channel_id'], user_invited_info['u_id'])
+
+    ch_details = channel_details(owner_info['token'], channel_id['channel_id'])['all_members']
     u_ids = [member['u_id'] for member in ch_details]
 
     assert owner_info['u_id'] in u_ids
@@ -144,33 +145,46 @@ def test_channel_invite_nonexistent_channel(create_public_channel, create_user2)
 ''' -------------------Testing channel_details -----------------'''
 
 def test_channel_details_valid(create_public_channel, create_user1): 
-	'''
-	Test channel_details gives intended information with valid inputs
-	'''	
-	new_ch, owner_info = create_public_channel 
+    '''
+    Test channel_details gives intended information with valid inputs
+    '''	
+    new_ch, owner_info = create_public_channel 
     user_info = create_user1
     channel_invite(owner_info["token"], new_ch["channel_id"], user_info["u_id"])
-	
-	details = channel_details(owner_info['token'], channel_details['channel_id'])
-	owners = details['owner_members']
-	channel_name = details['name'] 
-	all_membs = details['all_members'] 
-	
-	assert owner_info['u_id'] == owners[0]["u_id"]
+
+    details = channel_details(owner_info['token'], new_ch['channel_id'])
+    owners = details['owner_members']
+    channel_name = details['name'] 
+    all_membs = details['all_members'] 
+    members_u_ids = [member['u_id'] for member in all_membs]
+
+    assert owner_info['u_id'] == owners[0]["u_id"]
+    assert channels_list(owner_info["token"])["channels"][0]["name"] == channel_name
+    assert owner_info['u_id'] in members_u_ids
+    assert user_info['u_id'] in members_u_ids
     assert len(owners) == 1
-	assert channels_list(onwer_info["token"])["channels"][0]["name"] == channel_name
-    assert all_membs[0]['u_id'] == owner_info['u_id']
-    assert all_membs[1]['u_id'] == user_info['u_id']
     assert len(all_membs) == 2
 
     # add user as owner
     channel_addowner(owner_info["token"], new_ch["channel_id"], user_info["u_id"])
-    assert owners[1]["u_id"] == user_info["u_id"]
+
+    # getting details again
+    details = channel_details(owner_info['token'], channel_details['channel_id'])
+    owners = details['owner_members']
+    owners_u_ids = [owner['u_id'] for owner in owners]
+
+    assert user_info['u_id'] in owners_u_ids
     assert len(owners) == 2
 
     # remove original owner as owner
     channel_removeowner(user_info["token"], new_ch["channel_id"], owner_info["u_id"])
-    assert owners[0]["u_id"] == user_info["u_id"]
+
+    # getting details again
+    details = channel_details(owner_info['token'], channel_details['channel_id'])
+    owners = details['owner_members']
+    owners_u_ids = [owner['u_id'] for owner in owners]
+
+    assert owner_info["u_id"] not in owners_u_ids
     assert len(owners) == 1
 
 def test_channel_details_no_id(create_private_channel):
@@ -201,7 +215,7 @@ def test_channel_details_invalid_token(create_public_channel, create_user1):
     '''
     channel_id, owner_info = create_public_channel 
     with pytest.raises(AccessError): 
-		channel_details("I am an invalid token", channel_id['channel_id']) 
+        channel_details("I am an invalid token", channel_id['channel_id']) 
 
 '''------------------testing channel_messages--------------------'''
 def test_channel_messages_good(create_public_channel):
