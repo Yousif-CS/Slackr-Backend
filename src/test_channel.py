@@ -78,16 +78,18 @@ def test_channel_user_invite(create_user1, create_user2, create_public_channel):
 	user_invited_info = create_user2
 	channel_id, owner_info = create_public_channel	
 
-	assert owner_info['u_id'] != inviting_user_info['u_id']
-	assert inviting_user_info['u_id'] != user_info['u_id']
+	#assert owner_info['u_id'] != inviting_user_info['u_id']
+	#assert inviting_user_info['u_id'] != user_info['u_id']
 
 	channel_invite(owner_info['token'], channel_id['channel_id'], inviting_user_info['u_id'])
-	assert channel_details(owner_info['token'], channel_id['channel_id'])["all_members"][0]["u_id"] == owner_info["u_id"]
-    assert channel_details(inviting_user_info['token'], channel_id['channel_id'])["all_members"][1]["u_id"] == inviting_user_info["u_id"]
-
 	channel_invite(inviting_user_info['token'], channel_id['channel_id'], user_invited_info['u_id'])
-    assert channel_details(user_invited_info['token'], channel_id['channel_id'])["all_members"][2]["u_id"] == \
-        user_invited_info["u_id"]	
+    
+    ch_details = channel_details(owner_info['token'], channel_id['channel_id'])
+    u_ids = [member['u_id'] for member in ch_details]
+
+    assert owner_info['u_id'] in u_ids
+    assert inviting_user_info['u_id'] in u_ids
+    assert user_invited_info in u_ids
 
 def test_channel_invite_non_user(create_public_channel):
 	'''
