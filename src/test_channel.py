@@ -131,7 +131,7 @@ def test_channel_double_invite(create_owner, create_user1, create_public_channel
 		channel_invite(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
 
 
-''' -------------------Testing channel_details -------------------'''
+''' -------------------Testing channel_details -----------------'''
 
 def test_channel_details_valid(create_owner, create_public_channel): 
 	'''
@@ -151,14 +151,12 @@ def test_channel_details_valid(create_owner, create_public_channel):
 	assert channel_details['name'] == channel_name
 	
 	
-
 def test_channel_details_no_id(create_owner, create_private_channel):
 	'''
 	Input error when channel_id does not exist
 	'''
 	owner_info = create_owner 
 	channel_id = create_private_channel 
-	
 	non_channel_id = channel_id['channel_id'] + 1 
 	
 	assert non_channel_id != channel_id['channel_id'] 
