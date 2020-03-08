@@ -143,11 +143,8 @@ def test_login_password():
 #No users registered with email 
 
 def test_login_no_user():
-
 	first_user = auth_register('max.smith@gmail.com', 'great_password101', 'Max', 'Smith')  
-	
 	scnd_user = auth_register('bob99@unsw.edu.au', '45&*ght', 'Bob', 'Johnson') 
-		
 	third_user = auth_register('kate58@bigpond.com', 'secret101', 'Kate' , 'Perkins') 
 	
 	with pytest.raises(InputError) as e:
