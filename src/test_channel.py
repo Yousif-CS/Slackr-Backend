@@ -171,16 +171,21 @@ def test_channel_details_non_user(create_owner, create_user1, create_public_chan
 	''' 
 	Access Error occurs when a user that does not belong to a channel attempts to retrieve its details 
 	''' 
-	owner_info = create_owner
-	user_info = create_user1 
-	channel_id = create_public_channel 
+
+	channel_id, owner_info = create_public_channel 
+	user_info = create_user1  
 	
-	assert owner_info['u_id'] != user_info['u_id'] 
-	
-	with pytest.raises(AccessError) as e: 
+	with pytest.raises(AccessError): 
 		channel_details(user_info['token'], channel_id['channel_id']) 
 
-		
+def test_channel_details_invalid_token(create_public_channel, create_user1):
+    '''
+    Access Error occurs when an unauthorized  user invokes the function
+    '''
+    channel_id, owner_info = create_public_channel 
+    with pytest.raises(AccessError): 
+		channel_details("I am an invalid token", channel_id['channel_id']) 
+
 '''------------------testing channel_messages--------------------'''
 def test_channel_messages_good(create_public_channel):
     '''
