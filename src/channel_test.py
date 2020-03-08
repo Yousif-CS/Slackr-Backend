@@ -457,10 +457,10 @@ def test_channel_join_public_valid(create_public_channel, create_user1):
     #make sure user can view channel channel_details as member
     try:
         test_details = channel_details(user_info['token'], channel_id['channel_id'])
-        assert test_details
+        assert test_details #asserting it is not empty
         assert test_details['name'] == 'test_channel' 
-    except AccessError as exception:
-        assert AccessError != exception
+    except AccessError:
+        assert False
 
 
 def test_channel_join_invalid_channel(create_owner):
