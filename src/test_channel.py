@@ -53,68 +53,66 @@ def create_private_channel(create_owner):
     channel_id = channels_create(owner_info['token'], 'test_channel', False)    
     return (channel_id, owner_info)
 
-
-def test_channel_invite_valid(create_owner, create_user1, create_public_channel):
+''' -------------------------testing channel_invite -------------------------------- '''
+def test_channel_invite_valid(create_user1, create_public_channel):
 	''' 
 	testing owner of a channel can invite a registered user
 	'''
-	owner_info = create_owner 
 	user_info = create_user1 
-	channel_id = create_public_channel1 	
+	channel_id, owner_info = create_public_channel
 
 	assert owner_info['u_id'] != user_info['u_id']
+
 	channel_invite(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
+    assert channel_details(owner_info['token'], channel_id['channel_id'])["all_members"][0]["u_id"] == owner_info["u_id"]
+    assert channel_details(user_info['token'], channel_id['channel_id'])["all_members"][1]["u_id"] == user_info["u_id"]
 
-
-''' -------------------------testing channel_invite -------------------------------- '''
-
-
-def test_channel_user_invite(create_owner, create_user1, create_user2, create_public_channel):
-	
+def test_channel_user_invite(create_user1, create_user2, create_public_channel):
 	''' 
 	testing if user can invite another user to a channel they belong to 
 	'''
-	owner_info = create_owner 
 	inviting_user_info = create_user1 
 	user_invited_info = create_user2
-	channel_id = create_public_channel	
+	channel_id, owner_info = create_public_channel	
 
 	assert owner_info['u_id'] != inviting_user_info['u_id']
 	assert inviting_user_info['u_id'] != user_info['u_id']
 
-	channel_invite(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
-	
-	channel_invite(inviting_user_info['token'],channel_id['channel_id'], user_invited_info['u_id'])	
+	channel_invite(owner_info['token'], channel_id['channel_id'], inviting_user_info['u_id'])
+	assert channel_details(owner_info['token'], channel_id['channel_id'])["all_members"][0]["u_id"] == owner_info["u_id"]
+    assert channel_details(inviting_user_info['token'], channel_id['channel_id'])["all_members"][1]["u_id"] == inviting_user_info["u_id"]
 
-def test_channel_invite_non_user(create_owner,create_public_channel):
+	channel_invite(inviting_user_info['token'], channel_id['channel_id'], user_invited_info['u_id'])
+    assert channel_details(user_invited_info['token'], channel_id['channel_id'])["all_members"][2]["u_id"] == \
+        user_invited_info["u_id"]	
+
+def test_channel_invite_non_user(create_public_channel):
 	'''
 	Inviting a user id that doesn't belong to any registered user to a channel
 	'''
- 
-	owner_info = create_owner 
-	channel_id = create_public_channel
+	channel_id, owner_info = create_public_channel
 	rand_user_id = owner_info['u_id'] + 1 
 	
 	with pytest.raises(InputError) as e: 
 		channel_invite(owner_info['token'], channel_id['channel_id'], rand_user_id)
 
 
-def test_channel_invite_unath_user(create_owner, create_user1, create_user2,  create_public_channel): 
-	
+def test_channel_invite_unath_user(create_user1, create_user2,  create_public_channel): 
 	'''
  	Produces an input error when a user invites another registered user to a channel they don't belong to
 	'''
-	owner_info = create_owner 
 	user_info = create_user1 
 	invited_user = create_user2
-	channel_id = create_public_channel 	
+	channel_id, owner_info = create_public_channel 	
 
 	assert owner_info['u_id'] != user_info['u_id']
 	assert user_info['u_id'] != invited_user['u_id']
 
-	with pytest.raises(InputError) as e: 
+	with pytest.raises(AccessError) as e: 
 		channel_invite(user_info['token'], channel_id['channel_id'], invited_used['u_id'] )
 
+"""
+DO WE NEED THIS TEST?
 def test_channel_double_invite(create_owner, create_user1, create_public_channel):
 	'''
 	Access Error occurs when same member is invited to a channel they are already belong to
@@ -129,43 +127,61 @@ def test_channel_double_invite(create_owner, create_user1, create_public_channel
 
 	with pytest.raises(AccessError) as e: 
 		channel_invite(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
+"""
 
+def test_channel_invite_nonexistent_channel(create_public_channel, create_user2):
+    channel_id, owner_info = create_public_channel
+    user_info = create_user2
+    
+    with pytest.raises(InputError):
+        channel_invite(owner_info["token"], channel_id["channel_id"] + 1, user_info["u_id"])
+
+# invite, leave, invite again
 
 ''' -------------------Testing channel_details -----------------'''
 
-def test_channel_details_valid(create_owner, create_public_channel): 
+def test_channel_details_valid(create_public_channel, create_user1): 
 	'''
-	Test channel_details give intended information with valid inputs
-	
+	Test channel_details gives intended information with valid inputs
 	'''	
-
-	owner_info = create_owner 
-	channel_details = create_public_channel 
+	new_ch, owner_info = create_public_channel 
+    user_info = create_user1
+    channel_invite(owner_info["token"], new_ch["channel_id"], user_info["u_id"])
 	
 	details = channel_details(owner_info['token'], channel_details['channel_id'])
-	owner_membs = details['owner_members']
+	owners = details['owner_members']
 	channel_name = details['name'] 
-	total_members = details['all_members'] 
+	all_membs = details['all_members'] 
 	
-	assert owner_info['u_id'] in owner_membs 
-	assert channel_details['name'] == channel_name
-	
-	
-def test_channel_details_no_id(create_owner, create_private_channel):
+	assert owner_info['u_id'] == owners[0]["u_id"]
+    assert len(owners) == 1
+	assert channels_list(onwer_info["token"])["channels"][0]["name"] == channel_name
+    assert all_membs[0]['u_id'] == owner_info['u_id']
+    assert all_membs[1]['u_id'] == user_info['u_id']
+    assert len(all_membs) == 2
+
+    # add user as owner
+    channel_addowner(owner_info["token"], new_ch["channel_id"], user_info["u_id"])
+    assert owners[1]["u_id"] == user_info["u_id"]
+    assert len(owners) == 2
+
+    # remove original owner as owner
+    channel_removeowner(user_info["token"], new_ch["channel_id"], owner_info["u_id"])
+    assert owners[0]["u_id"] == user_info["u_id"]
+    assert len(owners) == 1
+
+def test_channel_details_no_id(create_private_channel):
 	'''
 	Input error when channel_id does not exist
 	'''
-	owner_info = create_owner 
-	channel_id = create_private_channel 
-	non_channel_id = channel_id['channel_id'] + 1 
+	channel_id, owner_info = create_private_channel 
 	
-	assert non_channel_id != channel_id['channel_id'] 
+	non_channel_id = channel_id['channel_id'] + 1 
 	
 	with pytest.raises(InputError) as e: 
 		channel_details(owner_info['token'], non_channel_id) 
-	
 
-def test_channel_details_non_user(create_owner, create_user1, create_public_channel):
+def test_channel_details_non_member(create_user1, create_public_channel):
 	''' 
 	Access Error occurs when a user that does not belong to a channel attempts to retrieve its details 
 	''' 
@@ -229,6 +245,12 @@ def test_channel_messages_more_than_fifty(create_public_channel):
     assert msgs['start'] == 0
     assert msgs['end'] == 50
 
+    #changing the start message to 15
+    msgs1 = channel_messages(owner_info['token'], channel_id['channel_id'], 15)
+
+    #asserting start and end are correct
+    assert msgs['start'] == 15
+    assert msgs['end'] == -1
 
 def test_channel_messages_empty_public(create_public_channel): 
     '''
@@ -303,8 +325,19 @@ def test_channel_messages_public_non_member(create_public_channel, create_user1)
     #access channel_messages as a non-member to a public channel
     with pytest.raises(AccessError):
         msgs = channel_messages(user_info['token'], channel_id['channel_id'], 0)
-        
 
+def test_channel_messages_public_member(create_public_channel, create_user1):
+    '''
+    Testing member access to channel_messages
+    '''
+    channel_id, owner_info = create_public_channel
+    user_info - create_user1
+    channel_join(user_info["token"], channel_id["channel_id"])
+    msg_id = message_send(user_info['token'], channel_id['channel_id'], "First Message!")
+
+    assert channel_messages(user_info["token"], channel_id["channel_id"], 0)["messages"][0]["message"] == \
+        "First Message!"
+        
 def test_channel_messages_unauthorized_user(create_public_channel):
     '''
     Testing unauthorized access(not a member of slackr) to channel_messages
@@ -314,6 +347,8 @@ def test_channel_messages_unauthorized_user(create_public_channel):
     #using an invalid token
     with pytest.raises(AccessError):
         msgs = channel_messages('I am an invalid token', channel_id['channel_id'], 0)
+
+
 
 '''------------------testing channel_leave--------------------'''
 

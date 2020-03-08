@@ -9,6 +9,10 @@
 ### Channel functions:
 The main assumption is that we only need to register the user once, and afterwards, we can log them in each time we test a certain function, that is, we assume that there is a database storing login details 
 
+#### channel_invite(token, channel_id, u_id):
+1. Assumes that channel_detail behaves as expected.
+2. Users are appended to the end of the list of all_members when added.
+
 #### channels_messages():
 1. Assuming that the email addresses provided exists for registration
 2. Assuming that the channel is empty once it is created (contains no messages)
@@ -49,7 +53,8 @@ The main assumption is that we only need to register the user once, and afterwar
 
 ### Message functions 
 #### message_send():
-1. Assuming that messages that are empty strings or white spaces are not allowed
+1. Assuming that messages that are empty strings or white spaces are not allowed, since 'message_edit' deletes
+    messages which have been edited to empty strings.
 2. Assuming that an invalid channel_id will also throw some error
 
 #### message_remove():

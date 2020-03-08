@@ -29,7 +29,7 @@ def make_user_ef():
 @pytest.fixture
 def make_user_gh():
     user_gh = auth_register("gregory@gmail.com", "ihaveadream", "Gregory", "Heidelberg")
-    return (user_gh["token"], user_ef["u_id"])
+    return (user_gh["token"], user_gh["u_id"])
 
 @pytest.fixture
 def make_user_ij():
@@ -258,8 +258,8 @@ def test_search_string_in_multiple_channels(create_public_channel, make_user_cd)
     channel_invite(user_cd['token'], new_private_channel['channel_id'], user_ab['u_id'])
     result_list = search(user_ab['token'], "channel message")['messages']
     # assuming that search function returns oldest results first
-    assert result_list[0]['u_id'] == user_ab['i_id']
-    assert result_list[1]['u_id'] == user_cd['i_id']
+    assert result_list[0]['u_id'] == user_ab['u_id']
+    assert result_list[1]['u_id'] == user_cd['u_id']
 
     assert result_list[0]['message'] == "ab's public channel message"
     assert result_list[1]['message'] == "cd's private channel message"
