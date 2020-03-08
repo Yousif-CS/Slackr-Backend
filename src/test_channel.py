@@ -54,25 +54,179 @@ def create_private_channel(create_owner):
     return (channel_id, owner_info)
 
 
+def test_channel_invite_valid(create_owner, create_user1, create_public_channel):
+	''' 
+	testing owner of a channel can invite a registered user
+	'''
+	owner_info = create_owner 
+	user_info = create_user1 
+	channel_id = create_public_channel1 	
+
+	assert owner_info['u_id'] != user_info['u_id']
+	channel_invite(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
+
+
+''' -------------------------testing channel_invite -------------------------------- '''
+
+
+def test_channel_user_invite(create_owner, create_user1, create_user2, create_public_channel):
+	
+	''' 
+	testing if user can invite another user to a channel they belong to 
+	'''
+	owner_info = create_owner 
+	inviting_user_info = create_user1 
+	user_invited_info = create_user2
+	channel_id = create_public_channel	
+
+	assert owner_info['u_id'] != inviting_user_info['u_id']
+	assert inviting_user_info['u_id'] != user_info['u_id']
+
+	channel_invite(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
+	
+	channel_invite(inviting_user_info['token'],channel_id['channel_id'], user_invited_info['u_id'])	
+
+def test_channel_invite_non_user(create_owner,create_public_channel):
+	'''
+	Inviting a user id that doesn't belong to any registered user to a channel
+	'''
+ 
+	owner_info = create_owner 
+	channel_id = create_public_channel
+	rand_user_id = owner_info['u_id'] + 1 
+	
+	with pytest.raises(InputError) as e: 
+		channel_invite(owner_info['token'], channel_id['channel_id'], rand_user_id)
+
+
+def test_channel_invite_unath_user(create_owner, create_user1, create_user2,  create_public_channel): 
+	
+	'''
+ 	Produces an input error when a user invites another registered user to a channel they don't belong to
+	'''
+	owner_info = create_owner 
+	user_info = create_user1 
+	invited_user = create_user2
+	channel_id = create_public_channel 	
+
+	assert owner_info['u_id'] != user_info['u_id']
+	assert user_info['u_id'] != invited_user['u_id']
+
+	with pytest.raises(InputError) as e: 
+		channel_invite(user_info['token'], channel_id['channel_id'], invited_used['u_id'] )
+
+def test_channel_double_invite(create_owner, create_user1, create_public_channel):
+	'''
+	Access Error occurs when same member is invited to a channel they are already belong to
+	'''
+
+	owner_info = create_owner 
+	user_info = create_user1 
+	channel_id = create_public_channel	
+
+	assert owner_info['u_id'] != user_info['u_id']
+	channel_invite(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
+
+	with pytest.raises(AccessError) as e: 
+		channel_invite(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
+
+
+''' -------------------Testing channel_details -------------------'''
+
+def test_channel_details_valid(create_owner, create_public_channel): 
+	'''
+	Test channel_details give intended information with valid inputs
+	
+	'''	
+
+	owner_info = create_owner 
+	channel_details = create_public_channel 
+	
+	details = channel_details(owner_info['token'], channel_details['channel_id'])
+	owner_membs = details['owner_members']
+	channel_name = details['name'] 
+	total_members = details['all_members'] 
+	
+	assert owner_info['u_id'] in owner_membs 
+	assert channel_details['name'] == channel_name
+	
+	
+
+def test_channel_details_no_id(create_owner, create_private_channel):
+	'''
+	Input error when channel_id does not exist
+	'''
+	owner_info = create_owner 
+	channel_id = create_private_channel 
+	
+	non_channel_id = channel_id['channel_id'] + 1 
+	
+	assert non_channel_id != channel_id['channel_id'] 
+	
+	with pytest.raises(InputError) as e: 
+		channel_details(owner_info['token'], non_channel_id) 
+	
+
+def test_channel_details_non_user(create_owner, create_user1, create_public_channel):
+	''' 
+	Access Error occurs when a user that does not belong to a channel attempts to retrieve its details 
+	''' 
+	owner_info = create_owner
+	user_info = create_user1 
+	channel_id = create_public_channel 
+	
+	assert owner_info['u_id'] != user_info['u_id'] 
+	
+	with pytest.raises(AccessError) as e: 
+		channel_details(user_info['token'], channel_id['channel_id']) 
+
+		
 '''------------------testing channel_messages--------------------'''
 def test_channel_messages_good(create_public_channel):
+    '''
+    General test to add 5 messages and checking returned dictionary
+    '''
     #create a public channel using fixture and return its details and the owner's
     channel_id, owner_info = create_public_channel
     #sending messages
-    msg1 = message_send(owner_info['token'], channel_id['channel_id'], "message 1")
-    msg2 = message_send(owner_info['token'], channel_id['channel_id'], "message 2")
-    msg3 = message_send(owner_info['token'], channel_id['channel_id'], "message 3")
-    msg4 = message_send(owner_info['token'], channel_id['channel_id'], "message 4")
-    msg5 = message_send(owner_info['token'], channel_id['channel_id'], "message 5")
+    sent_msgs_ids = []
+    sent_msgs_ids.append(message_send(owner_info['token'], channel_id['channel_id'], "message 1"))
+    sent_msgs_ids.append(message_send(owner_info['token'], channel_id['channel_id'], "message 2"))
+    sent_msgs_ids.append(message_send(owner_info['token'], channel_id['channel_id'], "message 3"))
+    sent_msgs_ids.append(message_send(owner_info['token'], channel_id['channel_id'], "message 4"))
+    sent_msgs_ids.append(message_send(owner_info['token'], channel_id['channel_id'], "message 5"))
     #retrieving message list
     msgs = channel_messages(owner_info['token'], channel_id['channel_id'], 0)
     assert len(msgs['messages']) == 5
     assert msgs['start'] == 0
     assert msgs['end'] == -1
-    u_ids = [u_id for message['u_id'] in msgs['messages']]
+    u_ids = [message['u_id'] for message in msgs['messages']]
+    retrieved_msgs_ids = [message['message_id'] for message in msgs['messages']]
     for user in u_ids:
         assert user == owner_info['u_id']
-    
+    for sent_msg, ret_msg in zip(sent_msgs_ids, retrieved_msgs_ids):
+        assert sent_msg == ret_msg 
+
+def test_channel_messages_more_than_fifty(create_public_channel):
+    '''
+    Testing sending more than 50 messages and checking the function returns only the first 50 (pagination)
+    Unfortunately, we have to use a for loop
+    '''
+    #create a public channel using fixture and return its details and the owner's
+    channel_id, owner_info = create_public_channel
+    sent_msgs_ids = []
+    #for loop to send messages
+    for i in range(60):
+        sent_msgs_ids.append(message_send(owner_info['token'], channel_id['channel_id'], "message " + str(i)))
+
+    #retrieving message list
+    msgs = channel_messages(owner_info['token'], channel_id['channel_id'], 0)
+
+    #asserting start and end are correct
+    assert msgs['start'] == 0
+    assert msgs['end'] == 50
+
+
 def test_channel_messages_empty_public(create_public_channel): 
     '''
     Testing requesting messages from an empty channel using a correct start index (0)

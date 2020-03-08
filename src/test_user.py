@@ -1,7 +1,7 @@
 import pytest 
 from error import InputError, AccessError
 from user import user_profile, user_profile_setname, user_profile_setemail, user_profile_sethandle
-from auth import auth_register, auth_login
+from auth import auth_register, auth_login, auth_logout
 from is_valid_email import is_valid_email
 
 
@@ -26,7 +26,7 @@ def test_access_own_profile(get_user_jwang):
         	"email": "joshua@gmail.com",
         	"name_first": "Joshua",
         	"name_last": "Wang",
-        	"handle_str": "joshuawang",
+        	"handle_str": "joshuawang"
             }
         }
 
@@ -42,7 +42,7 @@ def test_access_other_profiles(get_user_jwang, get_user_kli):
         	"email": "joshua@gmail.com",
         	"name_first": "Joshua",
         	"name_last": "Wang",
-        	"handle_str": "joshuawang",
+        	"handle_str": "joshuawang"
             }
         }
 
@@ -52,7 +52,35 @@ def test_access_other_profiles(get_user_jwang, get_user_kli):
         	"email": "ken@gmail.com",
         	"name_first": "Ken",
         	"name_last": "Li",
-        	"handle_str": "kenli",
+        	"handle_str": "kenli"
+            }
+        }
+
+# test one user accessing the information of another valid user id
+def test_access_other_logged_out_profiles(get_user_jwang, get_user_kli):
+    jwang_token, jwang_u_id = get_user_jwang
+    kli_token, kli_u_id = get_user_kli
+
+    # user kli accessing profile of user jwang
+    assert user_profile(kli_token, jwang_u_id) == \
+        {"user": {
+        	"u_id": jwang_u_id,
+        	"email": "joshua@gmail.com",
+        	"name_first": "Joshua",
+        	"name_last": "Wang",
+        	"handle_str": "joshuawang"
+            }
+        }
+    
+    auth_logout(kli_token)
+
+    assert user_profile(jwang_token, kli_u_id) == \
+        {"user": {
+        	"u_id": kli_u_id,
+        	"email": "ken@gmail.com",
+        	"name_first": "Ken",
+        	"name_last": "Li",
+        	"handle_str": "kenli"
             }
         }
 
