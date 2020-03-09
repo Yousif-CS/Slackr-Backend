@@ -2,7 +2,6 @@ import pytest
 from error import InputError, AccessError
 from user import user_profile, user_profile_setname, user_profile_setemail, user_profile_sethandle
 from auth import auth_register, auth_login, auth_logout
-from is_valid_email import is_valid_email
 
 
 # creates users jwang and kli, and login

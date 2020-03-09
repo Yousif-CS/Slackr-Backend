@@ -59,7 +59,7 @@ The main assumption is that we only need to register the user once, and afterwar
 
 #### message_remove():
 1. Assuming that 'message no longer exists' means that the message_id is not valid
-2. Assuming that removing a message does not affect the indexing of other messages
+2. Assuming that removing a message means it will no longer be displayed when channel_messages is called.
 
 #### message_edit():
 1. Assuming message_send and message_remove work as intended.
