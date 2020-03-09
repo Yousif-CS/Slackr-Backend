@@ -3,8 +3,7 @@
 from message import message_send, message_remove, message_edit
 from error import AccessError, InputError
 from auth import auth_login, auth_register
-from channel import channel_invite, channel_details, channel_messages, channel_leave, \
-     channel_join, channel_addowner, channel_removeowner
+from channel import channel_invite, channel_details, channel_messages, channel_leave, channel_join, channel_addowner, channel_removeowner
 from channels import channels_create
 from other import search
 import pytest
@@ -59,7 +58,8 @@ def test_message_send_type_id(create_public_channel):
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Message1")
     msg2 = message_send(user_ab['token'], new_public_channel['channel_id'], "Message2")
 
-    assert type(msg1['message_id']) == type(msg2['message_id']) == int
+    assert isinstance(msg1['message_id'], int) 
+    assert isinstance(msg2['message_id'], int)
     assert msg1['message_id'] != msg2['message_id']
 
 
@@ -78,7 +78,6 @@ def test_message_send_duplicate_msgs(create_public_channel, make_user_cd):
 
     assert first_msg['message'] == second_msg['message']
     assert first_msg['message_id'] != second_msg['message_id']
-    
 
 # testing that messages of any length (from 0 to 1000 characters) are allowed but any longer strings will throw InputError
 # 1. messages with white space and symbols, as long as length is under 1000 characters
@@ -157,7 +156,7 @@ def test_message_send_invalid_token(create_public_channel):
     new_public_channel, user_ab = create_public_channel
 
     with pytest.raises(Exception):
-        message_send("invalid", new_public_channel['channel_id'], "Bad message")
+        message_send(user_ab['token']+ "invalid", new_public_channel['channel_id'], "Invalid token test")
 
 '''------------------testing message_remove--------------------'''
 # no errors
@@ -171,6 +170,7 @@ def test_message_remove_owner_remove_own(create_public_channel):
     msgs_view = channel_messages(user_ab['token'], new_public_channel['channel_id'], 0)
 
     assert len(msgs_view['messages']) == 1
+    assert msgs_view['messages'][0]['message_id'] == msg1['message_id']
 
 # testing that a member of channel added by the owner is able to remove their own message
 def test_message_remove_user_remove_own(create_private_channel, make_user_cd):
@@ -183,9 +183,12 @@ def test_message_remove_user_remove_own(create_private_channel, make_user_cd):
     message_remove(user_cd['token'], msg2['message_id'])
     msg3 = message_send(user_ab['token'], new_private_channel['channel_id'], "Thank you.")
     # there should now be 2 messages remaining
-    msgs_view = channel_messages(user_ab['token'], new_private_channel['channel_id'], 0)
+    msgs_view = channel_messages(user_ab['token'], new_private_channel['channel_id'], 0)['messages']
+    msg_id_list = [msg['message_id'] for msg in msgs_view]
 
     assert len(msgs_view['messages']) == 2
+    assert msg2['message_id'] not in msg_id_list
+    
 
 
 # testing that owner of channel can remove message of other users 
@@ -199,9 +202,11 @@ def test_message_remove_owner_remove_user_msg(create_public_channel, make_user_c
     msg4 = message_send(user_cd['token'], new_public_channel['channel_id'], "Inappropriate messages.")
     # user_ab (creator of channel) removes message made by user_cd
     message_remove(user_ab['token'], msg4['message_id'])
-    msgs_view = channel_messages(user_ab['token'], new_public_channel['channel_id'], 0)
+    msgs_view = channel_messages(user_ab['token'], new_public_channel['channel_id'], 0)['messages']
+    msg_id_list = [msg['message_id'] for msg in msgs_view]
 
     assert len(msgs_view['messages']) == 3
+    assert msg4['message_id'] not in msg_id_list
 
 
 # InputError (when message_id invalid)
@@ -217,16 +222,12 @@ def test_message_remove_nolonger_exist_id(create_public_channel):
         message_remove(user_ab['token'], temp_msg1_id)
 
 
-# attempting to remove messages with ID of 22222, -1, etc. (assuming these are invalid ID for messages)
 def test_message_remove_invalid_id(create_public_channel):
     new_public_channel, user_ab = create_public_channel
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Hello world!")
 
     with pytest.raises(InputError):
-        message_remove(user_ab['token'], 22222)
-
-    with pytest.raises(InputError):
-        message_remove(user_ab['token'], -1) 
+        message_remove(user_ab['token'], msg1['message_id'] + 1)
 
 
 # AccessError
@@ -240,14 +241,18 @@ def test_message_remove_old_owner(create_public_channel, make_user_cd):
     channel_removeowner(user_cd['token'], new_public_channel['channel_id'], user_ab['token'])
 
     with pytest.raises(AccessError):
-        message_remove(user_cd['token'], msg1['message_id']) 
+        message_remove(user_ab['token'], msg1['message_id']) 
 
 
-# user of channel attempts to remove a message
+# non-member of channel attempts to remove a message
 def test_message_remove_user_remove_msg(create_public_channel, make_user_cd):
     new_public_channel, user_ab = create_public_channel
     user_cd = make_user_cd
     user_ef = auth_register("elephant@gmail.com", "pinkelephant1", "Ele", "Fant")
+
+    # user_ef joins new_public_channel
+    channel_join(user_ef['token'], new_public_channel['channel_id'])
+
     # user_ab and user_ef send messages to the channel
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Hello Elephant!")
     msg2 = message_send(user_ef['token'], new_public_channel['channel_id'], "Hello owner!")
