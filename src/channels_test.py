@@ -107,15 +107,23 @@ def test_channels_listall_public():
     ab_list = channels_listall(user_ab['token'])['channels']
     cd_list = channels_listall(user_cd['token'])['channels']
 
-    ab_lst_channel_ids = [ch["channel_id"] for ch in ab_list]
-    cd_lst_channel_ids = [ch["channel_id"] for ch in cd_list]
+    assert ab_list == cd_list
 
-    for id in ab_lst_channel_ids:
-        assert id in cd_lst_channel_ids
+# testing for a given public channel, channels_listall returns all the available channels
+def test_channels_listall_public_correct_channels(): 
+    # creating and registering users
+    user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
+    user_cd = auth_register("charlie@gmail.com", "pw321ABC", "Charlie", "Dragon")
+    # user_ab creates a public channel
+    new_public_channel = channels_create(user_ab['token'], 'public_test', True)
+    new_public_channel2 = channels_create(user_cd['token'], 'public_test2', True)
+    # user_ab and user_cd call channels_listall
+    ab_list = channels_listall(user_ab['token'])['channels']
+    channel_ids = [channel['channel_id'] for channel in ab_list]
+
+    assert new_public_channel['channel_id'] in channel_ids
+    assert new_public_channel2['channel_id'] in channel_ids
     
-    for id in cd_lst_channel_ids:
-        assert id in ab_lst_channel_ids
-
 
 # testing for a private channel, channels_listall also returns it for every user
 def test_channels_listall_private():
@@ -129,14 +137,7 @@ def test_channels_listall_private():
     ab_list = channels_listall(user_ab['token'])['channels']
     cd_list = channels_listall(user_cd['token'])['channels']
 
-    ab_lst_channel_ids = [ch["channel_id"] for ch in ab_list]
-    cd_lst_channel_ids = [ch["channel_id"] for ch in cd_list]
-
-    for id in ab_lst_channel_ids:
-        assert id in cd_lst_channel_ids
-    
-    for id in cd_lst_channel_ids:
-        assert id in ab_lst_channel_ids
+    assert ab_list == cd_list
 
 # testing that invalid token throws exception
 # assuming token with string 'invalid' is an invalid token
@@ -169,7 +170,7 @@ def test_channels_create_correct_details():
     # creating a public channel
     new_channel_id = channels_create(user_kli['token'], "some_channel_name", True)
     # user_kli invites user_bwang to the channel
-    channel_invite(user_kli['token'], new_channel_id['token'], user_bwang['u_id'])
+    channel_invite(user_kli['token'], new_channel_id['channel_id'], user_bwang['u_id'])
     print_details = channel_details(user_kli['token'], new_channel_id['channel_id'])
     assert print_details['name'] == "some_channel_name"
     assert print_details['all_members'] == \
