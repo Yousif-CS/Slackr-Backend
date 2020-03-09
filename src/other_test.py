@@ -201,24 +201,41 @@ def test_search_space_string(create_public_channel):
     # result_list is of type list (list of dictionaries) 
     result_list = search(user_ab['token'], " ")['messages']
     
-    assert result_list[0]['message_id'] == msg1['message_id']
-    assert result_list[0]['u_id'] == user_ab['u_id']
-    assert result_list[0]['message'] == "A message with spaces!"
+    # getting the message string
+    messages = [message['message'] for message in result_list]
+    # getting the message id and user ids that sent them
+    messages_ids = [message['message_id'] for message in result_list]
+    #getting the user ids of the senders
+    u_ids = [message['u_id'] for message in result_list]
+
+    assert msg1['message_id'] in messages_ids
+    assert user_ab['u_id'] in u_ids
+    assert "A message with spaces!" in messages
 
 
 # letters and symbols in search string (combination of above) 
 def test_search_normal_string(create_public_channel): 
+    
     new_public_channel, user_ab = create_public_channel
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Symbols & words")
     msg2 = message_send(user_ab['token'], new_public_channel['channel_id'], "& with more stuff")
+    msg3 = message_send(user_ab['token'], new_public_channel['channel_id'], "hola amigos!")
+    
     # result_list is of type list (list of dictionaries) 
     result_list = search(user_ab['token'], "& w")['messages']
 
-    assert result_list[0]['message_id'] == msg1['message_id']
-    assert result_list[1]['message_id'] == msg2['message_id']
+    # getting the message id and user ids that sent them
+    messages_ids = [message['message_id'] for message in result_list]
+    # getting the message string
+    messages = [message['message'] for message in result_list]
 
-    assert result_list[0]['message'] == 'Symbols & words'
-    assert result_list[1]['message'] == '& with more stuff'
+    # asserting we found the messages
+    assert msg1['message_id'] in messages_ids
+    assert msg2['message_id'] in messages_ids
+
+    #asserting the messages haven't been truncated or tampered with
+    assert 'Symbols & words' in messages
+    assert '& with more stuff' in messages
 
 
 # search string is exactly message
@@ -229,8 +246,11 @@ def test_search_exact_string(create_public_channel):
     # search string matches a message exactly
     result_list = search(user_ab['token'], "This is a very generic message")['messages']
     
+    # getting the message string and user ids that sent them
+    messages = [message['message'] for message in result_list]
+    
     assert len(result_list) == 1
-    assert result_list[0]['message'] == "This is a very generic message"
+    assert "This is a very generic message" in messages
 
 
 # search string longer than message (should be no match) 
@@ -257,12 +277,18 @@ def test_search_string_in_multiple_channels(create_public_channel, make_user_cd)
     # user_cd invites user_ab to private channel 
     channel_invite(user_cd['token'], new_private_channel['channel_id'], user_ab['u_id'])
     result_list = search(user_ab['token'], "channel message")['messages']
-    # assuming that search function returns oldest results first
-    assert result_list[0]['u_id'] == user_ab['u_id']
-    assert result_list[1]['u_id'] == user_cd['u_id']
 
-    assert result_list[0]['message'] == "ab's public channel message"
-    assert result_list[1]['message'] == "cd's private channel message"
+    # getting the message string and user ids that sent them
+    messages = [message['message'] for message in result_list]
+    u_ids = [message['u_id'] for message in result_list]
+    
+    #asserting the u_ids relate to the messages
+    assert user_cd['u_id'] in u_ids
+    assert user_ab['u_id'] in u_ids
+    
+    #asserting the messages are in the results
+    assert "ab's public channel message" in messages
+    assert "cd's private channel message" in messages
 
 
 # matching messages in unjoined channel shold not show up
