@@ -205,27 +205,39 @@ def test_set_name_exactly_fifty(get_user_jwang):
 # 3. name_first over 50 char
 # 4. name_last over 50 char
 # names that are purely whitespaces are counted as invalid
-def test_user_profile_setname_invalid_empty(get_user_kli):
+def test_user_profile_setname_invalid_empty1(get_user_kli):
     kli_token, kli_u_id = get_user_kli
 
     with pytest.raises(InputError):
         user_profile_setname(kli_token, "", "Lithium")
+
+def test_user_profile_setname_invalid_empty2(get_user_kli):
+    kli_token, kli_u_id = get_user_kli
+
     with pytest.raises(InputError):
         user_profile_setname(kli_token, "Kenneth", "")
 
-def test_user_profile_setname_invalid_toolong(get_user_kli):
+def test_user_profile_setname_invalid_toolong1(get_user_kli):
     kli_token, kli_u_id = get_user_kli
 
     with pytest.raises(InputError):
         user_profile_setname(kli_token, "K" * 51, "Lithium")
+
+def test_user_profile_setname_invalid_toolong2(get_user_kli):
+    kli_token, kli_u_id = get_user_kli
+
     with pytest.raises(InputError):
         user_profile_setname(kli_token, "Kenneth", "L" * 51)
 
-def test_user_profile_setname_invalid_whitespaces_only(get_user_kli):
+def test_user_profile_setname_invalid_whitespaces_only1(get_user_kli):
     kli_token, kli_u_id = get_user_kli
 
     with pytest.raises(InputError):
         user_profile_setname(kli_token, "       ", "Li")
+
+def test_user_profile_setname_invalid_whitespaces_only2(get_user_kli):
+    kli_token, kli_u_id = get_user_kli
+
     with pytest.raises(InputError):
         user_profile_setname(kli_token, "Ken", "        ")
 
@@ -270,32 +282,50 @@ def test_user_profile_setemail_unique_changes(get_user_jwang, get_user_kli):
     assert user_profile(kli_token, jwang_u_id)["user"]["email"] == "kenligordon1@gmail1.com"
 
 # test that invalid but unique emails throw input error
-def test_invalid_email_prefix(get_user_kli):
+def test_invalid_email_prefix1(get_user_kli):
     kli_token, kli_u_id = get_user_kli
     
     with pytest.raises(InputError):
         user_profile_setemail(kli_token, "ken-@gmail.ab")
 
+def test_invalid_email_prefix2(get_user_kli):
+    kli_token, kli_u_id = get_user_kli
+
     with pytest.raises(InputError):
         user_profile_setemail(kli_token, "ken.-li@gmail.ab")
+
+def test_invalid_email_prefix3(get_user_kli):
+    kli_token, kli_u_id = get_user_kli
 
     with pytest.raises(InputError):
         user_profile_setemail(kli_token, ".ken@gmail.ab")
 
+def test_invalid_email_prefix4(get_user_kli):
+    kli_token, kli_u_id = get_user_kli
+
     with pytest.raises(InputError):
         user_profile_setemail(kli_token, "ken#li@gmail.ab")
 
-def test_invalid_email_domain(get_user_kli):
+def test_invalid_email_domain1(get_user_kli):
     kli_token, kli_u_id = get_user_kli
     
     with pytest.raises(InputError):
         user_profile_setemail(kli_token, "ken@gmail.a")
+
+def test_invalid_email_domain2(get_user_kli):
+    kli_token, kli_u_id = get_user_kli
     
     with pytest.raises(InputError):
         user_profile_setemail(kli_token, "kenli@google#mail.com")
 
+def test_invalid_email_domain3(get_user_kli):
+    kli_token, kli_u_id = get_user_kli
+
     with pytest.raises(InputError):
         user_profile_setemail(kli_token, "kenli@google.mail")
+
+def test_invalid_email_domain4(get_user_kli):
+    kli_token, kli_u_id = get_user_kli
 
     with pytest.raises(InputError):
         user_profile_setemail(kli_token, "ken@gmail..com")
