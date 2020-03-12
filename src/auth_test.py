@@ -127,7 +127,7 @@ def test_register_long_last_name():
 def test_login(): 
 	user = auth_register('max.smith@gmail.com', 'great_password101', 'Max', 'Smith')  
 	
-	user_logging_in = auth_login('max.dsmith@gmail.com', 'great_password101') 
+	user_logging_in = auth_login('max.smith@gmail.com', 'great_password101') 
 		
 	assert user['u_id'] == user_logging_in['u_id'] 
 
@@ -158,7 +158,7 @@ def test_logout_success():
 	
 	user = auth_register('max.smith@gmail.com', 'great_password101', 'Max', 'Smith')  
 	
-	user_logging_in = auth_login('max.dsmith@gmail.com', 'great_password101') 
+	user_logging_in = auth_login('max.smith@gmail.com', 'great_password101') 
 
 	assert user['u_id'] == user_logging_in['u_id'] 
 	
@@ -172,7 +172,7 @@ def test_logout_success():
 def test_logout_unsuccessful(): 
 	user = auth_register('max.smith@gmail.com', 'great_password101', 'Max', 'Smith')  
 	
-	user_logging_in = auth_login('max.dsmith@gmail.com', 'great_password101') 
+	user_logging_in = auth_login('max.smith@gmail.com', 'great_password101') 
 	
 	assert user['u_id'] == user_logging_in['u_id'] 
 	user_token = user_logging_in['token'] 
@@ -189,7 +189,7 @@ def test_logout_unsuccessful():
 def test_logout_join_fails(): 
 	user = auth_register('max.smith@gmail.com', 'great_password101', 'Max', 'Smith')  
 	
-	user_logging_in = auth_login('max.dsmith@gmail.com', 'great_password101') 
+	user_logging_in = auth_login('max.smith@gmail.com', 'great_password101') 
 
 	assert user['u_id'] == user_logging_in['u_id'] 
 	
