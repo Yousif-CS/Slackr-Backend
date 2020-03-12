@@ -180,7 +180,7 @@ def test_channels_create_unique_id():
     new_channel_1 = channels_create(user_kli['token'], "generic_name", True)
     new_channel_2 = channels_create(user_kli['token'], "generic_name", True)
     # checking for uniqueness of channel_id
-    assert new_channel_1['channel_id'] != new_channel_1['channel_id']
+    assert new_channel_1['channel_id'] != new_channel_2['channel_id']
 
 # testing for raised exception if len(name) > 20
 def test_channels_create_invalid_name():
