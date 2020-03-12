@@ -251,6 +251,7 @@ def test_channel_messages_good(create_public_channel):
     retrieved_msgs_ids = [message['message_id'] for message in msgs['messages']]
     for user in u_ids:
         assert user == owner_info['u_id']
+    #testing if the returned ids of the messages are the same as the sent ids of the messages
     for sent_msg, ret_msg in zip(sent_msgs_ids, retrieved_msgs_ids):
         assert sent_msg == ret_msg 
 
@@ -263,7 +264,7 @@ def test_channel_messages_more_than_fifty(create_public_channel):
     channel_id, owner_info = create_public_channel
     sent_msgs_ids = []
     #for loop to send messages
-    for i in range(60):
+    for i in range(51):
         sent_msgs_ids.append(message_send(owner_info['token'], channel_id['channel_id'], "message " + str(i)))
 
     #retrieving message list
@@ -273,11 +274,11 @@ def test_channel_messages_more_than_fifty(create_public_channel):
     assert msgs['start'] == 0
     assert msgs['end'] == 50
 
-    #changing the start message to 15
-    msgs1 = channel_messages(owner_info['token'], channel_id['channel_id'], 15)
+    #changing the start message to 1
+    msgs1 = channel_messages(owner_info['token'], channel_id['channel_id'], 1)
 
     #asserting start and end are correct
-    assert msgs['start'] == 15
+    assert msgs['start'] == 1
     assert msgs['end'] == -1
 
 def test_channel_messages_empty_public(create_public_channel): 
