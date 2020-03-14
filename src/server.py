@@ -7,7 +7,7 @@ from error import InputError
 
 #This dictionary will contain all of the database
 #once the server starts and we unpickle the database file
-#it is supposed to be {"Users": { "u_id": {"name_first": "Yousif", "name_last": "Khalid", "email": "whatever@gmail.com", "channels": [channel_id1, channel_id2, ...]}},
+#it is supposed to be {"Users": { "u_id": {"name_first": "Yousif", "name_last": "Khalid", "email": "whatever@gmail.com", "global_permission": 0, "channels": [channel_id1, channel_id2, ...]}},
 #                      "Slack_owners: [u_id1, u_id2, ...], 
 #                      "Channels":{"channel_id": {"name": "my_channel", "all_members":[u_id1, u_id2, ..], "owner_members" = [u_id1, u_id2], "messages"= [message_id1, message_id2]}},
 #                      "Messages": {"message_id": {"message": "hello", "u_id": 12321, "time_created": 2323123232, "is_pinned" = True, "react_id": 1}}}
