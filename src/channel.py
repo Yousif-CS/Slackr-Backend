@@ -38,3 +38,34 @@ def channel_messages(token, channel_id, start):
         return {"messages": messages[start:], "start": start, "end": -1}
     #we return 50 messages with more to give
     return {"messages": messages[start: start + MESSAGE_BLOCK + 1], "start": start, "end": start + MESSAGE_BLOCK + 1}
+
+
+def channel_leave(token, channel_id):
+    #verify the user
+    if verify_token(token) is False:
+        raise InputError(description='Invalid token')
+
+    #get database information
+    data = get_store()
+    #getting id of the user
+    u_id = get_tokens()[token]
+
+    #verify the channel exists
+    if channel_id not in data['Channels']:
+        raise InputError(description="Invalid channel id")
+
+    #verify the user is a member of the channel
+    if channel_id not in data['Users'][u_id]['channels']:
+        raise AccessError(description="You do not have permission to view this channel's messages")
+
+    #deleting the user from the channel list
+    #and deleting the channel from the user's channel's list
+    data['Channels'][channel_id]['all_members'].remove(u_id)
+    #removing the user from the owner members if he is an owner, otherwise just pass
+    try:
+        data['Channels'][channel_id]['owner_members'].remove(u_id)
+    except ValueError:
+        pass
+    data['Users'][u_id]['channels'].remove(channel_id)
+
+
