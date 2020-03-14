@@ -9,7 +9,7 @@ from error import InputError
 #once the server starts and we unpickle the database file
 #it is supposed to be {"Users": { "u_id": {"name_first": "Yousif", "name_last": "Khalid", "email": "whatever@gmail.com", "global_permission": 0, "channels": [channel_id1, channel_id2, ...]}},
 #                      "Slack_owners: [u_id1, u_id2, ...], 
-#                      "Channels":{"channel_id": {"name": "my_channel", "all_members":[u_id1, u_id2, ..], "owner_members" = [u_id1, u_id2], "messages"= [message_id1, message_id2]}},
+#                      "Channels":{"channel_id": {"name": "my_channel", "all_members":[u_id1, u_id2, ..], "owner_members" = [u_id1, u_id2], "is_private": False,  "messages"= [message_id1, message_id2]}},
 #                      "Messages": [{"message_id": 123, "message": "hello", "u_id": 12321, "time_created": 2323123232, "is_pinned" = True, "reacts": {"react_id": 1, "u_ids": [u_id1, u_id2,...], "is_this_user_reacted": True}}}]
 #Where each 
 STORE = pickle.load("database.p", encoding="utf-8")

@@ -56,7 +56,7 @@ def channel_leave(token, channel_id):
 
     #verify the user is a member of the channel
     if channel_id not in data['Users'][u_id]['channels']:
-        raise AccessError(description="You do not have permission to view this channel's messages")
+        raise AccessError(description="You do not have permission leave channel: not a member")
 
     #deleting the user from the channel list
     #and deleting the channel from the user's channel's list
@@ -67,5 +67,31 @@ def channel_leave(token, channel_id):
     except ValueError:
         pass
     data['Users'][u_id]['channels'].remove(channel_id)
+    return {}
+
+def channel_join(token, channel_id):
+    #verify the user
+    if verify_token(token) is False:
+        raise InputError(description='Invalid token')
+
+    #get database information
+    data = get_store()
+    #getting id of the user
+    u_id = get_tokens()[token]
+
+    #verify the channel exists
+    if channel_id not in data['Channels']:
+        raise InputError(description="Invalid channel id")
+
+    #verify the channel is public
+    if data['Channels'][channel_id]['is_private'] is True:
+        raise AccessError(description="Cannot join channel: channel is private")
+    
+    #adding user to channel details
+    #and adding channel to user's channels list
+    data['Channels'][channel_id]['all_members'].append(u_id)
+    data['Users'][u_id]['channels'].append(channel_id)
+    
+    return {}
 
 
