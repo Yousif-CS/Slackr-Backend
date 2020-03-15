@@ -14,10 +14,12 @@ def is_valid_email(email):
     # pass the regualar expression 
     # and the string in search() method 
     if(re.search(regex,email)):  
-        print("valid")
+        print('is valid')
+        return True
           
     else:  
-        print("invalid")
+        print('is invalid')
+        return False 
 
 if __name__ == "__main__":
     is_valid_email("kenli@gmail.com")
