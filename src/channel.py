@@ -1,3 +1,4 @@
+#pylint: disable=missing-module-docstring
 from server import get_store, get_tokens
 from auth import verify_token
 from error import InputError, AccessError
@@ -29,17 +30,19 @@ def channel_messages(token, channel_id, start):
     #getting the messages of the channel
     message_ids = data['Channels'][channel_id]['messages']
     messages = [message for message in data['Messages'] if message['u_id'] in message_ids]
-    #verify the start index is less than the number of messages 
+    #verify the start index is less than the number of messages
     if len(messages) <= start:
         raise InputError(description="Invalid starting index")
-    
+
     #sorting the message list in terms of time created
-    messages = sorted(messages, key = lambda message: message['time_created'], reverse = True)
-    #reached the end 
-    if (start + 50 >= len(messages)):
+    messages = sorted(messages, key=lambda message: message['time_created'], reverse=True)
+    #reached the end
+    if start + 50 >= len(messages):
         return {"messages": messages[start:], "start": start, "end": -1}
     #we return 50 messages with more to give
-    return {"messages": messages[start: start + MESSAGE_BLOCK + 1], "start": start, "end": start + MESSAGE_BLOCK + 1}
+    return {"messages": messages[start: start + MESSAGE_BLOCK + 1],
+            "start": start,
+            "end": start + MESSAGE_BLOCK + 1}
 
 
 def channel_leave(token, channel_id):
