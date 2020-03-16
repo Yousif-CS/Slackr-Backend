@@ -73,7 +73,6 @@ def channel_leave(token, channel_id):
     except ValueError:
         pass
     data['Users'][u_id]['channels'].remove(channel_id)
-    return {}
 
 def channel_join(token, channel_id):
     '''
@@ -102,7 +101,6 @@ def channel_join(token, channel_id):
     data['Channels'][channel_id]['all_members'].append(u_id)
     data['Users'][u_id]['channels'].append(channel_id)
     
-    return {}
 
 
 def channel_addowner(token, channel_id, u_id):
@@ -140,3 +138,36 @@ def channel_addowner(token, channel_id, u_id):
     #add user as owner
     data['Channels'][channel_id]['owner_members'].append(u_id)
 
+def channel_removeowner(token, channel_id, u_id):
+    '''
+    input: a token,  a channel_id, and a u_id
+    output: user with u_id removed from being an owner to channel_id
+    '''
+    #verify the user
+    if verify_token(token) is False:
+        raise InputError(description='Invalid token')
+
+    #get database information
+    data = get_store()
+    #getting id of the user
+    u_id_invoker = get_tokens()[token]
+
+    #verify the channel exists
+    if channel_id not in data['Channels']:
+        raise InputError(description="Invalid channel id")
+
+    #verify user to add is an owner
+    if u_id not in data['Channels'][channel_id]['owner_members']:
+        raise InputError(description="User is not an owner")
+
+    #verify the invoker is either an owner of the channel or slackr
+    if u_id_invoker not in data['Channels'][channel_id]['owner_members'] \
+        and data['Users'][u_id_invoker]['global_permission'] != SLACKR_OWNER:
+        raise AccessError(description="You do not have privileges to add owners")
+    
+    #remove the ownership
+    data['Channels'][channel_id]['owner_members'].remove(u_id)
+
+
+
+    
