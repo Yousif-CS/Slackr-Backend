@@ -41,6 +41,10 @@ def channel_messages(token, channel_id, start):
 
 
 def channel_leave(token, channel_id):
+    '''
+    input: a token and a channel id
+    output: an empty dictionary, and removes user from the channel
+    '''
     #verify the user
     if verify_token(token) is False:
         raise InputError(description='Invalid token')
@@ -70,6 +74,10 @@ def channel_leave(token, channel_id):
     return {}
 
 def channel_join(token, channel_id):
+    '''
+    input: a token and a channel_id
+    output: an empty dictionary, and adding the user to the channel with channel_id
+    '''
     #verify the user
     if verify_token(token) is False:
         raise InputError(description='Invalid token')
