@@ -104,7 +104,9 @@ def channel_join(token, channel_id):
     data['Channels'][channel_id]['all_members'].append(u_id)
     data['Users'][u_id]['channels'].append(channel_id)
     
-
+    #if user is an owner of slackr, then he is added as an owner
+    if data['Users'][u_id]['global_permission'] == SLACKR_OWNER:
+        data['Channels'][channel_id]['owner_members'].append(u_id)
 
 def channel_addowner(token, channel_id, u_id):
     '''
@@ -159,14 +161,18 @@ def channel_removeowner(token, channel_id, u_id):
     if channel_id not in data['Channels']:
         raise InputError(description="Invalid channel id")
 
-    #verify user to add is an owner
+    #verify user to remove is an owner
     if u_id not in data['Channels'][channel_id]['owner_members']:
         raise InputError(description="User is not an owner")
-
+    
+    #verify the user to remove is not a Slackr owner
+    if data['Users'][u_id]['global_permission'] == SLACKR_OWNER:
+        raise AccessError(description="You do not have permission to the current user")
+    
     #verify the invoker is either an owner of the channel or slackr
     if u_id_invoker not in data['Channels'][channel_id]['owner_members'] \
         and data['Users'][u_id_invoker]['global_permission'] != SLACKR_OWNER:
-        raise AccessError(description="You do not have privileges to add owners")
+        raise AccessError(description="You do not have premission to remove owners")
     
     #remove the ownership
     data['Channels'][channel_id]['owner_members'].remove(u_id)
