@@ -4,6 +4,7 @@ from json import dumps
 from flask import Flask, request
 from flask_cors import CORS
 from error import InputError
+from standup import getStandup
 
 #This dictionary will contain all of the database
 #once the server starts and we unpickle the database file
