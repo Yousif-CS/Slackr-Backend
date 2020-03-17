@@ -61,6 +61,7 @@ def message_sendlater(token, channel_id, message, time_sent):
     Sends message from user to channel (specified by id) at specific time, automatically
     '''
 
+# TODO: how to know 
 def message_pin(token, message_id):
     '''
     input: token, message_id
