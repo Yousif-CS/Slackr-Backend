@@ -79,8 +79,24 @@ def channels_create(token, name, is_public):
     # check if is_public is correct type
     if not isinstance(is_public, bool):
         raise InputError(description='Invalid channel status')
-    
+
+    # assigning new id for channel
+    # if no channels exist, assign 1 as new id; otherwise assign max_id_size + 1
+    if len(channels_listall(token)['channels']) == 0:
+        new_id = 1
+    else:
+        new_id = max([i for i in data['Channels']]) + 1
+
     # updating database:
-    # 1. adding new channel id to user info
-    # 2. adding new key value pair into data.Channels
-    
+    # 1. adding new key value pair into data.Channels
+    data['Channels'][new_id] = {
+        'name': name,
+        'all_members': [u_id],
+        'owner_members': [u_id],
+        'is_priate': not is_public,
+        'messages': [],
+    }
+    # 2. adding new channel id to user info
+    data['Users'][u_id]['channels'].append(new_id)
+
+    return {'channel_id': new_id}
