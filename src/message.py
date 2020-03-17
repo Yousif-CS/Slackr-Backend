@@ -55,17 +55,43 @@ def message_send(token, channel_id, message):
 def message_sendlater(token, channel_id, message, time_sent):
     '''
     input: valid token, channel_id, message and time in the future
-    output: {message_id}; 
+    output: {message_id};
     Sends message from user to channel (specified by id) at specific time, automatically
     '''
 
-# TODO: how to know 
 def message_pin(token, message_id):
     '''
     input: token, message_id
     output: {}
-    Given message within a channel, mark it as 'pinned' 
+    Given message within a channel, mark it as 'pinned'
     '''
+    # verify the user
+    if verify_token(token) is False:
+        raise InputError(description='Invalid token')
+
+    # get database
+    data = get_store()
+    # getting id of the user
+    u_id = get_tokens()[token]
+    # check for valid message ID by looking for that ID in every channel the user is part of
+    for joined_channel_id in data['Users'][u_id]['channels']:
+        for msg_ids in data['Channels'][joined_channel_id]['messages']:
+            if message_id == msg_ids:
+                matching_channel_id = joined_channel_id
+                valid_message_id = True
+    if not valid_message_id:
+        raise InputError(description='You have provided an invalid message ID')
+    # checking user is admin in the channel containing message_id
+    if u_id not in data['Channels'][matching_channel_id]['owner_members']:
+        raise InputError(description='You are not an admin of the channel')
+    # checking if message is already pinned
+    for msgs in range(len(data['Messages'])):
+        if message_id == data['Messages'][msgs]['message_id']:
+            if data['Messages'][msgs]['is_pinned']:
+                raise InputError(description='Message already pinned')
+
+    # AccessError !!!
+
     return {}
 
 def message_unpin(token, message_id):
@@ -73,4 +99,3 @@ def message_unpin(token, message_id):
 
 def message_remove(token, message_id):
     pass
-
