@@ -25,6 +25,7 @@ def message_send(token, channel_id, message):
     # checking message string is valid
     if not isinstance(message, str) or len(message) > MAX_MSG_LEN or len(message) == 0:
         raise InputError(description='Invalid message')
+
     # checking channel_id is valid (user is part of)
     if channel_id not in data['Users'][u_id]['channels']:
         raise AccessError(description='You do not have access to send message in this channel')
@@ -35,6 +36,7 @@ def message_send(token, channel_id, message):
     else:
         id_list = [msg['message_id'] for msg in data['Messages']]
         new_msg_id = max(id_list) + 1
+
     # sending the actual message:
     # 1. append to list of message id's
     data['Channels'][channel_id]['message'].append(new_msg_id)
@@ -75,38 +77,31 @@ def message_pin(token, message_id):
     u_id = get_tokens()[token]
 
     # check for valid message ID by looking for that ID in every channel the user is part of
+    valid_message_id = False
     for joined_channel_id in data['Users'][u_id]['channels']:
         for msg_ids in data['Channels'][joined_channel_id]['messages']:
             if message_id == msg_ids:
                 matching_channel_id = joined_channel_id
                 valid_message_id = True
+
+    # check for AccessError or InputError: does message_id exist at all?
     if not valid_message_id:
+        for each_dict in data['Messages']:
+            if message_id == each_dict['message_id']:
+                raise AccessError(description='Not member of the channel which the message is in')
         raise InputError(description='You have provided an invalid message ID')
+
     # checking user is admin in the channel containing message_id
     if u_id not in data['Channels'][matching_channel_id]['owner_members']:
         raise InputError(description='You are not an admin of the channel')
+
     # checking if message is already pinned
-    for msgs in range(len(data['Messages'])):
+    for msgs in data['Messages']:
         if message_id == data['Messages'][msgs]['message_id']:
             if data['Messages'][msgs]['is_pinned']:
                 raise InputError(description='Message already pinned')
-
-    # AccessError !!!
-
-    '''
-    search for message_id in all the channels first
-        if message_id in some_channel:
-            if some_channel_id not in u_id.channels:
-                raise AccessError (not a member of channel where message is in)
-            else if u_id not in some_channel.owner_members:
-                raise InputError (not admin)
-            else if message_id.is_pinned:
-                raise InputError (already pinned)
-            else: valid = True
-            
-        if not valid: 
-            raise InputError (not valid message)
-    '''
+            # pinning the message if it's not yet pinned
+            data['Messages'][msgs]['is_pinned'] = True
     return {}
 
 def message_unpin(token, message_id):
