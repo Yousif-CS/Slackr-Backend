@@ -3,6 +3,8 @@ from auth import verify_token
 from error import InputError, AccessError
 
 MESSAGE_BLOCK = 50
+SLACKR_OWNER = 1
+SLACKR_MEMBER = 2
 
 def channel_messages(token, channel_id, start):
     '''
@@ -41,6 +43,10 @@ def channel_messages(token, channel_id, start):
 
 
 def channel_leave(token, channel_id):
+    '''
+    input: a token and a channel id
+    output: an empty dictionary, and removes user from the channel
+    '''
     #verify the user
     if verify_token(token) is False:
         raise InputError(description='Invalid token')
@@ -70,6 +76,10 @@ def channel_leave(token, channel_id):
     return {}
 
 def channel_join(token, channel_id):
+    '''
+    input: a token and a channel_id
+    output: an empty dictionary, and adding the user to the channel with channel_id
+    '''
     #verify the user
     if verify_token(token) is False:
         raise InputError(description='Invalid token')
@@ -94,4 +104,39 @@ def channel_join(token, channel_id):
     
     return {}
 
+
+def channel_addowner(token, channel_id, u_id):
+    '''
+    input: a token,  a channel_id, and a u_id
+    output: add user with u_id as an owner to channel_id
+    '''
+    #verify the user
+    if verify_token(token) is False:
+        raise InputError(description='Invalid token')
+
+    #get database information
+    data = get_store()
+    #getting id of the user
+    u_id_invoker = get_tokens()[token]
+
+    #verify the channel exists
+    if channel_id not in data['Channels']:
+        raise InputError(description="Invalid channel id")
+
+    #verify user to add is not an owner already
+    if u_id in data['Channels'][channel_id]['owner_members']:
+        raise InputError(description="User is already an owner")
+
+    #verify the invoker is either an owner of the channel or slackr
+    if u_id_invoker not in data['Channels'][channel_id]['owner_members'] \
+        and data['Users'][u_id_invoker]['global_permission'] != SLACKR_OWNER:
+        raise AccessError(description="You do not have privileges to add owners")
+
+    #add user as member if not already
+    if u_id not in data['Channels'][channel_id]['all_members']:
+        data['Channels'][channel_id]['all_members'].append(u_id)
+        data['Users'][u_id]['channels'].append(channel_id)
+
+    #add user as owner
+    data['Channels'][channel_id]['owner_members'].append(u_id)
 
