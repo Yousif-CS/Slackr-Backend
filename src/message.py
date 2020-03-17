@@ -92,6 +92,20 @@ def message_pin(token, message_id):
 
     # AccessError !!!
 
+    '''
+    Proper ordering of message_pin validity check:
+    search for message_id in all the channels first
+        if message_id in some_channel:
+            if some_channel_id not in u_id.channels:
+                raise AccessError (not a member of channel where message is in)
+            else if u_id not in some_channel.owner_members:
+                raise InputError (not admin)
+            else if message_id.is_pinned:
+                raise InputError (already pinned)
+            else: valid = True
+        if not valid: 
+            raise InputError (not valid message)
+    '''
     return {}
 
 def message_unpin(token, message_id):
