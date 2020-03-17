@@ -41,6 +41,7 @@ def message_send(token, channel_id, message):
     # 2. new dictionary in data['Messages']
     data['Messages'].append({
         'message_id': new_msg_id,
+        'channel_id': channel_id,
         'message': message,
         'u_id': u_id,
         'time_created': time(),
