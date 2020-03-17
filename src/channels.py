@@ -28,7 +28,7 @@ def channels_list(token):
     u_id = get_tokens()[token]
 
     # return details about all channels the user is part of
-    channels_dict = {}
+    channels_dict = {'channels': []}
     for ids in data['Users'][u_id]['channels']:
         channels_dict['channels'].append({
             'channel_id': ids,
@@ -50,8 +50,8 @@ def channels_listall(token):
     data = get_store()
 
     # return all existing channels
-    all_channels_dict = {}
-    for ids in data['Channels']:
+    all_channels_dict = {'channels': []}
+    for ids in data['Channels'].keys():
         all_channels_dict['channels'].append({
             'channel_id': ids,
             'name': data['Channels'][ids]['name'],
