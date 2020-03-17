@@ -57,3 +57,30 @@ def channels_listall(token):
             'name': data['Channels'][ids]['name'],
         })
     return all_channels_dict
+
+def channels_create(token, name, is_public):
+    '''
+    Input: token, name, is_public status
+    Output: {channel_id}, creates a new channel with the input name and public / private
+    '''
+    # verify the user
+    if verify_token(token) is False:
+        raise InputError(description='Invalid token')
+
+    # get database
+    data = get_store()
+    # getting user id from token
+    u_id = get_tokens()[token]
+
+    # check if name is valid
+    if not isinstance(name, str) or len(name) > 20:
+        raise InputError(description='Invalid channel name')
+
+    # check if is_public is correct type
+    if not isinstance(is_public, bool):
+        raise InputError(description='Invalid channel status')
+    
+    # updating database:
+    # 1. adding new channel id to user info
+    # 2. adding new key value pair into data.Channels
+    
