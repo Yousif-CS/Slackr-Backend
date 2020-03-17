@@ -3,9 +3,13 @@ from auth import verify_token
 from error import InputError, AccessError
 
 def is_u_id_valid(u_id):
+    '''
+    Helper function for user_profile to check that the u_id is in the database
+    '''
+
     u_ids = []
-    for id in get_store()["Users"].keys():
-        u_ids.append(id)
+    for identity in get_store()["Users"].keys():
+        u_ids.append(identity)
     if u_id in u_ids:
         return True
     else:
@@ -38,3 +42,25 @@ def user_profile(token, u_id):
     }
 
     return user_info
+
+def user_profile_setname(token, name_first, name_last):
+    '''
+    Update the authorised user's first name and last name. No output.
+    '''
+
+    # verify token is valid
+    if verify_token(token) is False:
+        raise AccessError(description = "Invalid token")
+
+    # verify that changes to name are allowed
+    if len(name_first) < 1 or len(name_last) < 1 \
+        or len(name_first) > 50 or len(name_last) > 50 \
+        or name_first.isspace() or name_last.isspace():
+        raise InputError(description = "Names must be between 1 and 50 characters long inclusive, \
+            and cannot contain exclusively whitespaces.")
+
+    # modify name_first and name_last in the database as per the user's changes
+    u_id = get_tokens()[token]
+    data = get_store()["Users"][u_id]
+    data["name_first"] = name_first
+    data["name_last"] = name_last
