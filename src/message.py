@@ -48,9 +48,17 @@ def message_send(token, channel_id, message):
 def message_sendlater(token, channel_id, message, time_sent):
     '''
     input: valid token, channel_id, message and time in the future
+    output: {message_id}; 
+    Sends message from user to channel (specified by id) at specific time, automatically
+    '''
 
 def message_pin(token, message_id):
-    pass
+    '''
+    input: token, message_id
+    output: {}
+    Given message within a channel, mark it as 'pinned' 
+    '''
+    return {}
 
 def message_unpin(token, message_id):
     pass
