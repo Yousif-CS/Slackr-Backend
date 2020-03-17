@@ -6,6 +6,8 @@ from error import InputError, AccessError
 # TODO: check structure for TOKENS dictionary
 # TODO: import sched? need pip install
 
+MAX_MSG_LEN = 1000
+
 def message_send(token, channel_id, message):
     '''
     input: valid token, channel_id to send message into, actual message string
@@ -13,7 +15,7 @@ def message_send(token, channel_id, message):
     '''
     # verify the user
     if verify_token(token) is False:
-        raise InputError(description='Invalid token')
+        raise AccessError(description='Invalid token')
 
     # get database
     data = get_store()
@@ -21,7 +23,7 @@ def message_send(token, channel_id, message):
     u_id = get_tokens()[token]
 
     # checking message string is valid
-    if not isinstance(message, str) or len(message) > 1000 or len(message) == 0:
+    if not isinstance(message, str) or len(message) > MAX_MSG_LEN or len(message) == 0:
         raise InputError(description='Invalid message')
     # checking channel_id is valid (user is part of)
     if channel_id not in data['Users'][u_id]['channels']:
@@ -31,9 +33,7 @@ def message_send(token, channel_id, message):
     if len(data['Messages']) == 0:
         new_msg_id = 0
     else:
-        id_list = []
-        for i in range(len(data['Messages'])):
-            id_list.append(data['Messages'][i]['message_id'])
+        id_list = [msg['message_id'] for msg in data['Messages']]
         new_msg_id = max(id_list) + 1
     # sending the actual message:
     # 1. append to list of message id's
@@ -67,12 +67,13 @@ def message_pin(token, message_id):
     '''
     # verify the user
     if verify_token(token) is False:
-        raise InputError(description='Invalid token')
+        raise AccessError(description='Invalid token')
 
     # get database
     data = get_store()
     # getting id of the user
     u_id = get_tokens()[token]
+
     # check for valid message ID by looking for that ID in every channel the user is part of
     for joined_channel_id in data['Users'][u_id]['channels']:
         for msg_ids in data['Channels'][joined_channel_id]['messages']:
@@ -93,7 +94,6 @@ def message_pin(token, message_id):
     # AccessError !!!
 
     '''
-    Proper ordering of message_pin validity check:
     search for message_id in all the channels first
         if message_id in some_channel:
             if some_channel_id not in u_id.channels:
@@ -103,6 +103,7 @@ def message_pin(token, message_id):
             else if message_id.is_pinned:
                 raise InputError (already pinned)
             else: valid = True
+            
         if not valid: 
             raise InputError (not valid message)
     '''
