@@ -5,7 +5,7 @@ from error import InputError
 def channels_list(token):
     '''
     Input: token
-    Output: dictionary of channels (and associated details) that the authorised user is part of
+    Output: list of channels (and associated details) that the authorised user is part of
     {channels} = {[
         {
             'channel_id': '1',
@@ -21,7 +21,7 @@ def channels_list(token):
     if verify_token(token) is False:
         raise InputError(description='Invalid token')
 
-    # from token, get list of channels user is part of
+    # get database
     data = get_store()
     # getting id of the user
     # get_tokens() should return a dictionary where token key corresponds to that user's id
@@ -35,3 +35,25 @@ def channels_list(token):
             'name': data['Channels'][ids]['name'],
         })
     return channels_dict
+
+
+def channels_listall(token):
+    '''
+    Input: token
+    Output: list of ALL channels in slackr
+    '''
+    # verify the user
+    if verify_token(token) is False:
+        raise InputError(description='Invalid token')
+
+    # get database
+    data = get_store()
+
+    # return all existing channels
+    all_channels_dict = {}
+    for ids in data['Channels']:
+        all_channels_dict['channels'].append({
+            'channel_id': ids,
+            'name': data['Channels'][ids]['name'],
+        })
+    return all_channels_dict
