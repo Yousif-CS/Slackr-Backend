@@ -1,12 +1,12 @@
 from server import get_store, get_tokens
 from auth import verify_token
-from error import InputError
+from error import InputError, AccessError
 
 def channels_list(token):
     '''
     Input: token
     Output: list of channels (and associated details) that the authorised user is part of
-    {channels} = {[
+    {channels: [
         {
             'channel_id': '1',
             'name': 'first_channel_name'
@@ -19,7 +19,7 @@ def channels_list(token):
     '''
     # verify the user
     if verify_token(token) is False:
-        raise InputError(description='Invalid token')
+        raise AccessError(description='Invalid token')
 
     # get database
     data = get_store()
@@ -44,7 +44,7 @@ def channels_listall(token):
     '''
     # verify the user
     if verify_token(token) is False:
-        raise InputError(description='Invalid token')
+        raise AccessError(description='Invalid token')
 
     # get database
     data = get_store()
@@ -65,7 +65,7 @@ def channels_create(token, name, is_public):
     '''
     # verify the user
     if verify_token(token) is False:
-        raise InputError(description='Invalid token')
+        raise AccessError(description='Invalid token')
 
     # get database
     data = get_store()
