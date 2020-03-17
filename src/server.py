@@ -69,7 +69,6 @@ def StandupsInitialise():
     '''
     initialises the standups managing thread
     '''
-
     global thread
     thread = threading.Thread(CHECKING_TIMER, manageStandups, ())
     thread.start()
