@@ -4,6 +4,7 @@ from auth import verify_token
 from error import InputError, AccessError
 
 # TODO: check structure for TOKENS dictionary
+# TODO: import sched? need pip install
 
 def message_send(token, channel_id, message):
     '''
@@ -45,7 +46,8 @@ def message_send(token, channel_id, message):
 
 
 def message_sendlater(token, channel_id, message, time_sent):
-    pass
+    '''
+    input: valid token, channel_id, message and time in the future
 
 def message_pin(token, message_id):
     pass
