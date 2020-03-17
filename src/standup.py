@@ -31,7 +31,7 @@ def standup_active(token, channel_id):
     standups_info = getStandup()
     for standup in standups_info:
         if standup['channel_id'] == channel_id:
-            return {"is_active" = True, "time_finish": standup['finish_time']}
+            return {"is_active": True, "time_finish": standup['finish_time']}
     return {"is_active": False, "time_finish": None}
 
 def standup_send(token, channel_id, message):
