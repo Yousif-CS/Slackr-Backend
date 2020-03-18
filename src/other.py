@@ -48,14 +48,14 @@ def users_all(token):
     # containing types u_id, email, name_first, name_last, handle_str
     data = get_store()
     every_user = {"users": []}
-    for identity in data["Users"]:
+    for identity, info in data["Users"].items():
         every_user["users"].append(
             {
                 "u_id": identity,
-                "email": identity["email"],
-                "name_first": identity["name_first"],
-                "name_last": identity["name_last"],
-                "handle_str": identity["handle"]
+                "email": info["email"],
+                "name_first": info["name_first"],
+                "name_last": info["name_last"],
+                "handle_str": info["handle"]
             }
         )
 

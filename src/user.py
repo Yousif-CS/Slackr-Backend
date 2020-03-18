@@ -115,7 +115,7 @@ def user_profile_setemail(token, email):
     data = get_store()
 
     if email != data["Users"][u_id]["email"]:
-        for identity in data["Users"]:
+        for identity in data["Users"].items():
             if identity["email"] == email:
                 raise InputError(description="this email is already being used by another user")
     
