@@ -7,6 +7,58 @@ MESSAGE_BLOCK = 50
 SLACKR_OWNER = 1
 SLACKR_MEMBER = 2
 
+def channel_details(token, channel_id):
+    '''
+    Given a Channel with ID channel_id that the authorised user is part of, provide basic details about the channel.
+    InputError: channel_id is not a valid channel
+    AccessError: authorised user is not part of the channel with channel_id
+    Output: (channel) name, owner_members, all_members
+    '''
+
+    # verify the token is valid
+    if verify_token(token) is False:
+        raise AccessError(description="Invalid token")
+
+    # check that channel with channel_id exists
+    data = get_store()
+    lstall_ch_ids = []
+    for ch_id in data["Channels"].keys():
+        lstall_ch_ids.append(ch_id)
+    if channel_id not in lstall_ch_ids:
+        raise InputError(description="Channel with this channel ID does not exist")
+
+    # check that the authorised user is member of said channel
+    auth_u_id = get_tokens()[token]
+    if auth_u_id not in data["Channels"][channel_id]["all_members"]:
+        raise AccessError(description="User is not a member of channel with channel ID")
+
+    # return the dictionary containing details of the channel
+    lst_owner_membs = []
+    for user_id in data["Channels"][channel_id]["owner_members"]:
+        lst_owner_membs.append(
+            {
+                "u_id": user_id,
+                "name_first": data["Users"][user_id]["name_first"],
+                "name_last": data["Users"][user_id]["name_last"]
+            }
+        )
+
+    lst_all_membs = []
+    for user_id in data["Channels"][channel_id]["all_members"]:
+        lst_all_membs.append(
+            {
+                "u_id": user_id,
+                "name_first": data["Users"][user_id]["name_first"],
+                "name_last": data["Users"][user_id]["name_last"]
+            }
+        )
+    
+    return {
+        "name": data["Channels"][channel_id]["name"],
+        "owner_members": lst_owner_membs,
+        "all_members": lst_all_membs
+    }
+
 def channel_messages(token, channel_id, start):
     '''
     input: a token, channel_id and the starting index
