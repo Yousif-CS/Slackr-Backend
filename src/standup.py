@@ -17,7 +17,7 @@ def getStandup():
 def standup_active(token, channel_id):
     #verify the user
     if verify_token(token) is False:
-        raise InputError(description='Invalid token')
+        raise AccessError(description='Invalid token')
     
     #get database information
     data = get_store()
@@ -26,7 +26,7 @@ def standup_active(token, channel_id):
 
     #verify the channel exists
     if channel_id not in data['Channels']:
-        raise InputError(description="Invalid channel id")
+        raise AccessError(description="Invalid channel id")
     
     #getting all the standups
     standups_info = getStandup()
@@ -38,7 +38,7 @@ def standup_active(token, channel_id):
 def standup_send(token, channel_id, message):
     #verify the user
     if verify_token(token) is False:
-        raise InputError(description='Invalid token')
+        raise AccessError(description='Invalid token')
     
     #get database information
     data = get_store()

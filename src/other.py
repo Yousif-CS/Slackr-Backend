@@ -1,4 +1,7 @@
-#pylint: disable=missing-module-docstring
+'''
+This file contains implementations of miscellaneous functions that do not belong to a specific category
+'''
+
 from server import get_store, get_tokens
 
 from auth import verify_token
