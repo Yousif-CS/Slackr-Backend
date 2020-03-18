@@ -319,3 +319,6 @@ def test_search_invalid_token(create_public_channel):
 
     with pytest.raises(Exception):
         result = search("invalid", "Search string")
+
+# TODO: tests for when no messages have been sent yet
+# Assumption that both these strings should return empty lists

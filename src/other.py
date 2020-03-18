@@ -60,3 +60,38 @@ def users_all(token):
         )
 
     return every_user
+
+def search(token, query_str):
+    '''
+    Given a query string, return a collection of messages
+    in all of the channels that the user has joined that match the query.
+    Results are sorted from most recent message to least recent message
+    output: a dictionary, which contains a key "messages", which is a list of dictionaries containing types
+    { message_id, u_id, message, time_created, reacts, is_pinned  }
+    '''
+
+    # verify the token is valid
+    if verify_token(token) is False:
+        raise InputError(description='Invalid token')
+    
+    matching_msgs = {"messages": []}
+    # empty query_str returns an empty list
+    if query_str == "":
+        return matching_msgs
+
+    # search for the query_str in the messages
+    data = get_store()
+    for msg_dict in data["Messages"]:
+        if query_str in msg_dict["message"]:
+            matching_msgs["messages"].append(
+                {
+                    "message_id": msg_dict["message_id"],
+                    "u_id": msg_dict["u_id"],
+                    "message": msg_dict["message"],
+                    "time_created": msg_dict["time_created"],
+                    "reacts": msg_dict["reacts"],
+                    "is_pinned": msg_dict["is_pinned"]
+                }
+            )
+
+    return matching_msgs
