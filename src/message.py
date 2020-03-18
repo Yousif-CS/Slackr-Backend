@@ -109,6 +109,7 @@ def message_sendlater(token, channel_id, message, time_sent):
 
     return {'message_id': new_msg_id}
 
+# TODO: how to know 
 def message_pin(token, message_id):
     '''
     input: token, message_id
