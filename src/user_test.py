@@ -110,6 +110,10 @@ def test_user_profile_invalid_token(get_user_jwang, get_user_kli):
     with pytest.raises(AccessError):
         user_profile(jwang_token + kli_token + "invalid", jwang_u_id)
 
+def test_user_profile_invalid_token2(get_user_jwang, get_user_kli):
+    jwang_token, jwang_u_id = get_user_jwang
+    kli_token, kli_u_id = get_user_kli
+
     with pytest.raises(AccessError):
         user_profile(jwang_token + kli_token + "invalid", kli_u_id)
 
