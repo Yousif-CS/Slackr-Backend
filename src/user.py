@@ -32,13 +32,13 @@ def user_profile(token, u_id):
         raise InputError(description="user id not valid")
 
     # if so, return the corresponding information by retrieving from the database
-    data = get_store()["Users"][u_id]
+    data = get_store()
     user_info = {"user": {
             "u_id": u_id,
-            "email": data["email"],
-            "name_first": data["name_first"],
-            "name_last": data["name_last"],
-            "handle_str": data["handle"]
+            "email": data["Users"][u_id]["email"],
+            "name_first": data["Users"][u_id]["name_first"],
+            "name_last": data["Users"][u_id]["name_last"],
+            "handle_str": data["Users"][u_id]["handle"]
         }
     }
 
@@ -62,9 +62,9 @@ def user_profile_setname(token, name_first, name_last):
 
     # modify name_first and name_last in the database as per the user's changes
     u_id = get_tokens()[token]
-    data = get_store()["Users"][u_id]
-    data["name_first"] = name_first
-    data["name_last"] = name_last
+    data = get_store()
+    data["Users"][u_id]["name_first"] = name_first
+    data["Users"][u_id]["name_last"] = name_last
 
 def user_profile_sethandle(token, handle_str):
     '''
@@ -86,15 +86,15 @@ def user_profile_sethandle(token, handle_str):
     # verify the new handle_str is unique
     # allow the "change" if the authorised user's new handle_str is identical to their old one.
     u_id = get_tokens()[token]
-    data = get_store()["Users"]
+    data = get_store()
 
-    if data[u_id]["handle"] != handle_str:
-        for identity in data:
+    if data["Users"][u_id]["handle"] != handle_str:
+        for identity in data["Users"]:
             if identity["handle"] == handle_str:
                 raise InputError(description="new handle_str not unique to this user")
 
     # change the handle_str in the database
-    data[u_id]["handle"] = handle_str
+    data["Users"][u_id]["handle"] = handle_str
 
 def user_profile_setemail(token, email):
     '''
@@ -112,13 +112,13 @@ def user_profile_setemail(token, email):
     # InputError if email not unique
     # Allow if the user is simply
     u_id = get_tokens()[token]
-    data = get_store()["Users"]
+    data = get_store()
 
-    if email != data[u_id]["email"]:
-        for identity in data:
+    if email != data["Users"][u_id]["email"]:
+        for identity in data["Users"]:
             if identity["email"] == email:
                 raise InputError(description="this email is already being used by another user")
     
     # Change the user's email in the STORE databas if the above hurdles are passed
-    data[u_id]["email"] = email
+    data["Users"][u_id]["email"] = email
     
