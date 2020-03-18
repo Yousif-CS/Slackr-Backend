@@ -7,6 +7,40 @@ MESSAGE_BLOCK = 50
 SLACKR_OWNER = 1
 SLACKR_MEMBER = 2
 
+def channel_invite(token, channel_id, u_id):
+    '''
+    Invites a user (with user id u_id) to join a channel with ID channel_id. 
+    Once invited the user is added to the channel immediately.
+    InputError: channel ID does not correspond to a valid channel; user ID does not refer to a valid user.
+    AccessError: authorised user is not already a member of channel with channel ID.
+    '''
+    # verify the validity of the authorised user's token
+    if verify_token(token) is False:
+        raise AccessError(description="Invalid token")
+
+    # check that channel_id corresponds to a valid channel
+    data = get_store()
+    if channel_id not in data["Channels"].keys():
+        raise InputError(description="Channel with this channel ID does not exist")
+
+    # check that the authorised user belongs to this valid channel
+    auth_u_id = get_tokens()[token]
+    if auth_u_id not in data["Channels"][channel_id]["all_members"]:
+        raise AccessError(description="The authorised user is not a member of channel with this channel ID")
+
+    # check that u_id corresponds to a valid user
+    if u_id not in data["Users"].keys():
+        raise InputError(description="User ID is not valid")
+
+    # check that u_id does not already belong to the channel, else raise InputError
+    if u_id in data["Channels"][channel_id]["all_members"]:
+        raise InputError(description="User with u_id is already a member of channel with channel_id")
+
+    # add the user with u_id into the channel
+    # update both the "Users" and "Channels" sub-dictionaries in database.p
+    data["Channels"][channel_id]["all_members"].append(u_id)
+    data["Users"][u_id]["channels"].append(channel_id)
+
 def channel_details(token, channel_id):
     '''
     Given a Channel with ID channel_id that the authorised user is part of, provide basic details about the channel.
@@ -21,10 +55,7 @@ def channel_details(token, channel_id):
 
     # check that channel with channel_id exists
     data = get_store()
-    lstall_ch_ids = []
-    for ch_id in data["Channels"].keys():
-        lstall_ch_ids.append(ch_id)
-    if channel_id not in lstall_ch_ids:
+    if channel_id not in data["Channels"].keys():
         raise InputError(description="Channel with this channel ID does not exist")
 
     # check that the authorised user is member of said channel

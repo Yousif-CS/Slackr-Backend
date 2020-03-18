@@ -116,7 +116,7 @@ def test_channel_invite_user_as_non_member(create_user1, create_user2,  create_p
 
 def test_channel_double_invite(create_user1, create_public_channel):
 	'''
-	Access Error occurs when same member is invited to a channel they are already belong to
+	Input Error occurs when same member is invited to a channel they are already belong to
 	'''
     #Creating users and channel
 	user_info = create_user1 
@@ -126,7 +126,7 @@ def test_channel_double_invite(create_user1, create_public_channel):
 	channel_invite(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
 
     #double inviting
-	with pytest.raises(AccessError): 
+	with pytest.raises(InputError): 
 		channel_invite(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
 
 def test_channel_invite_nonexistent_channel(create_public_channel, create_user1):
