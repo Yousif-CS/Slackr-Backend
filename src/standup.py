@@ -53,9 +53,9 @@ def standup_send(token, channel_id, message):
     if u_id not in data['Channels'][channel_id]['users']:
         raise AccessError(description="You do not have permission to send a standup message")
 
-    #verify message is not more than 1000 characters
-    if len(message) > MAX_LENGTH:
-        raise InputError(description="Message is too long")
+    #verify message is not more than 1000 characters or not less than 1
+    if len(message) > MAX_LENGTH or len(message) == 0:
+        raise InputError(description="Invalid message")
 
     #verify there is an active standup
     #getting all the standups
