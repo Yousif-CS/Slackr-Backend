@@ -1,12 +1,12 @@
 from server import get_store, get_tokens
 from auth import verify_token
-from error import InputError
+from error import InputError, AccessError
 
 def channels_list(token):
     '''
     Input: token
     Output: list of channels (and associated details) that the authorised user is part of
-    {channels} = {[
+    {channels: [
         {
             'channel_id': '1',
             'name': 'first_channel_name'
@@ -19,7 +19,7 @@ def channels_list(token):
     '''
     # verify the user
     if verify_token(token) is False:
-        raise InputError(description='Invalid token')
+        raise AccessError(description='Invalid token')
 
     # get database
     data = get_store()
@@ -28,7 +28,7 @@ def channels_list(token):
     u_id = get_tokens()[token]
 
     # return details about all channels the user is part of
-    channels_dict = {}
+    channels_dict = {'channels': []}
     for ids in data['Users'][u_id]['channels']:
         channels_dict['channels'].append({
             'channel_id': ids,
@@ -44,14 +44,14 @@ def channels_listall(token):
     '''
     # verify the user
     if verify_token(token) is False:
-        raise InputError(description='Invalid token')
+        raise AccessError(description='Invalid token')
 
     # get database
     data = get_store()
 
     # return all existing channels
-    all_channels_dict = {}
-    for ids in data['Channels']:
+    all_channels_dict = {'channels': []}
+    for ids in data['Channels'].keys():
         all_channels_dict['channels'].append({
             'channel_id': ids,
             'name': data['Channels'][ids]['name'],
@@ -65,7 +65,7 @@ def channels_create(token, name, is_public):
     '''
     # verify the user
     if verify_token(token) is False:
-        raise InputError(description='Invalid token')
+        raise AccessError(description='Invalid token')
 
     # get database
     data = get_store()
