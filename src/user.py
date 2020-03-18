@@ -1,6 +1,7 @@
 from server import get_store, get_tokens
 from auth import verify_token
 from error import InputError, AccessError
+from is_valid_email import is_valid_email
 
 def is_u_id_valid(u_id):
     '''
@@ -84,7 +85,7 @@ def user_profile_sethandle(token, handle_str):
 
     # verify the new handle_str is unique
     # allow the "change" if the authorised user's new handle_str is identical to their old one.
-    u_id = get_tokens[token]
+    u_id = get_tokens()[token]
     data = get_store()["Users"]
 
     if data[u_id]["handle"] != handle_str:
@@ -94,4 +95,30 @@ def user_profile_sethandle(token, handle_str):
 
     # change the handle_str in the database
     data[u_id]["handle"] = handle_str
+
+def user_profile_setemail(token, email):
+    '''
+    Update the authorised user's email address
+    '''
+
+    # verify that the token is valid
+    if verify_token(token) is False:
+        raise AccessError(description="Invalid token")
+
+    # InputError if email not valid
+    if is_valid_email(email) is False:
+        raise InputError(description="input is not a valid email")
+
+    # InputError if email not unique
+    # Allow if the user is simply
+    u_id = get_tokens()[token]
+    data = get_store()["Users"]
+
+    if email != data[u_id]["email"]:
+        for identity in data:
+            if identity["email"] == email:
+                raise InputError(description="this email is already being used by another user")
+    
+    # Change the user's email in the STORE databas if the above hurdles are passed
+    data[u_id]["email"] = email
     
