@@ -1,7 +1,5 @@
-'''
-This file contains all the implementations and data for message function
-'''
-from time import time
+import sched
+from time import time, sleep
 from server import get_store, get_tokens
 from auth import verify_token
 from error import InputError, AccessError
@@ -63,6 +61,53 @@ def message_sendlater(token, channel_id, message, time_sent):
     output: {message_id};
     Sends message from user to channel (specified by id) at specific time, automatically
     '''
+    # verify the user
+    if verify_token(token) is False:
+        raise AccessError(description='Invalid token')
+
+    # get database
+    data = get_store()
+    # getting id of the user
+    u_id = get_tokens()[token]
+
+    # checking message string is valid
+    if not isinstance(message, str) or len(message) > MAX_MSG_LEN or len(message) == 0:
+        raise InputError(description='Invalid message')
+
+    # checking channel_id is valid (user is part of)
+    if channel_id not in data['Users'][u_id]['channels']:
+        raise AccessError(description='You do not have access to send message in this channel')
+
+    # checking time_sent is valid (it is a time in the future)
+    if time_sent <= time():
+        raise InputError(description='Scheduled send time is invalid')
+
+    # assigning new message_id MUST BE GLOBALLY UNIQUE!
+    # starting from index 0
+    if len(data['Messages']) == 0:
+        new_msg_id = 0
+    else:
+        id_list = [msg['message_id'] for msg in data['Messages']]
+        new_msg_id = max(id_list) + 1
+    # the action to be completed at time time_sent
+    def auto_send_message():
+        data['Channels'][channel_id]['message'].append(new_msg_id)
+        data['Messages'].append({
+            'message_id': new_msg_id,
+            'channel_id': channel_id,
+            'message': message,
+            'u_id': u_id,
+            'time_created': time_sent,
+            'is_pinned': False,
+            'reacts': {}
+        })
+    # setting up scheduler object
+    s = sched.scheduler(time, sleep)
+    # setting auto_send_message to be called at 'time_sent'
+    s.enterabs(time_sent, 0, auto_send_message)
+    s.run()
+
+    return {'message_id': new_msg_id}
 
 def message_pin(token, message_id):
     '''
