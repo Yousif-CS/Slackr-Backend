@@ -1,3 +1,8 @@
+'''
+This file contains implementations for authentication functions: register, login and logout, token generation
+along with helper functions used in other files as well
+'''
+
 #Auth functions
 from server import get_tokens
 #please implement this function correctly
@@ -15,3 +20,9 @@ def get_token(u_id):
         if logged_uid == u_id:
             return token
     return None
+
+def auth_register(email, password, name_first, name_last):
+    return {'u_id': 0, 'token': '12313'}
+
+def auth_login(email, password):
+    return {'u_id': 0, 'token': '123123'}

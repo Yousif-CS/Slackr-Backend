@@ -1,13 +1,18 @@
 # please write tests for users_all and search here
 
 import pytest 
-from other import users_all, search
+from other import users_all, search, userpermission_change
 from user import user_profile
 from auth import auth_register, auth_login, auth_logout
 from channels import channels_create
 from message import message_send
 from error import InputError, AccessError
-from channel import channel_invite
+from channel import channel_invite, channel_join
+
+
+SLACKR_OWNER = 1
+SLACKR_MEMBER = 2
+INVALID_PERMISSION = 3
 
 @pytest.fixture
 def make_user_ab():
@@ -319,3 +324,117 @@ def test_search_invalid_token(create_public_channel):
 
     with pytest.raises(Exception):
         result = search("invalid", "Search string")
+
+'''Testing userpermission_change'''
+
+def test_userpermission_change_invalid_u_id(create_public_channel, make_user_ab):
+    '''
+    Changing permissions of a non-existent user
+    '''
+    
+    #creating a public channel
+    channel_id, owner_info = create_public_channel
+    #since owner is the first user who signs up in this
+    #test, he should be a slackr owner
+  
+    #giving admin permissions to a non-existent user
+    with pytest.raises(InputError):
+        userpermission_change(owner_info['token'], owner_info['u_id'] + 1, SLACKR_OWNER)
+
+def test_userpermission_change_permission_denied(create_public_channel, make_user_ab, make_user_cd):
+    '''
+    Trying to change another user's permissions as a non-slackr-owner
+    '''
+    #creating a public channel
+    channel_id, owner_info = create_public_channel
+    #since owner is the first user who signs up in this
+    #test, he should be a slackr owner
+
+    #create 2 general users
+    user_ab_info = make_user_ab
+    user_cd_info = make_user_cd
+    #changing permissions
+    with pytest.raises(AccessError):
+        userpermission_change(user_ab_info['token'], user_cd_info['u_id'], SLACKR_OWNER)
+
+def test_userpermission_change_invalid_permission(create_public_channel, make_user_ab):
+    '''
+    Testing changing a user's permissions to an invalid one
+    '''
+    #creating a public channel
+    channel_id, owner_info = create_public_channel
+    #since owner is the first user who signs up in this
+    #test, he should be a slackr owner
+
+    #create a general user
+    user_info = make_user_ab
+
+    with pytest.raises(InputError):
+        userpermission_change(owner_info['token'], user_info['u_id'], INVALID_PERMISSION)
+    
+def test_userpermission_change_invalid_permission_type(create_public_channel, make_user_ab):
+    '''
+    Testing changing a user's permissions to an invalid one
+    '''
+    #creating a public channel
+    channel_id, owner_info = create_public_channel
+    #since owner is the first user who signs up in this
+    #test, he should be a slackr owner
+
+    #create a general user
+    user_info = make_user_ab
+
+    with pytest.raises(InputError):
+        userpermission_change(owner_info['token'], user_info['u_id'], "You should complain")
+
+
+def test_userpermission_change_promote(create_private_channel, make_user_ab):
+    '''
+    Testing promoting a user allows him to join private channels
+    '''
+    #creating a public channel
+    channel_id, owner_info = create_private_channel
+    #since owner is the first user who signs up in this
+    #test, he should be a slackr owner
+
+    #create a general user
+    user_info = make_user_ab
+
+    #testing joining a private channel
+    try:
+        channel_join(user_info['token'], channel_id['channel_id'])
+        assert False
+    except:
+        userpermission_change(owner_info['token'], user_info['u_id'], SLACKR_OWNER)
+        try:
+            channel_join(user_info['token'], channel_id['channel_id'])
+        except:
+            assert False
+
+
+def test_userpermission_change_demote(create_private_channel, make_user_ab):
+    '''
+    Testing demoting a user restricts him to join private channels
+    '''
+    #creating a public channel
+    channel_id, owner_info = create_private_channel
+    #since owner is the first user who signs up in this
+    #test, he should be a slackr owner
+
+    #create a general user
+    user_info = make_user_ab
+    #promoting user
+    userpermission_change(owner_info['token'], user_info['u_id'], SLACKR_OWNER)
+    try:
+        channel_join(user_info['token'], channel_id['channel_id'])
+    except:
+        assert False
+    #demoting user
+    userpermission_change(owner_info['token'], user_info['u_id'], SLACKR_MEMBER)
+    #testing joining a private channel
+    with pytest.raises(AccessError):
+        channel_join(user_info['token'], channel_id['channel_id'])
+
+    
+    
+

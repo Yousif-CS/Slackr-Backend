@@ -53,7 +53,7 @@ def manageStandups():
             if standup['finish_time'] == current_time:
                 to_remove = standup_info.pop(standup)
                 to_send = '\n'.join(to_remove['messages'])
-                token = auth.get_token(TOKENS)
+                token = auth.get_token(to_remove['u_id'])
                 if token == None:
                     #temporarily log the user in to send the message then log him out
                     token = auth.generate_token(to_remove['u_id'])
