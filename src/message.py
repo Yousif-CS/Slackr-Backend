@@ -109,7 +109,6 @@ def message_sendlater(token, channel_id, message, time_sent):
 
     return {'message_id': new_msg_id}
 
-# TODO: how to know 
 def message_pin(token, message_id):
     '''
     input: token, message_id
@@ -236,3 +235,52 @@ def message_remove(token, message_id):
     data['Messages'].remove(msg_pos)
 
     return {}
+
+
+def has_message_edit_permission(auth_u_id, message_id):
+    data = get_store()
+
+    # check if auth user is a slackr owner
+    if auth_u_id in data["Slack_owners"]:
+        return True
+
+    # check if auth user wrote the message
+    for msg_dict in data["Messages"]:
+        if msg_dict["u_id"] == auth_u_id:
+            return True    
+
+    # check if auth user is owner of channel which contains the message
+    for ch_dict in data["Channels"].values():
+        if message_id in ch_dict["messages"]:
+            if auth_u_id in ch_dict["owner_members"]:
+                return True
+            else:
+                return False
+
+def message_edit(token, message_id, message):
+    '''
+    Given a message, update it's text with new text. If the new message is an empty string, the message is deleted.
+    Empty message string: delete message.
+    AccessError if request is not made by: authorised user OR (admin or owner) of (channel or slacker).
+    '''
+
+    # verify the validity of the token
+    if verify_token(token) is False:
+        raise AccessError(description="Invalid token")
+
+    # check that the request is being made by a user with the correct permissions
+    auth_u_id = get_tokens()[token]
+    data = get_store()
+
+    if has_message_edit_permission(auth_u_id, message_id) is False:
+        raise AccessError(description="User with this u_id does not have permission to edit this message")
+
+    # delete the message if the message string is empty,
+    # otherwise modify the message accordingly in both the "Channels" and "Messages" sub-dictionaries
+    if message == "":
+        message_remove(token, message_id)
+    else:
+        for msg_dict in data["Messages"]:
+            if msg_dict["message_id"] == message_id:
+                msg_dict["message"] = message
+                break
