@@ -1,3 +1,6 @@
+'''
+This file contains implementation for channels functions
+'''
 from server import get_store, get_tokens
 from auth import verify_token
 from error import InputError, AccessError
