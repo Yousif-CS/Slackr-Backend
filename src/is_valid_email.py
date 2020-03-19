@@ -14,26 +14,26 @@ def is_valid_email(email):
     # pass the regualar expression 
     # and the string in search() method 
     if(re.search(regex,email)):  
-        print("valid")
+        return True
           
     else:  
-        print("invalid")
+        return False
 
 if __name__ == "__main__":
-    is_valid_email("kenli@gmail.com")
-    is_valid_email("joshua_wang2@gmail.cc")
-    is_valid_email("joshua.wa-ng_23@mail-archive.com")
-    is_valid_email("kenligordon@gmail.com")
-    is_valid_email("kenligordon1@gmail1.com")
+    print(is_valid_email("kenli@gmail.com"))
+    print(is_valid_email("joshua_wang2@gmail.cc"))
+    print(is_valid_email("joshua.wa-ng_23@mail-archive.com"))
+    print(is_valid_email("kenligordon@gmail.com"))
+    print(is_valid_email("kenligordon1@gmail1.com"))
 
     print("Below should be invalid")
 
-    is_valid_email("ken-@gmail.ab")
-    is_valid_email("ken.-li@gmail.ab")
-    is_valid_email(".ken@gmail.ab")
-    is_valid_email("ken#li@gmail.ab")
-    is_valid_email("ken@gmail.a")
-    is_valid_email("kenli@google#mail.com")
-    is_valid_email("kenli@google.mail")
-    is_valid_email("ken@gmail..com")
+    print(is_valid_email("ken-@gmail.ab"))
+    print(is_valid_email("ken.-li@gmail.ab"))
+    print(is_valid_email(".ken@gmail.ab"))
+    print(is_valid_email("ken#li@gmail.ab"))
+    print(is_valid_email("ken@gmail.a"))
+    print(is_valid_email("kenli@google#mail.com"))
+    print(is_valid_email("kenli@google.mail"))
+    print(is_valid_email("ken@gmail..com"))
     
