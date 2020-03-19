@@ -99,8 +99,9 @@ def channel_join(token, channel_id):
     if channel_id not in data['Channels']:
         raise InputError(description="Invalid channel id")
 
-    #verify the channel is public
-    if data['Channels'][channel_id]['is_private'] is True:
+    #verify the channel is public unless user is a slackr owner
+    if data['Channels'][channel_id]['is_private'] is True \
+        and data['Users'][u_id]['global_permission'] not SLACKR_OWNER:
         raise AccessError(description="Cannot join channel: channel is private")
     
     #adding user to channel details

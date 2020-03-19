@@ -28,7 +28,7 @@ def userpermission_change(token, u_id, permission_id):
         raise InputError(description="User does not exist")
 
     #verify permission_id is valid (1 or 2)
-    if permission_id not in list(SLACKR_MEMBER, SLACKR_OWNER):
+    if not isinstance(permission_id, int) or permission_id not in list(SLACKR_MEMBER, SLACKR_OWNER):
         raise InputError(description="Invalid permission id")
 
     #verify the invoker is an admin
