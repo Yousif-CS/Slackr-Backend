@@ -83,15 +83,21 @@ def search(token, query_str):
     data = get_store()
     for msg_dict in data["Messages"]:
         if query_str in msg_dict["message"]:
-            matching_msgs["messages"].append(
-                {
-                    "message_id": msg_dict["message_id"],
-                    "u_id": msg_dict["u_id"],
-                    "message": msg_dict["message"],
-                    "time_created": msg_dict["time_created"],
-                    "reacts": msg_dict["reacts"],
-                    "is_pinned": msg_dict["is_pinned"]
-                }
-            )
+            matching_msgs["messages"].append({msg_dict})
 
     return matching_msgs
+
+def workspace_reset():
+    '''
+    Resets the workspace state. Assumes that the base state of database.p is:
+    {"Users": {}, "Slack_owners": [], "Channels":{}, "Messages": []}
+    '''
+    # clear the tokens dictionary
+    get_tokens().clear()
+
+    # clear database.p
+    data = get_store()
+    data["Users"].clear()
+    data["Slack_owners"].clear()
+    data["Channels"].clear()
+    data["Messages"].clear()

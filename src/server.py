@@ -24,6 +24,7 @@ STORE = pickle.load("database.p", encoding="utf-8")
 
 #this dictionary contains the session tokens that
 #won't need to be stored in the Store data dictionary for pickling
+# {"token_str1": u_id1, "token_str2": u_id2, ..}
 TOKENS = {}
 
 #This data is related to managing standups generally
