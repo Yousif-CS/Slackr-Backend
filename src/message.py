@@ -124,32 +124,26 @@ def message_pin(token, message_id):
     # getting id of the user
     u_id = get_tokens()[token]
 
-    # check for valid message ID by looking for that ID in every channel the user is part of
-    valid_message_id = False
-    for joined_channel_id in data['Users'][u_id]['channels']:
-        for msg_ids in data['Channels'][joined_channel_id]['messages']:
-            if message_id == msg_ids:
-                matching_channel_id = joined_channel_id
-                valid_message_id = True
-
-    # check for AccessError or InputError: does message_id exist at all?
-    if not valid_message_id:
-        for each_dict in data['Messages']:
-            if message_id == each_dict['message_id']:
-                raise AccessError(description='Not member of the channel which the message is in')
-        raise InputError(description='You have provided an invalid message ID')
-
-    # checking user is admin in the channel containing message_id
-    if u_id not in data['Channels'][matching_channel_id]['owner_members']:
-        raise InputError(description='You are not an admin of the channel')
-
-    # checking if message is already pinned
-    for msgs in data['Messages']:
-        if message_id == data['Messages'][msgs]['message_id']:
-            if data['Messages'][msgs]['is_pinned']:
+    # checking for InputError and AccessError
+    msg_ids = [msg['message_id'] for msg in data['Messages']]
+    if message_id not in msg_ids:
+        raise InputError(description='Invalid message ID')
+    for msg in data['Messages']:
+        # locate the message dictionary in data['Messages']
+        if msg['message_id'] == message_id:
+            # not part of channel where message_id is in
+            if msg['channel_id'] not in data['Users']['channels']:
+                raise AccessError(description='You are not part of the channel the message is in')
+            # neither admin of channel nor slackr owner
+            elif u_id not in data['Channels'][msg['channel_id']]['owner_members']:
+                if u_id not in data['Slack_owners']:
+                    raise AccessError(description='You are not admin of channel')
+            # message already pinned
+            elif msg['is_pinned'] is True:
                 raise InputError(description='Message already pinned')
-            # pinning the message if it's not yet pinned
-            data['Messages'][msgs]['is_pinned'] = True
+            # pinning the message
+            else:
+                msg['is_pinned'] = True
     return {}
 
 def message_unpin(token, message_id):
@@ -167,33 +161,28 @@ def message_unpin(token, message_id):
     # getting id of the user
     u_id = get_tokens()[token]
 
-    # check for valid message ID by looking for that ID in every channel the user is part of
-    valid_message_id = False
-    for joined_channel_id in data['Users'][u_id]['channels']:
-        for msg_ids in data['Channels'][joined_channel_id]['messages']:
-            if message_id == msg_ids:
-                matching_channel_id = joined_channel_id
-                valid_message_id = True
-
-    # check for AccessError or InputError: does message_id exist at all?
-    if not valid_message_id:
-        for each_dict in data['Messages']:
-            if message_id == each_dict['message_id']:
-                raise AccessError(description='Not member of the channel which the message is in')
-        raise InputError(description='You have provided an invalid message ID')
-
-    # checking user is admin in the channel containing message_id
-    if u_id not in data['Channels'][matching_channel_id]['owner_members']:
-        raise InputError(description='You are not an admin of the channel')
-
-    # checking if message is already unpinned
-    for msgs in data['Messages']:
-        if message_id == data['Messages'][msgs]['message_id']:
-            if not data['Messages'][msgs]['is_pinned']:
+    # checking for InputError and AccessError
+    msg_ids = [msg['message_id'] for msg in data['Messages']]
+    if message_id not in msg_ids:
+        raise InputError(description='Invalid message ID')
+    for msg in data['Messages']:
+        # locate the message dictionary in data['Messages']
+        if msg['message_id'] == message_id:
+            # not part of channel where message_id is in
+            if msg['channel_id'] not in data['Users']['channels']:
+                raise AccessError(description='You are not part of the channel the message is in')
+            # neither admin of channel nor slackr owner
+            elif u_id not in data['Channels'][msg['channel_id']]['owner_members']:
+                if u_id not in data['Slack_owners']:
+                    raise AccessError(description='You are not admin of channel')
+            # message already pinned
+            elif msg['is_pinned'] is False:
                 raise InputError(description='Message already unpinned')
-            # unpinning the message if it's pinned
-            data['Messages'][msgs]['is_pinned'] = False
+            # unpinning the message
+            else:
+                msg['is_pinned'] = False
     return {}
+
 
 def message_remove(token, message_id):
     '''
