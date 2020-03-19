@@ -196,7 +196,46 @@ def message_unpin(token, message_id):
     return {}
 
 def message_remove(token, message_id):
-    pass
+    '''
+    input: valid token, message_id of message to be removed
+    output: {}; just removes message from the channel
+    errors: InputError when message no longer exists (i.e. message_id not exist)
+    AccessError: none of: 
+        message with message_id sent by user making the request
+        authorised user is admin or owner of this channel or slackr
+    '''
+    # verify the user
+    if verify_token(token) is False:
+        raise AccessError(description='Invalid token')
+
+    # get database
+    data = get_store()
+    # getting id of the user
+    u_id = get_tokens()[token]
+    
+    # checking if the message with message_id exists
+    id_list = [msg['message_id'] for msg in data['Messages']]
+    if message_id not in id_list:
+        raise InputError(description='Invalid message ID')
+
+    # given message_id does exist, check for AccessError:
+    msg_pos = id_list.index(message_id)
+    is_user_delete_own = data['Messages'][msg_pos]['u_id'] == u_id
+    matching_channel_id = data['Messages'][msg_pos]['channel_id']
+    is_user_owner = u_id in data['Channels'][matching_channel_id]['owner_members']
+    is_user_slackr_owner = u_id in data['Slack_owners']
+
+    if not (is_user_delete_own or is_user_owner or is_user_slackr_owner):
+        raise AccessError(description='You do not have access to delete this message')
+
+    # passed above checks: delete actual message 
+    # 1. delete from message_id list in Channels info
+    data['Channels'][matching_channel_id]['messages'].remove(message_id)
+    # 2. delete message dictionary from Messages list
+    data['Messages'].remove(msg_pos)
+
+    return {}
+
 
 def has_message_edit_permission(auth_u_id, message_id):
     data = get_store()
