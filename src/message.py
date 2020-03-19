@@ -1,3 +1,6 @@
+'''
+This file contains all the implementations and data for message function
+'''
 from time import time
 from server import get_store, get_tokens
 from auth import verify_token
