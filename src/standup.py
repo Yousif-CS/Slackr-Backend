@@ -17,7 +17,7 @@ def getStandup():
 def standup_active(token, channel_id):
     #verify the user
     if verify_token(token) is False:
-        raise InputError(description='Invalid token')
+        raise AccessError(description='Invalid token')
     
     #get database information
     data = get_store()
@@ -26,7 +26,7 @@ def standup_active(token, channel_id):
 
     #verify the channel exists
     if channel_id not in data['Channels']:
-        raise InputError(description="Invalid channel id")
+        raise AccessError(description="Invalid channel id")
     
     #getting all the standups
     standups_info = getStandup()
@@ -38,7 +38,7 @@ def standup_active(token, channel_id):
 def standup_send(token, channel_id, message):
     #verify the user
     if verify_token(token) is False:
-        raise InputError(description='Invalid token')
+        raise AccessError(description='Invalid token')
     
     #get database information
     data = get_store()
@@ -53,9 +53,9 @@ def standup_send(token, channel_id, message):
     if u_id not in data['Channels'][channel_id]['users']:
         raise AccessError(description="You do not have permission to send a standup message")
 
-    #verify message is not more than 1000 characters
-    if len(message) > MAX_LENGTH:
-        raise InputError(description="Message is too long")
+    #verify message is not more than 1000 characters or not less than 1
+    if len(message) > MAX_LENGTH or len(message) == 0:
+        raise InputError(description="Invalid message")
 
     #verify there is an active standup
     #getting all the standups

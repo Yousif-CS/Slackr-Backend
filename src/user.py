@@ -1,20 +1,11 @@
+'''
+This file contains implementations for user functions
+'''
+
 from server import get_store, get_tokens
 from auth import verify_token
 from error import InputError, AccessError
 from is_valid_email import is_valid_email
-
-def is_u_id_valid(u_id):
-    '''
-    Helper function for user_profile to check that the u_id is in the database
-    '''
-
-    u_ids = []
-    for identity in get_store()["Users"].keys():
-        u_ids.append(identity)
-    if u_id in u_ids:
-        return True
-    else:
-        return False
 
 def user_profile(token, u_id):
     '''
@@ -28,11 +19,11 @@ def user_profile(token, u_id):
         raise AccessError(description="Invalid token")
 
     # check that the u_id of the user whose information the authorised user wants to access is valid
-    if is_u_id_valid(u_id) is False:
+    data = get_store()
+    if u_id not in data["Users"].keys():
         raise InputError(description="user id not valid")
 
     # if so, return the corresponding information by retrieving from the database
-    data = get_store()
     user_info = {"user": {
             "u_id": u_id,
             "email": data["Users"][u_id]["email"],
@@ -115,7 +106,7 @@ def user_profile_setemail(token, email):
     data = get_store()
 
     if email != data["Users"][u_id]["email"]:
-        for identity in data["Users"]:
+        for identity in data["Users"].items():
             if identity["email"] == email:
                 raise InputError(description="this email is already being used by another user")
     
