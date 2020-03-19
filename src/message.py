@@ -64,7 +64,6 @@ def message_sendlater(token, channel_id, message, time_sent):
     Sends message from user to channel (specified by id) at specific time, automatically
     '''
 
-# TODO: how to know 
 def message_pin(token, message_id):
     '''
     input: token, message_id
@@ -109,7 +108,47 @@ def message_pin(token, message_id):
     return {}
 
 def message_unpin(token, message_id):
-    pass
+    '''
+    input: token, message_id
+    output: {}
+    Given message within a channel, remove its pinned status and unpin it
+    '''
+    # verify the user
+    if verify_token(token) is False:
+        raise AccessError(description='Invalid token')
+
+    # get database
+    data = get_store()
+    # getting id of the user
+    u_id = get_tokens()[token]
+
+    # check for valid message ID by looking for that ID in every channel the user is part of
+    valid_message_id = False
+    for joined_channel_id in data['Users'][u_id]['channels']:
+        for msg_ids in data['Channels'][joined_channel_id]['messages']:
+            if message_id == msg_ids:
+                matching_channel_id = joined_channel_id
+                valid_message_id = True
+
+    # check for AccessError or InputError: does message_id exist at all?
+    if not valid_message_id:
+        for each_dict in data['Messages']:
+            if message_id == each_dict['message_id']:
+                raise AccessError(description='Not member of the channel which the message is in')
+        raise InputError(description='You have provided an invalid message ID')
+
+    # checking user is admin in the channel containing message_id
+    if u_id not in data['Channels'][matching_channel_id]['owner_members']:
+        raise InputError(description='You are not an admin of the channel')
+
+    # checking if message is already unpinned
+    for msgs in data['Messages']:
+        if message_id == data['Messages'][msgs]['message_id']:
+            if not data['Messages'][msgs]['is_pinned']:
+                raise InputError(description='Message already unpinned')
+            # unpinning the message if it's pinned
+            data['Messages'][msgs]['is_pinned'] = False
+    return {}
 
 def message_remove(token, message_id):
     pass
