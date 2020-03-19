@@ -1,3 +1,7 @@
+'''
+This file contains all the implementations and data relevant to channel functions
+'''
+
 #pylint: disable=missing-module-docstring
 from server import get_store, get_tokens
 from auth import verify_token
@@ -99,7 +103,7 @@ def channel_messages(token, channel_id, start):
     '''
     #verify the user
     if verify_token(token) is False:
-        raise InputError(description='Invalid token')
+        raise AccessError(description='Invalid token')
     #get database information
     data = get_store()
     #getting id of the user
@@ -135,7 +139,7 @@ def channel_leave(token, channel_id):
     '''
     #verify the user
     if verify_token(token) is False:
-        raise InputError(description='Invalid token')
+        raise AccessError(description='Invalid token')
 
     #get database information
     data = get_store()
@@ -167,7 +171,7 @@ def channel_join(token, channel_id):
     '''
     #verify the user
     if verify_token(token) is False:
-        raise InputError(description='Invalid token')
+        raise AccessError(description='Invalid token')
 
     #get database information
     data = get_store()
@@ -178,8 +182,9 @@ def channel_join(token, channel_id):
     if channel_id not in data['Channels']:
         raise InputError(description="Invalid channel id")
 
-    #verify the channel is public
-    if data['Channels'][channel_id]['is_private'] is True:
+    #verify the channel is public unless user is a slackr owner
+    if data['Channels'][channel_id]['is_private'] is True \
+        and data['Users'][u_id]['global_permission'] not SLACKR_OWNER:
         raise AccessError(description="Cannot join channel: channel is private")
     
     #adding user to channel details
@@ -198,7 +203,7 @@ def channel_addowner(token, channel_id, u_id):
     '''
     #verify the user
     if verify_token(token) is False:
-        raise InputError(description='Invalid token')
+        raise AccessError(description='Invalid token')
 
     #get database information
     data = get_store()
@@ -233,7 +238,7 @@ def channel_removeowner(token, channel_id, u_id):
     '''
     #verify the user
     if verify_token(token) is False:
-        raise InputError(description='Invalid token')
+        raise AccessError(description='Invalid token')
 
     #get database information
     data = get_store()
