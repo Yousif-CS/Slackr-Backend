@@ -1,3 +1,7 @@
+'''
+This file contains implementations for user functions
+'''
+
 from server import get_store, get_tokens
 from auth import verify_token
 from error import InputError, AccessError
