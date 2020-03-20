@@ -38,6 +38,14 @@ def userpermission_change(token, u_id, permission_id):
     #set new permissions
     data['Users'][u_id]['global_permission'] = permission_id
 
+    #update the Slack_owners dictionary in the database
+    if permission_id is SLACKR_MEMBER:
+        if u_id not in data['Slack_owners']:
+            data['Slack_owners'].append(u_id)
+    elif u_id in data['Slack_owners']:
+            data['Slack_owners'].remove(u_id)
+
+
 def users_all(token):
     '''
     Returns a list of all users and their associated details.
@@ -98,3 +106,4 @@ def search(token, query_str):
             )
 
     return matching_msgs
+
