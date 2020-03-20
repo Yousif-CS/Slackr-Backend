@@ -49,7 +49,7 @@ def message_send(token, channel_id, message):
         'u_id': u_id,
         'time_created': time(),
         'is_pinned': False,
-        'reacts': {}
+        'reacts': []
     })
 
     return {'message_id': new_msg_id}
@@ -99,7 +99,7 @@ def message_sendlater(token, channel_id, message, time_sent):
             'u_id': u_id,
             'time_created': time_sent,
             'is_pinned': False,
-            'reacts': {}
+            'reacts': []
         })
     # setting up scheduler object
     s = sched.scheduler(time, sleep)
@@ -281,7 +281,7 @@ def message_react(token, message_id, react_id):
     Errors: InputError:
         message_id not valid message within channel that user has joined
         react_id not valid (only valid react ID is 1)
-        message with message_id as id already has a react with ID react_id 
+        message with message_id as id already has a react with ID react_id
     '''
     # verify the user
     if verify_token(token) is False:
@@ -291,8 +291,8 @@ def message_react(token, message_id, react_id):
     data = get_store()
     # getting id of the user
     u_id = get_tokens()[token]
-
-    if react_id != 1:
+    # check if react id in the list of valid react id's
+    if react_id not in [1]:
         raise InputError(description='Not a valid react ID')
 
     msg_ids = [msg['message_id'] for msg in data['Messages']]
@@ -304,15 +304,30 @@ def message_react(token, message_id, react_id):
             # message not in a channel user has joined
             if msg['channel_id'] not in data['Users'][u_id]['channels']:
                 raise InputError(description='Not valid message ID within channel you have joined')
-            # message already has a react by user
-            if msg['reacts'] != {} and u_id in msg['reacts']['u_ids']:
-                raise InputError(description='You already have an active react to this message')
-            # react to the message
-            if msg['reacts'] == {}:
-                msg['reacts']['react_id'] = 1
-                msg['reacts']['u_id'] = [u_id]
-                msg['reacts']['is_this_user_reacted'] = msg['u_id'] == u_id
-
+            # react list not empty
+            if msg['reacts'] != []:
+                # new react to be added: append dictionary of new react
+                if react_id not in [react['react_id'] for react in msg['reacts']]:
+                    msg['reacts'].append({
+                        'react_id': react_id,
+                        'u_id': [u_id],
+                        'is_this_user_reacted': msg['u_id'] == u_id
+                    })
+                # existing react: check if user already reacted to this react
+                else:
+                    if has_user_reacted_react_id(token, message_id, react_id):
+                        raise InputError(description='Already reacted with this react')
+                    for react in msg['reacts']:
+                        if react['react_id'] == react_id:
+                            react['u_ids'].append(u_id)
+                            react['is_this_user_reacted'] = msg['u_id'] == u_id
+            # react list is empty
+            else:
+                msg['reacts'].append({
+                    'react_id': react_id,
+                    'u_id': [u_id],
+                    'is_this_user_reacted': msg['u_id'] == u_id
+                })
     return {}
 
 
@@ -333,8 +348,8 @@ def message_unreact(token, message_id, react_id):
     data = get_store()
     # getting id of the user
     u_id = get_tokens()[token]
-
-    if react_id != 1:
+    # checkif react id in the list of valid react id's
+    if react_id not in [1]:
         raise InputError(description='Not a valid react ID')
 
     msg_ids = [msg['message_id'] for msg in data['Messages']]
@@ -355,3 +370,17 @@ def message_unreact(token, message_id, react_id):
                 msg['reacts']['is_this_user_reacted'] = False
 
     return {}
+
+# helper function to check if user has active react on a given react id
+def has_user_reacted_react_id(token, message_id, react_id):
+    message_list = get_store()['Messages']
+    u_id = get_tokens()[token]
+    # locate the message dictionary in question
+    for message in message_list:
+        if message_id == message['message_id']:
+            this_msg = message['message_id']
+    for react in this_msg['reacts']:
+        if react['react_id'] == react_id:
+            if u_id in react['u_ids']:
+                return True
+    return False
