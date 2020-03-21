@@ -37,8 +37,8 @@ def create_handle(name_first, name_last):
     handle_str = handle_str[:21]
     
     while is_handle_unique(handle_str) is False:
-            count += 1
-            handle_str = handle_str[:21 - len(str(count))] + str(count)
+        count += 1
+        handle_str = handle_str[:21 - len(str(count))] + str(count)
 
     return handle_str
 
