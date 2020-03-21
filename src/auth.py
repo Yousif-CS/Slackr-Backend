@@ -99,10 +99,51 @@ def auth_register(email, password, name_first, name_last):
     data["Users"][u_id]["email"] = email
     data["Users"][u_id]["password"] = encrypted_pass
     data["Users"][u_id]["handle"] = create_handle(name_first, name_last)
-    data["Users"][u_id]["channels"] = []    
+    data["Users"][u_id]["channels"] = []
+
+    token = generate_token(u_id)
+    
+    # Store the token-u_id pair in the temporary TOKEN dictionary
+    get_tokens()[token] = u_id
 
     # generate and return u_id and token
     return {
         "u_id": u_id,
-        "token": generate_token(u_id)
+        "token": token
+    }
+
+def find_u_id(email):
+    for identity in data["Users"]:
+        if email == identity["email"]:
+            return identity
+    return None
+    
+
+def auth_login(email, password):
+    '''
+    Given a registered users' email and password and generates a valid token for the user to remain authenticated.
+    InputError: email entered not valid, email does not belong to a user, password is incorrect
+    Output: u_id, token
+    '''
+    data = get_store()
+
+    if is_valid_email(email) is False:
+        raise InputError(description='Email is not a valid email')
+
+    if find_u_id(email) is None:
+        raise InputError(description='Email does not belong to a registered user')
+    else:
+        u_id = find_u_id(email)
+    
+    if hashlib.sha256(password.encode()).hexdigest() != data["Users"][u_id]["password"]:
+        raise InputError(description='Password incorrect')
+
+    token = generate_token(u_id)
+    
+    # Store the token-u_id pair in the temporary TOKEN dictionary
+    get_tokens()[token] = u_id
+
+    return {
+        "u_id": u_id,
+        "token": token
     }
