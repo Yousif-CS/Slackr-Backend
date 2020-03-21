@@ -67,7 +67,7 @@ def auth_register(email, password, name_first, name_last):
         raise InputError(description="Input is not a valid email")
 
     # InputError if email not unique
-    for identity in data["Users"].items():
+    for identity in data["Users"].values():
         if identity["email"] == email:
             raise InputError(description="This email is already being used by another user")
 
@@ -129,11 +129,10 @@ def auth_login(email, password):
 
     if is_valid_email(email) is False:
         raise InputError(description='Email is not a valid email')
-
-    if find_u_id(email) is None:
+    
+    u_id = find_u_id(email)
+    if u_id is None:
         raise InputError(description='Email does not belong to a registered user')
-    else:
-        u_id = find_u_id(email)
     
     if hashlib.sha256(password.encode()).hexdigest() != data["Users"][u_id]["password"]:
         raise InputError(description='Password incorrect')
