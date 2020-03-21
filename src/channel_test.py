@@ -92,26 +92,26 @@ def test_channel_user_invite(create_user1, create_user2, create_public_channel):
     assert user_invited_info in u_ids
 
 def test_channel_invite_non_user(create_public_channel):
-	'''
+    '''
 	Inviting a user id that doesn't belong to any registered user to a channel
 	'''
-	channel_id, owner_info = create_public_channel
-	rand_user_id = owner_info['u_id'] + 1 
-	
-	with pytest.raises(InputError):
-		channel_invite(owner_info['token'], channel_id['channel_id'], rand_user_id)
+    channel_id, owner_info = create_public_channel
+    rand_user_id = owner_info['u_id'] + 1 
+
+    with pytest.raises(InputError):
+        channel_invite(owner_info['token'], channel_id['channel_id'], rand_user_id)
 
 
 def test_channel_invite_user_as_non_member(create_user1, create_user2,  create_public_channel): 
+    '''
+    Produces an input error when a user invites another registered user to a channel they don't belong to
 	'''
- 	Produces an input error when a user invites another registered user to a channel they don't belong to
-	'''
-	user_info = create_user1 
-	invited_user = create_user2
-	channel_id, owner_info = create_public_channel 	
+    user_info = create_user1 
+    invited_user = create_user2
+    channel_id, owner_info = create_public_channel 	
 
-	with pytest.raises(AccessError):
-		channel_invite(user_info['token'], channel_id['channel_id'], invited_user['u_id'] )
+    with pytest.raises(AccessError):
+    	channel_invite(user_info['token'], channel_id['channel_id'], invited_user['u_id'] )
 
 
 def test_channel_double_invite(create_user1, create_public_channel):
@@ -119,11 +119,11 @@ def test_channel_double_invite(create_user1, create_public_channel):
 	Input Error occurs when same member is invited to a channel they are already belong to
 	'''
     #Creating users and channel
-	user_info = create_user1 
-	channel_id, owner_info = create_public_channel	
+    user_info = create_user1 
+    channel_id, owner_info = create_public_channel	
     
     #inviting one user 
-	channel_invite(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
+    channel_invite(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
 
     #double inviting
 	with pytest.raises(InputError): 
