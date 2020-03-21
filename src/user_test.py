@@ -384,19 +384,19 @@ def test_user_profile_sethandle_exactly_twenty(get_user_jwang):
     user_profile_sethandle(jwang_token, "a" * 20)
     assert user_profile(jwang_token, jwang_u_id)["user"]["handle_str"] == "a" * 20
 
-# test that handles too short <3 throw InputError
+# test that handles too short <2 throw InputError
 def test_user_profile_sethandle_too_short(get_user_jwang):
     jwang_token, jwang_u_id = get_user_jwang
 
     with pytest.raises(InputError):
-        user_profile_sethandle(jwang_token, "ab")
+        user_profile_sethandle(jwang_token, "a")
 
 # test that handles too long >20 throw InputError
 def test_user_profile_sethandle_too_long(get_user_jwang):
     jwang_token, jwang_u_id = get_user_jwang
 
     with pytest.raises(InputError):
-        user_profile_sethandle(jwang_token, "ab" * 20)
+        user_profile_sethandle(jwang_token, "a" * 21)
 
 # test empty
 def test_user_profile_sethandle_empty(get_user_jwang):

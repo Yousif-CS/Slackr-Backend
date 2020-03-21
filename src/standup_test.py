@@ -194,3 +194,14 @@ def test_standup_send_empty_message(create_public_channel):
         standup.standup_send(owner_info['token'], channel_id['channel_id'], "")
 
 
+def test_standup_send_invalid_token(create_public_channel):
+    '''
+    Testing using an invalid token while calling the function -> accessError
+    '''
+    #creating a public channel
+    channel_id, owner_info = create_public_channel
+    #starting a standup
+    with pytest.raises(AccessError):
+        standup.standup_send(owner_info['token'] + str(1), channel_id['token'], "Aaaahhh!")
+
+

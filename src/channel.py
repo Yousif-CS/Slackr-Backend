@@ -11,6 +11,89 @@ MESSAGE_BLOCK = 50
 SLACKR_OWNER = 1
 SLACKR_MEMBER = 2
 
+def channel_invite(token, channel_id, u_id):
+    '''
+    Invites a user (with user id u_id) to join a channel with ID channel_id. 
+    Once invited the user is added to the channel immediately.
+    InputError: channel ID does not correspond to a valid channel; user ID does not refer to a valid user.
+    AccessError: authorised user is not already a member of channel with channel ID.
+    '''
+    # verify the validity of the authorised user's token
+    if verify_token(token) is False:
+        raise AccessError(description="Invalid token")
+
+    # check that channel_id corresponds to a valid channel
+    data = get_store()
+    if channel_id not in data["Channels"].keys():
+        raise InputError(description="Channel with this channel ID does not exist")
+
+    # check that the authorised user belongs to this valid channel
+    auth_u_id = get_tokens()[token]
+    if auth_u_id not in data["Channels"][channel_id]["all_members"]:
+        raise AccessError(description="The authorised user is not a member of channel with this channel ID")
+
+    # check that u_id corresponds to a valid user
+    if u_id not in data["Users"].keys():
+        raise InputError(description="User ID is not valid")
+
+    # check that u_id does not already belong to the channel, else raise InputError
+    if u_id in data["Channels"][channel_id]["all_members"]:
+        raise InputError(description="User with u_id is already a member of channel with channel_id")
+
+    # add the user with u_id into the channel
+    # update both the "Users" and "Channels" sub-dictionaries in database.p
+    data["Channels"][channel_id]["all_members"].append(u_id)
+    data["Users"][u_id]["channels"].append(channel_id)
+
+def channel_details(token, channel_id):
+    '''
+    Given a Channel with ID channel_id that the authorised user is part of, provide basic details about the channel.
+    InputError: channel_id is not a valid channel
+    AccessError: authorised user is not part of the channel with channel_id
+    Output: (channel) name, owner_members, all_members
+    '''
+
+    # verify the token is valid
+    if verify_token(token) is False:
+        raise AccessError(description="Invalid token")
+
+    # check that channel with channel_id exists
+    data = get_store()
+    if channel_id not in data["Channels"].keys():
+        raise InputError(description="Channel with this channel ID does not exist")
+
+    # check that the authorised user is member of said channel
+    auth_u_id = get_tokens()[token]
+    if auth_u_id not in data["Channels"][channel_id]["all_members"]:
+        raise AccessError(description="User is not a member of channel with channel ID")
+
+    # return the dictionary containing details of the channel
+    lst_owner_membs = []
+    for user_id in data["Channels"][channel_id]["owner_members"]:
+        lst_owner_membs.append(
+            {
+                "u_id": user_id,
+                "name_first": data["Users"][user_id]["name_first"],
+                "name_last": data["Users"][user_id]["name_last"]
+            }
+        )
+
+    lst_all_membs = []
+    for user_id in data["Channels"][channel_id]["all_members"]:
+        lst_all_membs.append(
+            {
+                "u_id": user_id,
+                "name_first": data["Users"][user_id]["name_first"],
+                "name_last": data["Users"][user_id]["name_last"]
+            }
+        )
+    
+    return {
+        "name": data["Channels"][channel_id]["name"],
+        "owner_members": lst_owner_membs,
+        "all_members": lst_all_membs
+    }
+
 def channel_messages(token, channel_id, start):
     '''
     input: a token, channel_id and the starting index
@@ -101,7 +184,7 @@ def channel_join(token, channel_id):
 
     #verify the channel is public unless user is a slackr owner
     if data['Channels'][channel_id]['is_private'] is True \
-        and data['Users'][u_id]['global_permission'] not SLACKR_OWNER:
+        and data['Users'][u_id]['global_permission'] is not SLACKR_OWNER:
         raise AccessError(description="Cannot join channel: channel is private")
     
     #adding user to channel details
@@ -110,7 +193,7 @@ def channel_join(token, channel_id):
     data['Users'][u_id]['channels'].append(channel_id)
     
     #if user is an owner of slackr, then he is added as an owner
-    if data['Users'][u_id]['global_permission'] == SLACKR_OWNER:
+    if data['Users'][u_id]['global_permission'] is SLACKR_OWNER:
         data['Channels'][channel_id]['owner_members'].append(u_id)
 
 def channel_addowner(token, channel_id, u_id):

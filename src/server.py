@@ -2,29 +2,51 @@
 The server that handles the routes for slackr
 '''
 
-#pylint disable=missing-module-docstring
 import sys 
 import pickle
 import message
 import auth
 
-from datetime import datetime
+#these are routes imports
+import channel_routes
+import channels_routes
+import user_routes
+import auth_routes
+import standup_routes
+import message_routes
+
 from json import dumps
 from flask import Flask, request
 from flask_cors import CORS
 from error import InputError
-from standup import getStandup
 #This dictionary will contain all of the database
 #once the server starts and we unpickle the database file
-#it is supposed to be {"Users": { u_id: {"name_first": "Yousif", "name_last": "Khalid", "email": "whatever@gmail.com", "global_permission": 0, "channels": [channel_id1, channel_id2, ...]}},
-#                      "Slack_owners: [u_id1, u_id2, ...], 
+#it is supposed to be {"Users": {u_id: {"name_first": "Yousif", "name_last": "Khalid", "email": "whatever@gmail.com", "handle": "ykhalid", "global_permission": 0, "channels": [channel_id1, channel_id2, ...]}},
+#                      "Slack_owners": [u_id1, u_id2, ...],
 #                      "Channels":{channel_id: {"name": "my_channel", "all_members":[u_id1, u_id2, ..], "owner_members" = [u_id1, u_id2], "is_private": False,  "messages"= [message_id1, message_id2]}},
-#                      "Messages": [{"message_id": 123, "message": "hello", "u_id": 12321, "time_created": 2323123232, "is_pinned" = True, "reacts": {"react_id": 1, "u_ids": [u_id1, u_id2,...], "is_this_user_reacted": True}}}]
-STORE = pickle.load("database.p", encoding="utf-8")
+#                      "Messages": [{"message_id": 123, "message": "hello", "u_id": 12321, "time_created": 2323123232, "is_pinned": True, "reacts": {"react_id": 1, "u_ids": [u_id1, u_id2,...], "is_this_user_reacted": True}}}]
+
+STORE = {}
 
 #this dictionary contains the session tokens that
 #won't need to be stored in the Store data dictionary for pickling
 TOKENS = {}
+
+def initialize_store():
+    '''
+    Initialize the server database dictionary, creates an empty dictionary if the 
+    database file is empty
+    '''
+    global STORE    #pylint: disable=global-statement
+    with open('database.py', "r") as file:
+        STORE = pickle.load(file, encoding="utf-8") 
+        if STORE == None:
+            STORE = {
+                'Users': {},
+                'Slack_owners': [],
+                'Channels': {},
+                'Messages': [],
+            }
 
 def get_store():
     '''
@@ -64,10 +86,11 @@ APP.register_error_handler(Exception, defaultHandler)
 def echo():
     data = request.args.get('data')
     if data == 'echo':
-   	    raise InputError(description='Cannot echo "echo"')
+        raise InputError(description='Cannot echo "echo"')
     return dumps({
         'data': data
     })
 
 if __name__ == "__main__":
+    initialize_store()
     APP.run(port=(int(sys.argv[1]) if len(sys.argv) == 2 else 8080))
