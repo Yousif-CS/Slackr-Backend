@@ -274,6 +274,27 @@ def message_edit(token, message_id, message):
                 msg_dict["message"] = message
                 break
 
+
+# helper function to check if user has active react on a given react id
+def has_user_reacted_react_id(token, message_id, react_id):
+    '''
+    Checks whether a user has an existing react with ID 'react_id' for a given message
+    Assumes token is valid, message_id is valid (user is part of channel this message is in),
+    and that a react with this ID already exists in the list
+    '''
+    message_list = get_store()['Messages']
+    u_id = get_tokens()[token]
+    # locate the message dictionary in question
+    for message in message_list:
+        if message_id == message['message_id']:
+            this_msg = message['message_id']
+    for react in this_msg['reacts']:
+        if react['react_id'] == react_id:
+            if u_id in react['u_ids']:
+                return True
+    return False
+
+
 def message_react(token, message_id, react_id):
     '''
     input: valid token, message_id, react_id
@@ -373,22 +394,3 @@ def message_unreact(token, message_id, react_id):
                         react['is_this_user_reacted'] = False
 
     return {}
-
-# helper function to check if user has active react on a given react id
-def has_user_reacted_react_id(token, message_id, react_id):
-    '''
-    Checks whether a user has an existing react with ID 'react_id' for a given message
-    Assumes token is valid, message_id is valid (user is part of channel this message is in),
-    and that a react with this ID already exists in the list
-    '''
-    message_list = get_store()['Messages']
-    u_id = get_tokens()[token]
-    # locate the message dictionary in question
-    for message in message_list:
-        if message_id == message['message_id']:
-            this_msg = message['message_id']
-    for react in this_msg['reacts']:
-        if react['react_id'] == react_id:
-            if u_id in react['u_ids']:
-                return True
-    return False
