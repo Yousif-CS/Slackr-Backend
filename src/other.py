@@ -6,6 +6,7 @@ from server import get_store, get_tokens
 
 from auth import verify_token
 from error import InputError, AccessError
+import pickle
 
 SLACKR_OWNER = 1
 SLACKR_MEMBER = 2
@@ -112,3 +113,6 @@ def workspace_reset():
     data["Slack_owners"].clear()
     data["Channels"].clear()
     data["Messages"].clear()
+
+    with open("database.p", "wb") as FILE:
+        pickle.dump(data, FILE)
