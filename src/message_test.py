@@ -7,6 +7,8 @@ from channel import channel_invite, channel_details, channel_messages, channel_l
 from channels import channels_create
 from other import search
 import pytest
+from server import get_store, get_tokens
+from other import workspace_reset
 
 # reminders: white space / empty messages? 
 # invalid user token? throws Exception?
@@ -157,6 +159,15 @@ def test_message_send_invalid_token(create_public_channel):
 
     with pytest.raises(Exception):
         message_send(user_ab['token']+ "invalid", new_public_channel['channel_id'], "Invalid token test")
+
+# check that messages are not pinned when they are first sent
+def test_message_send_default_unpinned(create_public_channel):
+    workspace_reset()
+    new_public_channel, user_ab = create_public_channel
+    data = get_store()
+
+    message_send(user_ab['token'], new_public_channel['channel_id'], "This message should not be pinned")
+    assert data["Messages"][0]["is_pinned"] == False
 
 '''------------------testing message_remove--------------------'''
 # no errors
@@ -365,3 +376,22 @@ def test_message_edit_owner_left_channel_invalid(create_public_channel, make_use
 
     with pytest.raises(AccessError):
         message_edit(user_ab["token"], msg_id, "First owner should no longer be able to edit others' messages")
+
+'''------------------testing message_pin--------------------'''
+# message_pin(token, message_id)
+# Owner can pin own message in a channel
+def test_message_pin(create_public_channel,):
+    pass
+
+# Owner can pin the message of another
+
+
+# InputError: message_id is not a valid id
+
+# InputError: auth user is not an owner
+
+# InputError: message is already pinned
+
+# AccessError: auth_user is not a member
+
+'''------------------testing message_unpin--------------------'''
