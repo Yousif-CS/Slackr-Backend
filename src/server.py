@@ -2,18 +2,23 @@
 The server that handles the routes for slackr
 '''
 
-#pylint disable=missing-module-docstring
 import sys 
 import pickle
 import message
 import auth
 
-from datetime import datetime
+#these are routes imports
+import channel_routes
+import channels_routes
+import user_routes
+import auth_routes
+import standup_routes
+import message_routes
+
 from json import dumps
 from flask import Flask, request
 from flask_cors import CORS
 from error import InputError
-from standup import getStandup
 #This dictionary will contain all of the database
 #once the server starts and we unpickle the database file
 #it is supposed to be {"Users": {u_id: {"name_first": "Yousif", "name_last": "Khalid", "email": "whatever@gmail.com", "password": "hashed_pw_str", "handle": "ykhalid", "global_permission": 0, "channels": [channel_id1, channel_id2, ...]}},
@@ -27,6 +32,22 @@ STORE = pickle.load("database.p", encoding="utf-8")
 #won't need to be stored in the Store data dictionary for pickling
 # {"token_str1": u_id1, "token_str2": u_id2, ..}
 TOKENS = {}
+
+def initialize_store():
+    '''
+    Initialize the server database dictionary, creates an empty dictionary if the 
+    database file is empty
+    '''
+    global STORE    #pylint: disable=global-statement
+    with open('database.py', "r") as file:
+        STORE = pickle.load(file, encoding="utf-8") 
+        if STORE == None:
+            STORE = {
+                'Users': {},
+                'Slack_owners': [],
+                'Channels': {},
+                'Messages': [],
+            }
 
 def get_store():
     '''
@@ -66,10 +87,11 @@ APP.register_error_handler(Exception, defaultHandler)
 def echo():
     data = request.args.get('data')
     if data == 'echo':
-   	    raise InputError(description='Cannot echo "echo"')
+        raise InputError(description='Cannot echo "echo"')
     return dumps({
         'data': data
     })
 
 if __name__ == "__main__":
+    initialize_store()
     APP.run(port=(int(sys.argv[1]) if len(sys.argv) == 2 else 8080))
