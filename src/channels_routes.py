@@ -26,4 +26,3 @@ def listall():
     return dumps(response)
 
 
-
