@@ -24,3 +24,13 @@ def sendlater():
     response = message.message_sendlater(data['token'], data['channel_id'],\
         data['message'], data['time_sent'])
     return dumps(response)
+
+@APP.route("/message/react", methods=['POST'])
+def react():
+    '''
+    a route that calls message_react from message
+    '''
+    data = request.get_json()
+    message.message_react(data['token'], data['message_id'], data['react_id'])
+    return dumps({})
+
