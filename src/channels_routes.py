@@ -25,4 +25,11 @@ def listall():
     response = channels_listall(data['token'])
     return dumps(response)
 
-
+@APP.route("/channels/create", methods=['POST'])
+def create():
+    '''
+    a route which calls channels_create
+    '''
+    data = request.get_json()
+    response = channels_create(data['token'], data['name'], data['is_public'])
+    return dumps(response)
