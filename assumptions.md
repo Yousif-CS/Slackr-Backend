@@ -143,3 +143,10 @@ The main assumption is that we only need to register the user once, and afterwar
 1. token
 2. channel_id
 3. length
+
+## Other wrappers
+`Overarching assumption is that the data in request is given in json format which contains the following keys:`
+1. token
+2. u_ir
+3. permission_id
+

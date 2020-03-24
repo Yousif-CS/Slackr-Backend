@@ -1,12 +1,12 @@
 '''
-This file contains implementations of miscellaneous functions that do not belong to a specific category
+This file contains implementations of miscellaneous functions
+that do not belong to a specific category
 '''
 
+import pickle
 from server import get_store, get_tokens
-
 from auth import verify_token
 from error import InputError, AccessError
-import pickle
 
 SLACKR_OWNER = 1
 SLACKR_MEMBER = 2
@@ -43,7 +43,7 @@ def userpermission_change(token, u_id, permission_id):
         if u_id not in data['Slack_owners']:
             data['Slack_owners'].append(u_id)
     elif u_id in data['Slack_owners']:
-            data['Slack_owners'].remove(u_id)
+        data['Slack_owners'].remove(u_id)
 
 def users_all(token):
     '''
@@ -76,14 +76,15 @@ def search(token, query_str):
     Given a query string, return a collection of messages
     in all of the channels that the user has joined that match the query.
     Results are sorted from most recent message to least recent message
-    output: a dictionary, which contains a key "messages", which is a list of dictionaries containing types
+    output: a dictionary, which contains a key "messages",
+    which is a list of dictionaries containing types
     { message_id, u_id, message, time_created, reacts, is_pinned  }
     '''
 
     # verify the token is valid
     if verify_token(token) is False:
         raise InputError(description='Invalid token')
-    
+
     matching_msgs = {"messages": []}
     # empty query_str returns an empty list
     if query_str == "":
@@ -112,5 +113,5 @@ def workspace_reset():
     data["Channels"].clear()
     data["Messages"].clear()
 
-    with open("database.p", "wb") as FILE:
-        pickle.dump(data, FILE)
+    with open("database.p", "wb") as database_file:
+        pickle.dump(data, database_file)
