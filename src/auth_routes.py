@@ -9,27 +9,21 @@ from flask import Flask, request
 
 @APP.route('/auth/register', methods=['POST'])
 def create_user(): 
-    user_input = request.get_json()
-    reg_token, user_id = auth_register(user_input['email'], user_input['password'], user_input['name_first'], user_input['name_last'])
-    return dumps ({
-        'token': reg_token
-    })
+    details = request.get_json()
+    reg_info = auth_register(details['email'], details['password'], details['name_first'], details['name_last'])
+    return dumps(reg_info)
 
 @APP.route('/auth/login', methods=['POST'])
 def connect(): 
     details = request.get_json()
-    login_token, user_id = auth_login(details['email'], details['password'])
-    return dumps ({
-        'token': login_token
-    })
+    login_info = auth_login(details['email'], details['password'])
+    return dumps(login_info)
 
 @APP.route('/auth/logout', methods= ['POST'])
 def disconnect(): 
 	details = request.get_json()
-	succesful = auth_logout(details['token'])
-	return dumps ({
-		'is_success' : successful
-	}) 
+	successful = auth_logout(details['token'])
+	return dumps(successful)
 	
 	
 
