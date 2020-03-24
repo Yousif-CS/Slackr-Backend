@@ -34,3 +34,13 @@ def react():
     message.message_react(data['token'], data['message_id'], data['react_id'])
     return dumps({})
 
+@APP.route("/message/unreact", methods=['POST'])
+def react():
+    '''
+    a route that calls message_unreact from message
+    '''
+    data = request.get_json()
+    message.message_unreact(data['token'], data['message_id'], data['react_id'])
+    return dumps({})
+
+
