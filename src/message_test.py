@@ -1,6 +1,6 @@
 # TODO: import more modules / functions as needed 
 
-from message import message_send, message_remove, message_edit
+from message import message_send, message_remove, message_edit, message_react, message_unreact
 from error import AccessError, InputError
 from auth import auth_login, auth_register
 from channel import channel_invite, channel_details, channel_messages, channel_leave, channel_join, channel_addowner, channel_removeowner
@@ -395,3 +395,31 @@ def test_message_pin(create_public_channel,):
 # AccessError: auth_user is not a member
 
 '''------------------testing message_unpin--------------------'''
+
+
+'''------------------testing message_react--------------------'''
+# User can react to another user's message as long as:
+# - the user is part of the channel (public, private) the message is in 
+# - and the user has not previously reacted with that valid react id
+def test_message_react_valid_react(create_public_channel, make_user_cd):
+    new_public_channel, user_ab = create_public_channel
+    user_cd = make_user_cd
+    # user_cd creates a private channel
+    new_private_channel = channels_create(user_cd['token'], 'private_channel', False)
+    msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Hello world!")
+    msg2 = message_send(user_cd['token'], new_private_channel['channel_id'], "This is a private channel msg")
+    # user_cd adds user_ab to their private channel 
+    channel_invite(user_cd['token'], new_private_channel['channel_id'], user_ab['u_id'])
+
+    # user_ab now reacts to both messages (1 in public, 1 in private channel)
+    message_react(user_ab['token'], msg1['message_id'], 1)
+    message_react(user_ab['token'], msg1['message_id'], 1)
+    assert
+# User can react to own message under similar conditions: 
+# - also changes their is_this_user_reacted status to True
+
+# InputError: user kicked out of channel cannot react to any messages (incl. their own)
+
+# 
+
+'''------------------testing message_unreact--------------------'''
