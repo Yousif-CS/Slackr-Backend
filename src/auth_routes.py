@@ -25,7 +25,14 @@ def connect():
 
 @APP.route('/auth/logout', methods= ['POST'])
 def disconnect(): 
-	details = request.get_josn()
+	details = request.get_json()
+	succesful = auth_logout(details['token'])
+	return dumps ({
+		'is_success' : successful
+	}) 
+	
+	
+
 	
 
 	
