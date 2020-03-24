@@ -43,4 +43,12 @@ def unreact():
     message.message_unreact(data['token'], data['message_id'], data['react_id'])
     return dumps({})
 
+@APP.route("/message/pin", methods=['POST'])
+def pin():
+    '''
+    a route which calls message_pin from message
+    '''
+    data = request.get_json()
+    message.message_pin(data['token'], data['message_id'])
+    return dumps({})
 
