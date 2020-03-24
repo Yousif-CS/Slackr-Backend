@@ -52,3 +52,11 @@ def pin():
     message.message_pin(data['token'], data['message_id'])
     return dumps({})
 
+@APP.route("/message/unpin", methods=['POST'])
+def unpin():
+    '''
+    a route which calls message_pin from message
+    '''
+    data = request.get_json()
+    message.message_unpin(data['token'], data['message_id'])
+    return dumps({})
