@@ -35,7 +35,7 @@ def react():
     return dumps({})
 
 @APP.route("/message/unreact", methods=['POST'])
-def react():
+def unreact():
     '''
     a route that calls message_unreact from message
     '''
