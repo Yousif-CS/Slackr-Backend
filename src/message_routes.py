@@ -60,3 +60,13 @@ def unpin():
     data = request.get_json()
     message.message_unpin(data['token'], data['message_id'])
     return dumps({})
+
+@APP.route("/message/remove", methods=['DELETE'])
+def delete():
+    '''
+    a route which calls message_delete from message
+    '''
+    data = request.get_json()
+    message.message_remove(data['token'], data['message_id'])
+    return dumps({})
+
