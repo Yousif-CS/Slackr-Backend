@@ -6,6 +6,7 @@ from server import get_store, get_tokens
 
 from auth import verify_token
 from error import InputError, AccessError
+import pickle
 
 SLACKR_OWNER = 1
 SLACKR_MEMBER = 2
@@ -37,6 +38,12 @@ def userpermission_change(token, u_id, permission_id):
 
     #set new permissions
     data['Users'][u_id]['global_permission'] = permission_id
+    #update the Slack_owners dictionary in the database
+    if permission_id is SLACKR_MEMBER:
+        if u_id not in data['Slack_owners']:
+            data['Slack_owners'].append(u_id)
+    elif u_id in data['Slack_owners']:
+            data['Slack_owners'].remove(u_id)
 
 def users_all(token):
     '''
@@ -86,15 +93,24 @@ def search(token, query_str):
     data = get_store()
     for msg_dict in data["Messages"]:
         if query_str in msg_dict["message"]:
-            matching_msgs["messages"].append(
-                {
-                    "message_id": msg_dict["message_id"],
-                    "u_id": msg_dict["u_id"],
-                    "message": msg_dict["message"],
-                    "time_created": msg_dict["time_created"],
-                    "reacts": msg_dict["reacts"],
-                    "is_pinned": msg_dict["is_pinned"]
-                }
-            )
+            matching_msgs["messages"].append({msg_dict})
 
     return matching_msgs
+
+def workspace_reset():
+    '''
+    Resets the workspace state. Assumes that the base state of database.p is:
+    {"Users": {}, "Slack_owners": [], "Channels":{}, "Messages": []}
+    '''
+    # clear the tokens dictionary
+    get_tokens().clear()
+
+    # clear database.p
+    data = get_store()
+    data["Users"].clear()
+    data["Slack_owners"].clear()
+    data["Channels"].clear()
+    data["Messages"].clear()
+
+    with open("database.p", "wb") as FILE:
+        pickle.dump(data, FILE)

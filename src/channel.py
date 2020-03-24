@@ -184,7 +184,7 @@ def channel_join(token, channel_id):
 
     #verify the channel is public unless user is a slackr owner
     if data['Channels'][channel_id]['is_private'] is True \
-        and data['Users'][u_id]['global_permission'] not SLACKR_OWNER:
+        and data['Users'][u_id]['global_permission'] is not SLACKR_OWNER:
         raise AccessError(description="Cannot join channel: channel is private")
     
     #adding user to channel details
@@ -193,7 +193,7 @@ def channel_join(token, channel_id):
     data['Users'][u_id]['channels'].append(channel_id)
     
     #if user is an owner of slackr, then he is added as an owner
-    if data['Users'][u_id]['global_permission'] == SLACKR_OWNER:
+    if data['Users'][u_id]['global_permission'] is SLACKR_OWNER:
         data['Channels'][channel_id]['owner_members'].append(u_id)
 
 def channel_addowner(token, channel_id, u_id):
