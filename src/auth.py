@@ -2,6 +2,8 @@
 This file contains implementations for authentication functions: register, login and logout, token generation
 along with helper functions used in other files as well
 '''
+from server import get_tokens
+from error import AccessError
 
 from server import get_store, get_tokens
 from is_valid_email import is_valid_email
@@ -146,3 +148,23 @@ def auth_login(email, password):
         "u_id": u_id,
         "token": token
     }
+
+
+def auth_logout(token):
+    '''
+    input:valid token
+    output: is_success (True / False)
+    Must invalidate token to log user out.
+    '''
+    # verify the user
+    if verify_token(token) is False:
+        raise AccessError(description='Invalid token')
+
+    tokens = get_tokens()
+    u_id = get_tokens()[token]
+    # removing the key value pair from TOKENS
+    del tokens[token]
+    # checking if user is logged out
+    if get_token(u_id) is None:
+        return True
+    else: return False
