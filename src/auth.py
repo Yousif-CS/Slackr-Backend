@@ -74,6 +74,7 @@ def auth_register(email, password, name_first, name_last):
         data["Users"] = {}
         data["Users"][u_id] = {}
         data["Users"][u_id]["global_permission"] = 1
+        data["Slack_owners"] = [u_id]
     else:
         u_id = max(data["Users"].keys()) + 1
         data["Users"][u_id] = {}
