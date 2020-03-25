@@ -5,6 +5,7 @@ The server that handles the routes for slackr
 import sys
 import pickle
 
+from threading import Timer
 from json import dumps
 from flask import Flask, request
 from flask_cors import CORS
@@ -62,6 +63,28 @@ STORE = list()
 #won't need to be stored in the Store data dictionary for pickling
 # {"token_str1": u_id1, "token_str2": u_id2, ..}
 TOKENS = dict()
+
+#A constant to update the database every hour
+SECONDS_TO_UPDATE = 3600
+
+class StateTimer(Timer):
+    '''
+    An simple abstraction over the timer class to
+    run a function every n seconds
+    '''
+    def run(self):
+        while not self.finished.wait(self.interval):
+            self.function(*self.args, **self.kwargs)
+
+def update_database():
+    '''
+    pickle the state database into a file
+    '''
+    with open('database.py', "w") as database_file:
+        pickle.dump(STORE, database_file)
+
+#a Timer to update the database every hour
+DATABASE_UPDATER = StateTimer(SECONDS_TO_UPDATE, update_database)
 
 def initialize_store():
     '''
@@ -132,4 +155,5 @@ def echo():
 
 if __name__ == "__main__":
     initialize_state()
+    DATABASE_UPDATER.start()
     APP.run(port=(int(sys.argv[1]) if len(sys.argv) == 2 else 8080))
