@@ -3,6 +3,7 @@ This module contains all the routes for auth functionalities
 '''
 from flask import Flask, request 
 from server import APP
+from error import RequestError
 from auth import auth_register, auth_login, auth_logout
 from json import dumps
 
