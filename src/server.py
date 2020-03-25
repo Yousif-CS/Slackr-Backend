@@ -44,7 +44,7 @@ from flask import Flask, request
 #                                   }]
 #                   }
 
-STORE = list()
+STORE = {"Users": {}, "Slack_owners": [], "Channels":{}, "Messages": []}
 
 #this dictionary contains the session tokens that
 #won't need to be stored in the Store data dictionary for pickling

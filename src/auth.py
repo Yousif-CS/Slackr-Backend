@@ -36,18 +36,18 @@ def create_handle(name_first, name_last):
     data = get_store()
     count = 0
     handle_str = name_first.lower() + name_last.lower()
-    handle_str = handle_str[:21]
+    handle_str = handle_str[:20]
     
     while is_handle_unique(handle_str) is False:
         count += 1
-        handle_str = handle_str[:21 - len(str(count))] + str(count)
+        handle_str = handle_str[:20 - len(str(count))] + str(count)
 
     return handle_str
 
 def is_handle_unique(handle_str):
     data = get_store()
     for identity in data["Users"]:
-        if identity["handle"] == handle_str:
+        if data["Users"][identity]["handle"] == handle_str:
             return False
     return True
 
@@ -63,15 +63,27 @@ def auth_register(email, password, name_first, name_last):
     InputError: invalid email, non-unique email, password less than 6 char long, first or last name not [1,50] char long
     '''
     data = get_store()
-
+    
     # InputError if email not valid
     if is_valid_email(email) is False:
         raise InputError(description="Input is not a valid email")
+    
+    # If this is the first user, then they become the slack owner, and have u_id of 1, and have global_permissions.
+    if len(data["Slack_owners"]) == 0:
+        u_id = 1
+        data["Users"] = {}
+        data["Users"][u_id] = {}
+        data["Users"][u_id]["global_permission"] = 1
+    else:
+        u_id = max(data["Users"].keys()) + 1
+        data["Users"][u_id] = {}
+        data["Users"][u_id]["global_permission"] = 2
 
-    # InputError if email not unique
-    for identity in data["Users"].values():
-        if identity["email"] == email:
-            raise InputError(description="This email is already being used by another user")
+        # InputError if email not unique
+        for identity in data["Users"].values():
+            if identity["email"] == email:
+                raise InputError(description="This email is already being used by another user")
+    
 
     # InputError if password is too short (less than 6 char)
     if len(password) < 6:
@@ -87,19 +99,12 @@ def auth_register(email, password, name_first, name_last):
     # hash the password
     encrypted_pass = hashlib.sha256(password.encode()).hexdigest()
 
-    # If this is the first user, then they become the slack owner, and have u_id of 1, and have global_permissions.
-    if len(data["Slack_onwers"]) == 0:
-        u_id = 1
-        data["Users"][u_id]["global_permission"] = 1
-    else:
-        u_id = max(data["Users"].keys()) + 1
-        data["Users"][u_id]["global_permission"] = 2
-
     # put all the information (email, password, name_first, name_last, handle) into database.p
     data["Users"][u_id]["name_first"] = name_first
     data["Users"][u_id]["name_last"] = name_last
     data["Users"][u_id]["email"] = email
     data["Users"][u_id]["password"] = encrypted_pass
+    data["Users"][u_id]["handle"] = ""
     data["Users"][u_id]["handle"] = create_handle(name_first, name_last)
     data["Users"][u_id]["channels"] = []
 
@@ -115,6 +120,8 @@ def auth_register(email, password, name_first, name_last):
     }
 
 def find_u_id(email):
+    data = get_store()
+
     for identity in data["Users"]:
         if email == identity["email"]:
             return identity
