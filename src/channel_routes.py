@@ -3,11 +3,31 @@ This module contains all the routes for channel functionalities
 '''
 
 import json
-from flask import request
+from flask import Flask, request
 
 import channel
 from server import APP
 from error import RequestError
+
+
+@APP.route('/channel/invite', methods= ['POST'])
+def invite(): 
+    '''
+    A route to call channel invites
+    '''
+    payload = request.get_json()
+    channel.channel_invite(payload['token'], payload['channel_id'], payload['u_id'])
+    return json.dumps({ })
+
+
+@APP.route('/channel/details', methods= ['GET'])
+def details(): 
+    ''' 
+    A route to gather a channel's details
+    ''' 
+    payload = request.get_json()
+    info = channel.channel_details(payload['token'], payload['channel_id'])
+    return json.dumps(info)
 
 @APP.route('/channel/messages', methods=['GET'])
 def messages():
