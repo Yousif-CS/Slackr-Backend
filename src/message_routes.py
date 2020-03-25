@@ -69,4 +69,3 @@ def delete():
     data = request.get_json()
     message.message_remove(data['token'], data['message_id'])
     return dumps({})
-

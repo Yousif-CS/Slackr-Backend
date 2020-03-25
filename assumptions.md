@@ -68,6 +68,9 @@ The main assumption is that we only need to register the user once, and afterwar
 4. channel_join and channel_leave work as per the spec.
 5. A user that has not joined a channel cannot see or access the messages in that channel, hence cannot edit the messages at all.
 
+#### message_pin():
+1. More than one message may be pinned at once.
+
 ### User functions
 1. Assuming that auth_login works as per the spec.
 

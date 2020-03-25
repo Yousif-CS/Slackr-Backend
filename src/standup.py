@@ -9,6 +9,7 @@ from server import get_store, get_tokens
 from auth import verify_token, get_token, generate_token, auth_logout
 from message import message_send
 from error import InputError, AccessError
+from message import message_send
 
 MAX_LENGTH = 1000
 
