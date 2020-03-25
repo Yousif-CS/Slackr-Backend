@@ -54,6 +54,9 @@ def create_private_channel():
     return (channel_id, owner_info)
 
 
+'''Testing standup_start'''
+# 
+
 '''Testing standup_active'''
 
 def test_standup_active_invalid_channel(create_public_channel):

@@ -4,10 +4,12 @@ along with all its related schedulers and data structures
 '''
 import time
 import sched
+from threading import Lock
 from server import get_store, get_tokens
 from auth import verify_token, get_token, generate_token, auth_logout
 from message import message_send
 from error import InputError, AccessError
+from message import message_send
 
 MAX_LENGTH = 1000
 
@@ -16,6 +18,9 @@ MAX_LENGTH = 1000
 # the creator's user id and the messages it has
 STANDUP_MESSAGES = []
 
+#A data lock that prevents different threads from accessing STANDUP_MESSAGES
+#at the same time
+STANDUP_LOCK = Lock()
 
 #this is a scheduler that handles scheduling events for standup_start
 MY_SCHEDULER = sched.scheduler(time.time, time.sleep)
@@ -32,19 +37,23 @@ def flush_standup(channel_id):
     Helper function to concat messages in a standup and send them
     at once
     '''
-    standups = get_standup()
-    for standup in standups:
-        if standup['channel_id'] == channel_id:
-            to_remove = standups.pop(standup)
-            to_send = '\n'.join(to_remove['messages'])
-            user_token = get_token(to_remove['u_id'])
-            #the user has logged out: generate a temporary token
-            if user_token is None:
-                user_token = generate_token(to_remove['u_id'])
-                message_send(user_token, channel_id, to_send)
-                auth_logout(user_token)
-            else:
-                message_send(user_token, channel_id, to_send)
+    with STANDUP_LOCK:
+        standups = get_standup()
+        for standup in standups:
+            #get specific standup with channel id
+            if standup['channel_id'] == channel_id:
+                #remove it
+                to_remove = standups.pop(standup)
+                #prepare messages
+                to_send = '\n'.join(to_remove['messages'])
+                user_token = get_token(to_remove['u_id'])
+                #the user has logged out: generate a temporary token
+                if user_token is None:
+                    user_token = generate_token(to_remove['u_id'])
+                    message_send(user_token, channel_id, to_send)
+                    auth_logout(user_token)
+                else:
+                    message_send(user_token, channel_id, to_send)
 
 def run_scheduler(target, running_time, args):
     '''
@@ -82,13 +91,14 @@ def standup_start(token, channel_id, length):
         raise InputError(description="Invalid length type")
     #creating a new standup
     time_finish = time.time() + length
-    standups_info.append({
-        'channel_id': channel_id,
-        'u_id': u_id,
-        'time_start': time.time(),
-        'time_finish': time_finish,
-        'messages': [],
-    })
+    with STANDUP_LOCK:
+        standups_info.append({
+            'channel_id': channel_id,
+            'u_id': u_id,
+            'time_start': time.time(),
+            'time_finish': time_finish,
+            'messages': [],
+        })
     #schedule flushing the standup
     run_scheduler(target=flush_standup, running_time=time.time() + length, args=(channel_id,))
     return {'time_finish': time_finish}
@@ -147,6 +157,7 @@ def standup_send(token, channel_id, message):
     standups_info = get_standup()
     for standup in standups_info:
         if standup['channel_id'] == channel_id:
-            standup['messages'].append(message)
+            with STANDUP_LOCK:
+                standup['messages'].append(message)
             return {}
     raise InputError(description="No active standup in this channel")
