@@ -126,3 +126,30 @@ The main assumption is that we only need to register the user once, and afterwar
 1. Assume that valid search strings are no longer than 1000 characters in length 
 2. Assume that the list 'messages' orders the results from oldest to newest (e.g. time_created in ascending order) 
 3. Assume that empty search strings return empty 'messages' list
+
+### Standup functions:
+
+#### standup_active(token, channel_id):
+1. Assume that any user in slackr can view if a channel has a standup even if not a member
+--------------------------------------------------------
+# HTTP wrappers Assumptions
+
+## Channel wrappers
+`Overarching assumption is the data in the request is given in json format which contains the following keys:`
+1. token
+2. channel_id
+3. u_id
+4. start
+
+## Standup wrappers
+`Overarching assumption is that the data in request is given in json format which contains the following keys:`
+1. token
+2. channel_id
+3. length
+
+## Other wrappers
+`Overarching assumption is that the data in request is given in json format which contains the following keys:`
+1. token
+2. u_ir
+3. permission_id
+
