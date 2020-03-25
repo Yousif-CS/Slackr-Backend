@@ -2,14 +2,12 @@
 This file contains implementations for authentication functions: register, login and logout, token generation
 along with helper functions used in other files as well
 '''
-from server import get_tokens
-from error import AccessError
-
+import jwt 
+import hashlib
 from server import get_store, get_tokens
 from is_valid_email import is_valid_email
 from error import InputError, AccessError
-import jwt 
-import hashlib
+
 
 SECRET = "Never l3t me g0"
 
@@ -76,16 +74,15 @@ def auth_register(email, password, name_first, name_last):
         data["Users"][u_id]["global_permission"] = 1
         data["Slack_owners"] = [u_id]
     else:
+        # InputError if email not unique
+        for identity in data["Users"].keys():
+            if data["Users"][identity]["email"] == email:
+                raise InputError(description="This email is already being used by another user")
+
         u_id = max(data["Users"].keys()) + 1
         data["Users"][u_id] = {}
         data["Users"][u_id]["global_permission"] = 2
-
-        # InputError if email not unique
-        for identity in data["Users"].values():
-            if identity["email"] == email:
-                raise InputError(description="This email is already being used by another user")
     
-
     # InputError if password is too short (less than 6 char)
     if len(password) < 6:
         raise InputError(description="Password too short, must be at least 6 characters")
@@ -123,8 +120,8 @@ def auth_register(email, password, name_first, name_last):
 def find_u_id(email):
     data = get_store()
 
-    for identity in data["Users"]:
-        if email == identity["email"]:
+    for identity in data["Users"].keys():
+        if email == data["Users"][identity]["email"]:
             return identity
     return None
     
@@ -175,4 +172,5 @@ def auth_logout(token):
     # checking if user is logged out
     if get_token(u_id) is None:
         return True
-    else: return False
+    else: 
+        return False
