@@ -163,7 +163,7 @@ def auth_logout(token):
     '''
     # verify the user
     if verify_token(token) is False:
-        raise AccessError(description='Invalid token')
+        return {"is_success": False}
 
     tokens = get_tokens()
     u_id = get_tokens()[token]
@@ -171,6 +171,6 @@ def auth_logout(token):
     del tokens[token]
     # checking if user is logged out
     if get_token(u_id) is None:
-        return True
+        return {"is_success": True}
     else: 
-        return False
+        return {"is_success": False}
