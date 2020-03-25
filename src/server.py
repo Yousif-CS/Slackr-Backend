@@ -4,21 +4,8 @@ The server that handles the routes for slackr
 
 import sys
 import pickle
-
-from threading import Timer
-from json import dumps
 from flask import Flask, request
-from flask_cors import CORS
 
-#these are routes imports
-import channel_routes
-import channels_routes
-import user_routes
-import auth_routes
-import standup_routes
-import message_routes
-
-from error import InputError
 #This dictionary will contain all of the database
 #once the server starts and we unpickle the database file
 #it is supposed to be {
@@ -64,6 +51,39 @@ STORE = list()
 # {"token_str1": u_id1, "token_str2": u_id2, ..}
 TOKENS = dict()
 
+APP = Flask(__name__)
+
+
+def get_store():
+    '''
+    Returns the global data structure STORE for modification by other functions
+    in other files
+    '''
+    global STORE    #pylint: disable=global-statement
+    return STORE
+
+def get_tokens():
+    '''
+    Returns the global data structure Tokens for modification by other functions
+    in other files
+    '''
+    global TOKENS   #pylint: disable=global-statement
+    return TOKENS
+
+from threading import Timer
+from json import dumps
+from flask_cors import CORS
+
+#these are routes imports
+import channel_routes
+import channels_routes
+import user_routes
+import auth_routes
+import standup_routes
+import message_routes
+
+from error import InputError
+       
 #A constant to update the database every hour
 SECONDS_TO_UPDATE = 3600
 
@@ -80,7 +100,7 @@ def update_database():
     '''
     pickle the state database into a file
     '''
-    with open('database.py', "w") as database_file:
+    with open('database.p', "wb") as database_file:
         pickle.dump(STORE, database_file)
 
 #a Timer to update the database every hour
@@ -92,7 +112,7 @@ def initialize_store():
     database file is empty
     '''
     global STORE    #pylint: disable=global-statement
-    with open('database.py', "r") as file:
+    with open('database.p', "rb") as file:
         STORE = pickle.load(file, encoding="utf-8")
         if STORE is None:
             STORE = {
@@ -110,21 +130,6 @@ def initialize_state():
     global TOKENS   #pylint: disable=global-statement
     TOKENS = dict()
 
-def get_store():
-    '''
-    Returns the global data structure STORE for modification by other functions
-    in other files
-    '''
-    global STORE    #pylint: disable=global-statement
-    return STORE
-
-def get_tokens():
-    '''
-    Returns the global data structure Tokens for modification by other functions
-    in other files
-    '''
-    global TOKENS   #pylint: disable=global-statement
-    return TOKENS
 
 def defaultHandler(err): #pylint: disable=missing-function-docstring
     response = err.get_response()
