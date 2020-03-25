@@ -1,7 +1,7 @@
 import sched
 from time import time, sleep
-from auth import verify_token
 from server import get_store, get_tokens
+from auth import verify_token
 from error import InputError, AccessError
 
 # TODO: check structure for TOKENS dictionary
