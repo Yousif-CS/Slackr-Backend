@@ -75,12 +75,14 @@ from json import dumps
 from flask_cors import CORS
 
 #these are routes imports
+'''
 import channel_routes
 import channels_routes
 import user_routes
 import auth_routes
 import standup_routes
 import message_routes
+'''
 
 from error import InputError
        
