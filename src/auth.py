@@ -66,23 +66,6 @@ def auth_register(email, password, name_first, name_last):
     if is_valid_email(email) is False:
         raise InputError(description="Input is not a valid email")
     
-    # If this is the first user, then they become the slack owner, and have u_id of 1, and have global_permissions.
-    if len(data["Slack_owners"]) == 0:
-        u_id = 1
-        data["Users"] = {}
-        data["Users"][u_id] = {}
-        data["Users"][u_id]["global_permission"] = 1
-        data["Slack_owners"] = [u_id]
-    else:
-        # InputError if email not unique
-        for identity in data["Users"].keys():
-            if data["Users"][identity]["email"] == email:
-                raise InputError(description="This email is already being used by another user")
-
-        u_id = max(data["Users"].keys()) + 1
-        data["Users"][u_id] = {}
-        data["Users"][u_id]["global_permission"] = 2
-    
     # InputError if password is too short (less than 6 char)
     if len(password) < 6:
         raise InputError(description="Password too short, must be at least 6 characters")
@@ -97,17 +80,36 @@ def auth_register(email, password, name_first, name_last):
     # hash the password
     encrypted_pass = hashlib.sha256(password.encode()).hexdigest()
 
-    # put all the information (email, password, name_first, name_last, handle) into database.p
-    data["Users"][u_id]["name_first"] = name_first
-    data["Users"][u_id]["name_last"] = name_last
-    data["Users"][u_id]["email"] = email
-    data["Users"][u_id]["password"] = encrypted_pass
-    data["Users"][u_id]["handle"] = ""
-    data["Users"][u_id]["handle"] = create_handle(name_first, name_last)
-    data["Users"][u_id]["channels"] = []
-
+    # If this is the first user, then they become the slack owner, and have u_id of 1, and have global_permissions.
+    if len(data["Users"]) == 0:
+        u_id = 1
+        data['Slack_owners'].append(u_id)
+        data["Users"][u_id] = {
+            'name_first': name_first,
+            'name_last': name_last,
+            'email': email,
+            'password': encrypted_pass,
+            'handle': create_handle(name_first, name_last),
+            'global_permission': 1,
+            'channels': [],        
+        }
+    else:
+        # InputError if email not unique
+        for identity in data["Users"].values():
+            if identity["email"] == email:
+                raise InputError(description="This email is already being used by another user")
+        #append the user
+        u_id = max(data["Users"].keys()) + 1
+        data["Users"][u_id] = {
+            'name_first': name_first,
+            'name_last': name_last,
+            'email': email,
+            'password': encrypted_pass,
+            'handle': create_handle(name_first, name_last),
+            'global_permission': 2,
+            'channels': [],        
+        }
     token = generate_token(u_id)
-    
     # Store the token-u_id pair in the temporary TOKEN dictionary
     get_tokens()[token] = u_id
 
