@@ -1,7 +1,8 @@
 import pytest 
 import user 
 from auth import auth_register, auth_login, auth_logout
-from channel import channel_join	 
+from channel import channel_join
+from channels import channels_create	 
 from error import InputError 
 from user import user_profile
 from other import workspace_reset
@@ -242,8 +243,10 @@ def test_logout_join_fails():
 	user_token = user_logging_in['token'] 
 	message = auth_logout(user_token) 
 	
-	assert message['is_success'] == True 
+	assert message['is_success'] == True
+
+	ch_id = channels_create(user["token"], "new-channel", True)["channel_id"]
 	
 	with pytest.raises(InputError) as e: 
-		channel_join(user_token, 1)
+		channel_join(user_token, ch_id)
 	
