@@ -1,7 +1,8 @@
 # TODO: import more modules / functions as needed 
+
 from server import get_store, get_tokens
 import pytest
-from message import message_send, message_remove, message_edit, message_pin, message_unpin
+from message import message_send, message_remove, message_edit, message_pin, message_unpin, message_react, message_unreact
 from error import AccessError, InputError
 from auth import auth_login, auth_register
 from channel import channel_invite, channel_details, channel_messages, channel_leave, channel_join, channel_addowner, channel_removeowner
@@ -485,6 +486,7 @@ def test_message_pin_auth_user_not_owner(create_public_channel, make_user_cd):
     with pytest.raises(AccessError):
         message_pin(user_cd["token"], msg_id0)
 
+
 '''------------------testing message_unpin--------------------'''
 # Owner can unpin own message
 def test_message_unpin_owners_own_msg(create_public_channel):
@@ -603,3 +605,208 @@ def test_message_unpin_auth_user_not_owner(create_public_channel, make_user_cd):
 
     with pytest.raises(AccessError):
         message_unpin(user_cd["token"], msg_id0)
+
+
+
+'''------------------testing message_react--------------------'''
+# Test correct display of messages without any reacts
+def test_message_react_no_react(create_public_channel):
+    new_public_channel, user_ab = create_public_channel
+    msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "No reaccs")
+    # grab the list of messages in both channels
+    messages_public = channel_messages(user_ab['token'], \
+        new_public_channel['channel_id'], 0)['messages']
+    # check for correct display of reacts dictionary
+    assert message_public[0]['reacts'] == [{
+        'react_id': 1,
+        'u_ids': [],
+        'is_this_user_reacted': False,
+    }]
+
+
+# User can react to another user's message as long as:
+# - the user is part of the channel (public, private) the message is in
+# - and the user has not previously reacted with that valid react id
+def test_message_react_valid_react(create_public_channel, make_user_cd):
+    new_public_channel, user_ab = create_public_channel
+    user_cd = make_user_cd
+    # user_cd creates a private channel
+    new_private_channel = channels_create(user_cd['token'], 'private_channel', False)
+    msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Hello world!")
+    msg2 = message_send(user_cd['token'], new_private_channel['channel_id'], "Private msg")
+    # user_cd adds user_ab to their private channel
+    channel_invite(user_cd['token'], new_private_channel['channel_id'], user_ab['u_id'])
+
+    # user_ab now reacts to both messages (1 in public, 1 in private channel)
+    message_react(user_ab['token'], msg1['message_id'], 1)
+    message_react(user_ab['token'], msg1['message_id'], 1)
+    # grab the list of messages in both channels
+    messages_public = channel_messages(user_ab['token'], \
+        new_public_channel['channel_id'], 0)['messages']
+    messages_private = channel_messages(user_ab['token'], \
+        new_private_channel['channel_id'], 0)['messages']
+
+    # check the reacts are there
+    assert messages_public[0]['reacts'] == [{
+        'react_id': 1,
+        'u_ids': [user_ab['u_id']],
+        'is_this_user_reacted': True,
+    }]
+    assert messages_private[0]['reacts'] == [{
+        'react_id': 1,
+        'u_ids': [user_ab['u_id']],
+        'is_this_user_reacted': False,
+    }]
+
+
+# Multiple users can react to one message under similar conditions:
+# - also changes their is_this_user_reacted status to True if sender of message reacted
+def test_message_react_multiple_reacts(create_public_channel, make_user_cd):
+    new_public_channel, user_ab = create_public_channel
+    user_cd = make_user_cd
+    # user_ab adds user_cd to their public channel
+    channel_invite(user_ab['token'], new_public_channel['channel_id'], user_cd['token'])
+    msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "2 reacts ples")
+    # both user_ab and cd react to the message; user_cd reacts FIRST
+    message_react(user_cd['token'], msg1['message_id'], 1)
+    message_react(user_ab['token'], msg1['message_id'], 1)
+    # get the list of messages in channel
+    messages_public = channel_messages(user_ab['token'], \
+        new_public_channel['channel_id'], 0)['messages']
+
+    # check for correct reactions (that both users reacted) and correct ORDERING
+    assert messages_public[0]['reacts'] == [{
+        'react_id': 1,
+        'u_ids': [user_cd['u_id'], user_ab['u_id']],
+        'is_this_user_reacted': True,
+    }]
+
+
+# InputError: check that attempting to react to a nonexistent message throws exception
+def test_message_react_message_id_not_exist(make_user_ab):
+    user_ab = make_user_ab
+
+    with pytest.raises(InputError):
+        message_react(user_ab['token'], 22222, 1)
+
+
+# InputError: message_id invalid (user not in that channel with the msg)
+def test_message_react_invalid_message_id(create_public_channel, make_user_cd):
+    new_public_channel, user_ab = create_public_channel
+    user_cd = make_user_cd
+    msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Message 1")
+
+    # user_cd tries to react to the message but they are not in the channel
+    with pytest.raises(InputError):
+        message_react(user_cd['token'], msg1['message_id'], 1)
+    
+
+# InputError: invalid react ID (AT the moment only valid react ID is 1)
+def test_message_react_invalid_react_id(create_public_channel):
+    new_public_channel, user_ab = create_public_channel
+    msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Hello World?")
+    
+    with pytest.raises(InputError):
+        message_react(user_ab['token'], msg1['message_id'], 22222)
+
+
+# InputError: user has already reacted with the react ID to the message with message_id
+def test_message_react_twice(create_public_channel):
+    new_public_channel, user_ab = create_public_channel
+    msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Only once please")
+    message_react(user_ab['token'], msg1['message_id'], 1)
+    
+    # check that InputError is thrown when user_ab tries to react again with same react_id
+    with pytest.raises(InputError):
+        message_react(user_ab['token'], msg1['message_id'], 1)
+# 
+
+'''------------------testing message_unreact--------------------'''
+
+# check that when a user unreacts, they are no longer part of the list of reacted users for that msg
+def test_message_unreact_standard(create_public_channel):
+    new_public_channel, user_ab = create_public_channel
+    msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "React then unreact")
+    # functionality of message_react tested above
+    message_react(user_ab['token'], msg1['message_id'], 1)
+    # user_ab unreacts to same message
+    message_unreact(user_ab['token'], msg1['message_id'], 1)
+    # grabbing the list of messages currently in the channel
+    messages_public = channel_messages(user_ab['token'], \
+        new_public_channel['channel_id'], 0)['messages']
+
+    # check that the list of reacted users is now empty and is_user_reacted set to False
+    assert messages_public[0]['reacts'] == [{
+        'react_id': 1,
+        'u_ids': [],
+        'is_this_user_reacted': False,
+    }]
+
+
+# check that when multiple users have reacted and then one unreacts, the other one still remains
+def test_message_unreact_multiple_users(create_public_channel, make_user_cd):
+    new_public_channel, user_ab = create_public_channel
+    user_cd = make_user_cd
+    msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "two minus one is one")
+    message_react(user_ab['token'], msg1['message_id'], 1)
+    message_react(user_cd['token'], msg1['message_id'], 1)
+    message_unreact(user_ab['token'], msg1['message_id'], 1)
+
+    # checking that user_cd still remains on the list after user_ab unreacted
+    assert essages_public[0]['reacts'] == [{
+        'react_id': 1,
+        'u_ids': [user_cd['u_id']],
+        'is_this_user_reacted': False,
+    }]
+
+# InputError: user that left channel cannot unreact to any messages (incl. their own)
+def test_message_unreact_no_longer_in_channel(create_public_channel, user_cd):
+    new_public_channel, user_ab = create_public_channel
+    user_cd = make_user_cd
+    # user_ab invites user_cd to channel
+    channel_invite(user_ab['token'], new_public_channel['channel_id'], user_cd['token'])
+    msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "I don't like you cd")
+    # user_cd reacts to msg1, and then leaves channel
+    message_react(user_cd['token'], msg1['message_id'], 1)
+    channel_leave(user_cd['token'], new_public_channel['channel_id'])
+
+    with pytest.raises(InputError):
+        message_unreact(user_cd['token'], msg1['message_id'], 1)
+
+
+# InputError: user cannot unreact if they did not already react with the same id
+def test_message_unreact_no_react(create_public_channel):
+    new_public_channel, user_ab = create_public_channel
+    msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Some message")
+
+    with pytest.raises(InputError):
+        message_unreact(user_ab['token'], msg1['message_id'], 1)
+
+# InputError: user cannot unreact using invalid react_id
+def test_message_unreact_invalid_react(create_public_channel):
+    new_public_channel, user_ab = create_public_channel
+    message_react(user_ab['token'], msg1['message_id'], 1)
+
+    with pytest.raises(InputError):
+        message_unreact(user_ab['token'], msg1['message_id'], 22222)
+
+
+# InputError: user cannot unreact a non-existent message
+def test_message_unreact_non_existent_msg(make_user_ab):
+    user_ab = make_user_ab
+
+    # no messages yet. Cannot unreact anything
+    with pytest.raises(InputError):
+        message_unreact(user_ab['token'], 0, 1)
+
+# InputError: user cannot unreact (correctly) a message then unreact again
+def test_message_unreact_twice(create_public_channel):
+    new_public_channel, user_ab = create_public_channel
+    msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Keep unreacting!")
+    message_react(user_ab['token'], msg1['message_id'], 1)
+    # user_ab unreacts once
+    message_unreact(user_ab['token'], msg1['message_id'], 1)
+
+    # but they cannot unreact again
+    with pytest.raises(InputError):
+        message_unreact(user_ab['token'], msg1['message_id'], 1)
