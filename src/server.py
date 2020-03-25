@@ -44,7 +44,7 @@ from flask import Flask, request
 #                                   }]
 #                   }
 
-STORE = {"Users": {}, "Slack_owners": [], "Channels":{}, "Messages": []}
+STORE = dict()
 
 #this dictionary contains the session tokens that
 #won't need to be stored in the Store data dictionary for pickling
@@ -75,13 +75,14 @@ from json import dumps
 from flask_cors import CORS
 
 #these are routes imports
+'''
 import channel_routes
 import channels_routes
 import user_routes
 import auth_routes
 import standup_routes
 import message_routes
-
+'''
 from error import InputError
        
 #A constant to update the database every hour
@@ -113,8 +114,9 @@ def initialize_store():
     '''
     global STORE    #pylint: disable=global-statement
     with open('database.p', "rb") as file:
-        STORE = pickle.load(file, encoding="utf-8")
-        if STORE is None:
+        try:
+            STORE = pickle.load(file, encoding="utf-8")
+        except EOFError:
             STORE = {
                 'Users': {},
                 'Slack_owners': [],
@@ -147,6 +149,8 @@ CORS(APP)
 
 APP.config['TRAP_HTTP_EXCEPTIONS'] = True
 APP.register_error_handler(Exception, defaultHandler)
+
+initialize_store()
 
 # Example
 @APP.route("/echo", methods=['GET'])
