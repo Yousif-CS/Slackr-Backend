@@ -2,6 +2,22 @@
 The server that handles the routes for slackr
 '''
 
+def get_store():
+    '''
+    Returns the global data structure STORE for modification by other functions
+    in other files
+    '''
+    global STORE    #pylint: disable=global-statement
+    return STORE
+
+def get_tokens():
+    '''
+    Returns the global data structure Tokens for modification by other functions
+    in other files
+    '''
+    global TOKENS   #pylint: disable=global-statement
+    return TOKENS
+
 import sys
 import pickle
 
@@ -110,21 +126,7 @@ def initialize_state():
     global TOKENS   #pylint: disable=global-statement
     TOKENS = dict()
 
-def get_store():
-    '''
-    Returns the global data structure STORE for modification by other functions
-    in other files
-    '''
-    global STORE    #pylint: disable=global-statement
-    return STORE
 
-def get_tokens():
-    '''
-    Returns the global data structure Tokens for modification by other functions
-    in other files
-    '''
-    global TOKENS   #pylint: disable=global-statement
-    return TOKENS
 
 def defaultHandler(err): #pylint: disable=missing-function-docstring
     response = err.get_response()
