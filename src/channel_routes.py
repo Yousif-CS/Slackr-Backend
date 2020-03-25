@@ -16,8 +16,11 @@ def invite():
     A route to call channel invites
     '''
     payload = request.get_json()
+    if not payload['token'] or not payload['channel_id'] or not payload['u_id']: 
+        raise RequestError(description=f"Missing data in request body")
+
     channel.channel_invite(payload['token'], payload['channel_id'], payload['u_id'])
-    return json.dumps({ })
+    return json.dumps({})
 
 
 @APP.route('/channel/details', methods= ['GET'])
@@ -26,6 +29,9 @@ def details():
     A route to gather a channel's details
     ''' 
     payload = request.get_json()
+    if not payload['token'] or not payload['channel_id']: 
+        raise RequestError(description=f"Missing data in request body")
+
     info = channel.channel_details(payload['token'], payload['channel_id'])
     return json.dumps(info)
 
