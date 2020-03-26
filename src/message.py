@@ -31,16 +31,16 @@ def message_send(token, channel_id, message):
     if channel_id not in data['Users'][u_id]['channels']:
         raise AccessError(description='You do not have access to send message in this channel')
     # assigning new message_id MUST BE GLOBALLY UNIQUE!
-    # starting from index 0
+    # starting from index 1
     if len(data['Messages']) == 0:
-        new_msg_id = 0
+        new_msg_id = 1
     else:
         id_list = [msg['message_id'] for msg in data['Messages']]
         new_msg_id = max(id_list) + 1
 
     # sending the actual message:
     # 1. append to list of message id's
-    data['Channels'][channel_id]['message'].append(new_msg_id)
+    data['Channels'][channel_id]['messages'].append(new_msg_id)
     # 2. new dictionary in data['Messages']
     data['Messages'].append({
         'message_id': new_msg_id,
@@ -49,7 +49,11 @@ def message_send(token, channel_id, message):
         'u_id': u_id,
         'time_created': time(),
         'is_pinned': False,
-        'reacts': []
+        'reacts': [{
+            'react_id': 1,
+            'u_ids': [],
+            'is_this_user_reacted': False,
+        }]
     })
 
     return {'message_id': new_msg_id}
@@ -91,7 +95,7 @@ def message_sendlater(token, channel_id, message, time_sent):
         new_msg_id = max(id_list) + 1
     # the action to be completed at time time_sent
     def auto_send_message():
-        data['Channels'][channel_id]['message'].append(new_msg_id)
+        data['Channels'][channel_id]['messages'].append(new_msg_id)
         data['Messages'].append({
             'message_id': new_msg_id,
             'channel_id': channel_id,
@@ -99,7 +103,11 @@ def message_sendlater(token, channel_id, message, time_sent):
             'u_id': u_id,
             'time_created': time_sent,
             'is_pinned': False,
-            'reacts': []
+            'reacts': [{
+                'react_id': 1,
+                'u_ids': [],
+                'is_this_user_reacted': False,
+            }]
         })
     # setting up scheduler object
     s = sched.scheduler(time, sleep)
@@ -287,7 +295,7 @@ def has_user_reacted_react_id(token, message_id, react_id):
     # locate the message dictionary in question
     for message in message_list:
         if message_id == message['message_id']:
-            this_msg = message['message_id']
+            this_msg = message
     for react in this_msg['reacts']:
         if react['react_id'] == react_id:
             if u_id in react['u_ids']:

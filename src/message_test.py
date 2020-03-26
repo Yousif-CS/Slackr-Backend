@@ -797,15 +797,22 @@ def test_message_unreact_standard(create_public_channel):
 # check that when multiple users have reacted and then one unreacts, the other one still remains
 def test_message_unreact_multiple_users(create_public_channel, make_user_cd):
     workspace_reset()
-    new_public_channel, user_ab = create_public_channel
-    user_cd = make_user_cd
+    '''new_public_channel, user_ab = create_public_channel
+    user_cd = make_user_cd'''
+
+    user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
+    user_cd = auth_register("charlie@gmail.com", "pw321ABC", "Charlie", "Dragon")
+    new_public_channel = channels_create(user_ab['token'], 'public_test_1', True)
+    channel_join(user_cd['token'], new_public_channel['channel_id'])
+
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "two minus one is one")
     message_react(user_ab['token'], msg1['message_id'], 1)
     message_react(user_cd['token'], msg1['message_id'], 1)
     message_unreact(user_ab['token'], msg1['message_id'], 1)
-
+    messages_public = channel_messages(user_ab['token'], \
+        new_public_channel['channel_id'], 0)['messages']
     # checking that user_cd still remains on the list after user_ab unreacted
-    assert essages_public[0]['reacts'] == [{
+    assert messages_public[0]['reacts'] == [{
         'react_id': 1,
         'u_ids': [user_cd['u_id']],
         'is_this_user_reacted': False,
@@ -856,9 +863,14 @@ def test_message_unreact_non_existent_msg(make_user_ab):
         message_unreact(user_ab['token'], 0, 1)
 
 # InputError: user cannot unreact (correctly) a message then unreact again
-def test_message_unreact_twice(create_public_channel):
+def test_message_unreact_twice():
+    
+    '''new_public_channel, user_ab = create_public_channel'''
     workspace_reset()
-    new_public_channel, user_ab = create_public_channel
+    user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
+    new_public_channel = channels_create(user_ab['token'], 'public_test_1', True)
+
+
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Keep unreacting!")
     message_react(user_ab['token'], msg1['message_id'], 1)
     # user_ab unreacts once
