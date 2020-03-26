@@ -677,8 +677,8 @@ def test_message_unpin_already_unpinned_error(make_users):
 # AccessError: auth user is not a member of channel
 def test_message_unpin_auth_user_not_owner(make_users):
     # setting up users and public channel
-    user_ab, user_cd = make_users
-    new_ch = channels_create(user_ab['token'], 'test_channel_public', True)
+    owner_ab, user_cd = make_users
+    new_ch = channels_create(owner_ab['token'], 'test_channel_public', True)
 
     channel_invite(owner_ab["token"], new_ch["channel_id"], user_cd["u_id"])
 
@@ -703,7 +703,7 @@ def test_message_react_no_react(make_users):
     messages_public = channel_messages(user_ab['token'], \
         new_public_channel['channel_id'], 0)['messages']
     # check for correct display of reacts dictionary
-    assert message_public[0]['reacts'] == [{
+    assert messages_public[0]['reacts'] == [{
         'react_id': 1,
         'u_ids': [],
         'is_this_user_reacted': False,
@@ -727,7 +727,7 @@ def test_message_react_valid_react(make_users):
 
     # user_ab now reacts to both messages (1 in public, 1 in private channel)
     message_react(user_ab['token'], msg1['message_id'], 1)
-    message_react(user_ab['token'], msg1['message_id'], 1)
+    message_react(user_ab['token'], msg2['message_id'], 1)
     # grab the list of messages in both channels
     messages_public = channel_messages(user_ab['token'], \
         new_public_channel['channel_id'], 0)['messages']
