@@ -49,7 +49,11 @@ def message_send(token, channel_id, message):
         'u_id': u_id,
         'time_created': time(),
         'is_pinned': False,
-        'reacts': []
+        'reacts': [{
+            'react_id': 1,
+            'u_ids': [],
+            'is_this_user_reacted': False,
+        }]
     })
 
     return {'message_id': new_msg_id}
@@ -99,7 +103,11 @@ def message_sendlater(token, channel_id, message, time_sent):
             'u_id': u_id,
             'time_created': time_sent,
             'is_pinned': False,
-            'reacts': []
+            'reacts': [{
+                'react_id': 1,
+                'u_ids': [],
+                'is_this_user_reacted': False,
+            }]
         })
     # setting up scheduler object
     s = sched.scheduler(time, sleep)
