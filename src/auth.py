@@ -123,10 +123,11 @@ def auth_register(email, password, name_first, name_last):
 
 def find_u_id(email):
     data = get_store()
-
-    for identity in data["Users"]:
-        if email == identity["email"]:
-            return identity
+    size = 1
+    while size <= len(data['Users']):
+        if email == data["Users"][size]['email']:
+                return size
+        size += 1 
     return None
     
 
@@ -167,7 +168,7 @@ def auth_logout(token):
     '''
     # verify the user
     if verify_token(token) is False:
-        raise AccessError(description='Invalid token')
+        return {'is_success' : False}
 
     tokens = get_tokens()
     u_id = get_tokens()[token]
@@ -175,5 +176,7 @@ def auth_logout(token):
     del tokens[token]
     # checking if user is logged out
     if get_token(u_id) is None:
-        return True
-    else: return False
+        return { 'is_success' : True}
+
+    return {'is_success' : False}
+
