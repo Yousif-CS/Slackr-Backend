@@ -221,7 +221,7 @@ def message_remove(token, message_id):
     # 1. delete from message_id list in Channels info
     data['Channels'][matching_channel_id]['messages'].remove(message_id)
     # 2. delete message dictionary from Messages list
-    data['Messages'].remove(msg_pos)
+    data['Messages'].remove(data['Messages'][msg_pos])
 
     return {}
 
