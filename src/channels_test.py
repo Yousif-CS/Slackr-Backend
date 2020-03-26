@@ -6,6 +6,7 @@ from channels import channels_list, channels_listall, channels_create
 from error import InputError, AccessError
 from channel import channel_invite, channel_details
 from auth import auth_login, auth_register
+from other import workspace_reset
 
 
 '''------------------testing channels_list--------------------'''
@@ -16,6 +17,7 @@ from auth import auth_login, auth_register
 
 # testing whether channels_list returns empty list if no channels exist yet
 def test_channels_list_no_channels(): 
+    workspace_reset()
     # creating and registering user (user_ab is type dictionary with u_id and token keys)
     user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
     # assuming users are not part of any channel after registration
@@ -24,13 +26,14 @@ def test_channels_list_no_channels():
 
 # testing that channels_list returns a channel that the user created
 def test_channels_list_creator_public_channel():
+    workspace_reset()
     # creating and registering users
     user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
     user_cd = auth_register("charlie@gmail.com", "pw321ABC", "Charlie", "Dragon")
     # user_ab creates a public channel (new_public_channel is a dictionary with key channel_id)
     new_public_channel = channels_create(user_ab['token'], 'public_test_1', True)
     ab_list = channels_list(user_ab['token'])
-    cd_list = channels_list(user_cd['token'])
+
     # assuming channel_id begins indexing from 1?
     assert ab_list['channels'] == [
         {
@@ -38,10 +41,13 @@ def test_channels_list_creator_public_channel():
             'name': 'public_test_1'
         }
     ]
+    
+    cd_list = channels_list(user_cd['token'])
     assert cd_list['channels'] == []
 
 # testing that private channels also shows up when channel_id is called by a user in channel
 def test_channels_list_creator_private_channel():
+    workspace_reset()
     # creating and registering user
     user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
     # user creates private channel
@@ -57,6 +63,7 @@ def test_channels_list_creator_private_channel():
 
 # testing that channels_list also returns a channel if a user was added by the creator
 def test_channels_list_added_by_creator():
+    workspace_reset()
     # creating and registering users
     user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
     user_cd = auth_register("charlie@gmail.com", "pw321ABC", "Charlie", "Dragon")
@@ -77,6 +84,7 @@ def test_channels_list_added_by_creator():
 # testing that invalid token throws exception
 # assuming token with string 'invalid' is an invalid token
 def test_channels_list_invalid_token():
+    workspace_reset()
     user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
 
     with pytest.raises(AccessError):
@@ -89,6 +97,7 @@ def test_channels_list_invalid_token():
 
 # testing that channels_listall returns an empty dictionary when no channels exist
 def test_channels_listall_empty():
+    workspace_reset()
     # creating and registering user_ab
     user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
     # assuming users are not part of any channel after registration
@@ -96,7 +105,8 @@ def test_channels_listall_empty():
     assert channels_listall(user_ab['token'])['channels'] == []
 
 # testing for a given public channel, channels_listall returns it for every user
-def test_channels_listall_public(): 
+def test_channels_listall_public():
+    workspace_reset()
     # creating and registering users
     user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
     user_cd = auth_register("charlie@gmail.com", "pw321ABC", "Charlie", "Dragon")
@@ -110,7 +120,8 @@ def test_channels_listall_public():
     assert ab_list == cd_list
 
 # testing for a given public channel, channels_listall returns all the available channels
-def test_channels_listall_public_correct_channels(): 
+def test_channels_listall_public_correct_channels():
+    workspace_reset()
     # creating and registering users
     user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
     user_cd = auth_register("charlie@gmail.com", "pw321ABC", "Charlie", "Dragon")
@@ -127,6 +138,7 @@ def test_channels_listall_public_correct_channels():
 
 # testing for a private channel, channels_listall also returns it for every user
 def test_channels_listall_private():
+    workspace_reset()
     # creating and registering users
     user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
     user_cd = auth_register("charlie@gmail.com", "pw321ABC", "Charlie", "Dragon")
@@ -142,6 +154,7 @@ def test_channels_listall_private():
 # testing that invalid token throws exception
 # assuming token with string 'invalid' is an invalid token
 def test_channels_listall_invalid_token():
+    workspace_reset()
     user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
 
     with pytest.raises(Exception):
@@ -156,6 +169,7 @@ def test_channels_listall_invalid_token():
 
 # testing for correct output (channel_id as int)
 def test_channels_create_id_int():
+    workspace_reset()
     # creating and registering user
     user_kli = auth_register("ken@gmail.com", "new_pass", "Ken", "L")
     # creating a public channel
@@ -164,6 +178,7 @@ def test_channels_create_id_int():
 
 # testing for correct details (using channel_details)
 def test_channels_create_correct_details():
+    workspace_reset()
     # creating and registering user
     user_kli = auth_register("ken@gmail.com", "new_pass", "Ken", "L")
     user_bwang = auth_register("bobw@gmail.com", "password123", "Bob", "Wang") 
@@ -181,6 +196,7 @@ def test_channels_create_correct_details():
 
 # testing that 2 different channels (maybe with same name) does not have same ID
 def test_channels_create_unique_id():
+    workspace_reset()
     # creating and registering user
     user_kli = auth_register("ken@gmail.com", "new_pass", "Ken", "L")
     # creating 2 channels that have the same name and is_public status
@@ -192,18 +208,21 @@ def test_channels_create_unique_id():
 
 # tests that channel whose name is exactly 20 characters long can be made
 def test_channels_create_name_20char():
+    workspace_reset()
     user_kli = auth_register("ken@gmail.com", "new_pass", "Ken", "L")
     channels_create(user_kli['token'], "a" * 20, True)
     assert len(channels_listall(user_kli['token'])['channels']) == 1
 
 # tests that a channel named with an empty string can be made
 def test_channels_create_noname():
+    workspace_reset()
     user_kli = auth_register("ken@gmail.com", "new_pass", "Ken", "L")
     channels_create(user_kli['token'], "", True)
     assert len(channels_listall(user_kli['token'])['channels']) == 1
 
 # testing for raised exception if len(name) > 20
 def test_channels_create_invalid_name():
+    workspace_reset()
     # creating and registering user
     user_kli = auth_register("ken@gmail.com", "new_pass", "Ken", "L")
     with pytest.raises(InputError):
@@ -212,6 +231,7 @@ def test_channels_create_invalid_name():
 # testing that invalid token throws exception
 # assuming token with string 'invalid' is an invalid token
 def test_channels_create_invalid_token():
+    workspace_reset()
     user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
 
     with pytest.raises(Exception):
