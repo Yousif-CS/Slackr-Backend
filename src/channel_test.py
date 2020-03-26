@@ -98,7 +98,7 @@ def test_channel_user_invite(reset, create_user1, create_user2, create_public_ch
 
     assert owner_info['u_id'] in u_ids
     assert inviting_user_info['u_id'] in u_ids
-    assert user_invited_info in u_ids
+    assert user_invited_info['u_id'] in u_ids
 
 def test_channel_invite_non_user(reset, create_public_channel):
     '''
@@ -120,7 +120,7 @@ def test_channel_invite_user_as_non_member(reset, create_user1, create_user2,  c
     channel_id, owner_info = create_public_channel 	
 
     with pytest.raises(AccessError):
-    	channel_invite(user_info['token'], channel_id['channel_id'], invited_user['u_id'] )
+    	channel_invite(user_info['token'], channel_id['channel_id'], invited_user['u_id'])
 
 
 def test_channel_double_invite(reset, create_user1, create_public_channel):
@@ -248,23 +248,25 @@ def test_channel_messages_good(reset, create_public_channel):
     channel_id, owner_info = create_public_channel
     #sending messages
     sent_msgs_ids = []
-    sent_msgs_ids.append(message_send(owner_info['token'], channel_id['channel_id'], "message 1"))
-    sent_msgs_ids.append(message_send(owner_info['token'], channel_id['channel_id'], "message 2"))
-    sent_msgs_ids.append(message_send(owner_info['token'], channel_id['channel_id'], "message 3"))
-    sent_msgs_ids.append(message_send(owner_info['token'], channel_id['channel_id'], "message 4"))
-    sent_msgs_ids.append(message_send(owner_info['token'], channel_id['channel_id'], "message 5"))
+    sent_msgs_ids.append(message_send(owner_info['token'], channel_id['channel_id'], "message 1")['message_id'])
+    sent_msgs_ids.append(message_send(owner_info['token'], channel_id['channel_id'], "message 2")['message_id'])
+    sent_msgs_ids.append(message_send(owner_info['token'], channel_id['channel_id'], "message 3")['message_id'])
+    sent_msgs_ids.append(message_send(owner_info['token'], channel_id['channel_id'], "message 4")['message_id'])
+    sent_msgs_ids.append(message_send(owner_info['token'], channel_id['channel_id'], "message 5")['message_id'])
+    sent_msgs_ids.sort()
     #retrieving message list
     msgs = channel_messages(owner_info['token'], channel_id['channel_id'], 0)
-    assert len(msgs['messages']) == 5
-    assert msgs['start'] == 0
-    assert msgs['end'] == -1
     u_ids = [message['u_id'] for message in msgs['messages']]
-    retrieved_msgs_ids = [message['message_id'] for message in msgs['messages']]
+    retrieved_msgs_ids = sorted([message['message_id'] for message in msgs['messages']])
+    #assertions
     for user in u_ids:
         assert user == owner_info['u_id']
     #testing if the returned ids of the messages are the same as the sent ids of the messages
     for sent_msg, ret_msg in zip(sent_msgs_ids, retrieved_msgs_ids):
-        assert sent_msg == ret_msg 
+        assert sent_msg == ret_msg
+    assert len(msgs['messages']) == 5
+    assert msgs['start'] == 0
+    assert msgs['end'] == -1
 
 def test_channel_messages_more_than_fifty(reset, create_public_channel):
     '''
@@ -287,7 +289,7 @@ def test_channel_messages_more_than_fifty(reset, create_public_channel):
     assert msgs['end'] == 50
 
     #changing the start message to 1
-    msgs1 = channel_messages(owner_info['token'], channel_id['channel_id'], 1)
+    msgs = channel_messages(owner_info['token'], channel_id['channel_id'], 1)
 
     #asserting start and end are correct
     assert msgs['start'] == 1
@@ -373,7 +375,7 @@ def test_channel_messages_public_member(reset, create_public_channel, create_use
 
     assert channel_messages(user_info["token"], channel_id["channel_id"], 0)["messages"][0]["message"] == \
         "First Message!"
-        
+
 def test_channel_messages_unauthorized_user(reset, create_public_channel):
     '''
     Testing unauthorized access(not a member of slackr) to channel_messages

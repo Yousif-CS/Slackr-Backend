@@ -116,21 +116,20 @@ def channel_messages(token, channel_id, start):
         raise AccessError(description="You do not have permission to view this channel's messages")
     #getting the messages of the channel
     message_ids = data['Channels'][channel_id]['messages']
-    messages = [message for message in data['Messages'] if message['u_id'] in message_ids]
+    messages = [message for message in data['Messages'] if message['message_id'] in message_ids]
     #verify the start index is less than the number of messages
-    if len(messages) <= start:
+    if len(message_ids) <= start:
         raise InputError(description="Invalid starting index")
 
     #sorting the message list in terms of time created
     messages = sorted(messages, key=lambda message: message['time_created'], reverse=True)
     #reached the end
-    if start + 50 >= len(messages):
+    if start + MESSAGE_BLOCK >= len(messages):
         return {"messages": messages[start:], "start": start, "end": -1}
     #we return 50 messages with more to give
     return {"messages": messages[start: start + MESSAGE_BLOCK + 1],
             "start": start,
-            "end": start + MESSAGE_BLOCK + 1}
-
+            "end": start + MESSAGE_BLOCK}
 
 def channel_leave(token, channel_id):
     '''
@@ -153,6 +152,11 @@ def channel_leave(token, channel_id):
     #verify the user is a member of the channel
     if channel_id not in data['Users'][u_id]['channels']:
         raise AccessError(description="You do not have permission leave channel: not a member")
+
+    #verify the leaving is not the only member of a private channel
+    if len(data['Channels'][channel_id]['all_members']) is 1 \
+        and data['Channels'][channel_id]['is_private'] is True:
+        raise InputError(description="Cannot leave a private channel as the only member")
 
     #deleting the user from the channel list
     #and deleting the channel from the user's channel's list
@@ -181,17 +185,21 @@ def channel_join(token, channel_id):
     #verify the channel exists
     if channel_id not in data['Channels']:
         raise InputError(description="Invalid channel id")
-
+    
+    #verify user is not already a member
+    if channel_id in data['Users'][u_id]['channels']:
+        raise InputError(description="You are already a member")
+    
     #verify the channel is public unless user is a slackr owner
     if data['Channels'][channel_id]['is_private'] is True \
         and data['Users'][u_id]['global_permission'] is not SLACKR_OWNER:
         raise AccessError(description="Cannot join channel: channel is private")
-    
+
     #adding user to channel details
     #and adding channel to user's channels list
     data['Channels'][channel_id]['all_members'].append(u_id)
     data['Users'][u_id]['channels'].append(channel_id)
-    
+
     #if user is an owner of slackr, then he is added as an owner
     if data['Users'][u_id]['global_permission'] is SLACKR_OWNER:
         data['Channels'][channel_id]['owner_members'].append(u_id)
