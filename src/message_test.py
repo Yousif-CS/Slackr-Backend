@@ -567,12 +567,12 @@ def test_message_unpin_owners_own_msg(make_users):
     user_ab, user_cd = make_users
     new_ch = channels_create(user_ab['token'], 'test_channel_public', True)
 
-    msg_id = message_send(owner_ab["token"], new_ch["channel_id"], "This message is to be pinned")["message_id"]
-    message_pin(owner_ab["token"], msg_id)
-    assert channel_messages(owner_ab["token"], new_ch["channel_id"],0)["messages"][0]["is_pinned"] == True
+    msg_id = message_send(user_ab["token"], new_ch["channel_id"], "This message is to be pinned")["message_id"]
+    message_pin(user_ab["token"], msg_id)
+    assert channel_messages(user_ab["token"], new_ch["channel_id"],0)["messages"][0]["is_pinned"] == True
 
-    message_unpin(owner_ab["token"], msg_id)
-    assert channel_messages(owner_ab["token"], new_ch["channel_id"],0)["messages"][0]["is_pinned"] == False
+    message_unpin(user_ab["token"], msg_id)
+    assert channel_messages(user_ab["token"], new_ch["channel_id"],0)["messages"][0]["is_pinned"] == False
 
 # Owner can unpin other message
 def test_message_unpin_others_msg(make_users):
@@ -580,16 +580,16 @@ def test_message_unpin_others_msg(make_users):
     user_ab, user_cd = make_users
     new_ch = channels_create(user_ab['token'], 'test_channel_public', True)
 
-    channel_invite(owner_ab["token"], new_ch["channel_id"], user_cd["u_id"])
+    channel_invite(user_ab["token"], new_ch["channel_id"], user_cd["u_id"])
 
-    msg_id0 = message_send(owner_ab["token"], new_ch["channel_id"],
+    msg_id0 = message_send(user_ab["token"], new_ch["channel_id"],
         "This message by the owner will not be pinned.")["message_id"]
     msg_id1 = message_send(user_cd["token"], new_ch["channel_id"], 
         "This message from a normal member will be pinned by the owner")["message_id"]
 
-    message_pin(owner_ab["token"], msg_id1)
+    message_pin(user_ab["token"], msg_id1)
 
-    msg_dict = channel_messages(owner_ab["token"], new_ch["channel_id"], 0)["messages"]
+    msg_dict = channel_messages(user_ab["token"], new_ch["channel_id"], 0)["messages"]
     assert msg_dict[0]["is_pinned"] == False
     assert msg_dict[1]["is_pinned"] == True
 
