@@ -1,6 +1,6 @@
 # TODO: import more modules / functions as needed 
 
-from server import get_store, get_tokens
+
 import pytest
 from message import message_send, message_remove, message_edit, message_pin, message_unpin, message_react, message_unreact
 from error import AccessError, InputError
@@ -41,6 +41,7 @@ def create_private_channel(make_user_ab):
 # testing if an authorised user who is part of a channel can send messages correctly
 # using channel_messages to check 
 def test_message_send_correct_output(create_public_channel):
+    workspace_reset()
     new_public_channel, user_ab = create_public_channel
     # user_ab sends a message on the public channel
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Hello world!")
@@ -54,6 +55,7 @@ def test_message_send_correct_output(create_public_channel):
 
 # check type of message_id to be int and that user messages' message_id's are unique 
 def test_message_send_type_id(create_public_channel):
+    workspace_reset()
     new_public_channel, user_ab = create_public_channel
     # user_ab sends a message on the public channel
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Message1")
@@ -66,6 +68,7 @@ def test_message_send_type_id(create_public_channel):
 
 # testing that duplicate messages (messages with identical strings) are processed correctly
 def test_message_send_duplicate_msgs(create_public_channel, make_user_cd):
+    workspace_reset()
     new_public_channel, user_ab = create_public_channel
     user_cd = make_user_cd
     # user_cd joins the channel 
@@ -83,6 +86,7 @@ def test_message_send_duplicate_msgs(create_public_channel, make_user_cd):
 # testing that messages of any length (from 0 to 1000 characters) are allowed but any longer strings will throw InputError
 # 1. messages with white space and symbols, as long as length is under 1000 characters
 def test_message_send_msg_good(create_public_channel):
+    workspace_reset()
     new_public_channel, user_ab = create_public_channel
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "awf;lk#5)(*#&                #W*%*@#&(hi")
     msg2 = message_send(user_ab['token'], new_public_channel['channel_id'], "m" * 1000)
@@ -96,16 +100,19 @@ def test_message_send_msg_good(create_public_channel):
 # 2. All white spaces
 # 3. a mixture of characters
 def test_message_send_msg_bad_symbols(create_public_channel): 
+    workspace_reset()
     new_public_channel, user_ab = create_public_channel
     with pytest.raises(InputError):
         message_send(user_ab['token'], new_public_channel['channel_id'], "b" * 1001)
 
 def test_message_send_msg_bad_spaces(create_public_channel): 
+    workspace_reset()
     new_public_channel, user_ab = create_public_channel
     with pytest.raises(InputError):
         message_send(user_ab['token'], new_public_channel['channel_id'], " " * 1001)
 
 def test_message_send_msg_bad_message(create_public_channel): 
+    workspace_reset()
     new_public_channel, user_ab = create_public_channel
     with pytest.raises(InputError):
         message_send(user_ab['token'], new_public_channel['channel_id'], "message&3." * 500 + " " * 400 + "loong" * 50)
@@ -113,6 +120,7 @@ def test_message_send_msg_bad_message(create_public_channel):
 
 # testing for AccessError: when user is not part of a channel 
 def test_message_send_not_part_of_channel(create_private_channel, make_user_cd):
+    workspace_reset()
     # user_ab creates a private channel but does not add user_cd to it
     new_private_channel, user_ab = create_private_channel
     user_cd = make_user_cd
@@ -123,6 +131,7 @@ def test_message_send_not_part_of_channel(create_private_channel, make_user_cd):
 
 # testing for AccesError: when previous user/owner of channel leaves the channel and attempts to send message
 def test_message_send_owner_removed_send(create_private_channel, make_user_cd):
+    workspace_reset()
     new_private_channel, user_ab = create_private_channel
     user_cd = make_user_cd
     # user_ab ads user_cd to the channel
@@ -136,6 +145,7 @@ def test_message_send_owner_removed_send(create_private_channel, make_user_cd):
 
 # testing for Exception: when channel_id is invalid and the channel does not actually exist
 def test_message_send_channel_not_found(make_user_ab):
+    workspace_reset()
     user_ab = make_user_ab
 
     with pytest.raises(Exception):
@@ -145,6 +155,7 @@ def test_message_send_channel_not_found(make_user_ab):
 # testing that empty strings as messages throws exception
 # assuming empty strings are bad
 def test_message_send_empty_string_bad(create_public_channel): 
+    workspace_reset()
     new_public_channel, user_ab = create_public_channel
 
     with pytest.raises(Exception):
@@ -154,6 +165,7 @@ def test_message_send_empty_string_bad(create_public_channel):
 # testing that invalid token throws exception
 # assuming token with string 'invalid' is an invalid token
 def test_message_send_invalid_token(create_public_channel):
+    workspace_reset()
     new_public_channel, user_ab = create_public_channel
 
     with pytest.raises(Exception):
@@ -171,6 +183,7 @@ def test_message_send_default_unpinned(create_public_channel):
 # no errors
 # testing that owner of channel can remove their own message 
 def test_message_remove_owner_remove_own(create_public_channel):
+    workspace_reset()
     new_public_channel, user_ab = create_public_channel
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Hello world!")
     msg2 = message_send(user_ab['token'], new_public_channel['channel_id'], "Second message to channel")
@@ -183,6 +196,7 @@ def test_message_remove_owner_remove_own(create_public_channel):
 
 # testing that a member of channel added by the owner is able to remove their own message
 def test_message_remove_user_remove_own(create_private_channel, make_user_cd):
+    workspace_reset()
     new_private_channel, user_ab = create_private_channel
     user_cd = make_user_cd
     msg1 = message_send(user_ab['token'], new_private_channel['channel_id'], "Please do not post stupid things here")
@@ -203,6 +217,7 @@ def test_message_remove_user_remove_own(create_private_channel, make_user_cd):
 # testing that owner of channel can remove message of other users 
 # also testing with more messages
 def test_message_remove_owner_remove_user_msg(create_public_channel, make_user_cd):
+    workspace_reset()
     new_public_channel, user_ab = create_public_channel
     user_cd = make_user_cd
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Hello world!")
@@ -221,6 +236,7 @@ def test_message_remove_owner_remove_user_msg(create_public_channel, make_user_c
 # InputError (when message_id invalid)
 # a previously removed message 
 def test_message_remove_nolonger_exist_id(create_public_channel):
+    workspace_reset()
     new_public_channel, user_ab = create_public_channel
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Removing the same message twice.")
     # storing msg1 ID for later reference
@@ -232,6 +248,7 @@ def test_message_remove_nolonger_exist_id(create_public_channel):
 
 
 def test_message_remove_invalid_id(create_public_channel):
+    workspace_reset()
     new_public_channel, user_ab = create_public_channel
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Hello world!")
 
@@ -242,6 +259,7 @@ def test_message_remove_invalid_id(create_public_channel):
 # AccessError
 # owner of channel removed as owner, tries to remove messages (now as user)
 def test_message_remove_old_owner(create_public_channel, make_user_cd):
+    workspace_reset()
     new_public_channel, user_ab = create_public_channel
     user_cd = make_user_cd
     channel_addowner(user_ab['token'], new_public_channel['channel_id'], user_cd['u_id'])
@@ -255,6 +273,7 @@ def test_message_remove_old_owner(create_public_channel, make_user_cd):
 
 # non-member of channel attempts to remove a message
 def test_message_remove_user_remove_msg(create_public_channel, make_user_cd):
+    workspace_reset()
     new_public_channel, user_ab = create_public_channel
     user_cd = make_user_cd
     user_ef = auth_register("elephant@gmail.com", "pinkelephant1", "Ele", "Fant")
@@ -275,6 +294,7 @@ def test_message_remove_user_remove_msg(create_public_channel, make_user_cd):
 # testing that invalid token throws exception
 # assuming token with string 'invalid' is an invalid token
 def test_message_remove_invalid_token(create_public_channel):
+    workspace_reset()
     new_public_channel, user_ab = create_public_channel
     # user_ab and user_ef send messages to the channel
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Hello Elephant!")
@@ -288,6 +308,7 @@ def test_message_remove_invalid_token(create_public_channel):
 # access error if message-id not sent by correct user: authorised user or admin or owner of channel or slackr
 
 def test_message_edit_one_member_channel(create_public_channel):
+    workspace_reset()
     new_ch, user_ab = create_public_channel # user_ab has a u_id and token is the owner of channel_id
     msg_id = message_send(user_ab["token"], new_ch["channel_id"], "First message.")["message_id"]
     
@@ -296,6 +317,7 @@ def test_message_edit_one_member_channel(create_public_channel):
         "Edited first message"
 
 def test_message_edit_whitespaces(create_public_channel):
+    workspace_reset()
     new_ch, user_ab = create_public_channel
     msg_id = message_send(user_ab["token"], new_ch["channel_id"], "First message.")["message_id"]
 
@@ -304,6 +326,7 @@ def test_message_edit_whitespaces(create_public_channel):
         "     "
 
 def test_message_edit_empty(create_public_channel):
+    workspace_reset()
     new_ch, user_ab = create_public_channel # user_ab has a u_id and token is the owner of channel_id
     msg1_id = message_send(user_ab["token"], new_ch["channel_id"], "First message.")["message_id"]
     msg2_id = message_send(user_ab["token"], new_ch["channel_id"], "Second message.")["message_id"]
@@ -316,6 +339,7 @@ def test_message_edit_empty(create_public_channel):
 
 # non-owner sender edits own message
 def test_message_edit_sender_edit_self(create_public_channel, make_user_cd):
+    workspace_reset()
     new_ch, user_ab = create_public_channel
     user_cd = make_user_cd
     channel_join(user_cd["token"], new_ch["channel_id"])
@@ -329,6 +353,7 @@ def test_message_edit_sender_edit_self(create_public_channel, make_user_cd):
 
 # owner edits sender's message
 def test_message_edit_owner_edits_another_sender(create_public_channel, make_user_cd):
+    workspace_reset()
     new_ch, user_ab = create_public_channel
     user_cd = make_user_cd
     channel_join(user_cd["token"], new_ch["channel_id"])
@@ -342,6 +367,7 @@ def test_message_edit_owner_edits_another_sender(create_public_channel, make_use
 
 # Access Error: edit from non-owner, non-sender
 def test_message_edit_unauthorised(create_public_channel, make_user_cd):
+    workspace_reset()
     new_ch, user_ab = create_public_channel
     user_cd = make_user_cd
     channel_join(user_cd["token"], new_ch["channel_id"])
@@ -353,6 +379,7 @@ def test_message_edit_unauthorised(create_public_channel, make_user_cd):
 
 # Access Error: general invalid token test
 def test_message_edit_invalid_token(create_public_channel):
+    workspace_reset()
     new_ch, user_ab = create_public_channel
 
     msg_id = message_send(user_ab["token"], new_ch["channel_id"], "First message")["message_id"]
@@ -363,6 +390,7 @@ def test_message_edit_invalid_token(create_public_channel):
 
 # when an owner leaves a channel, they can no longer edit messages in that channel
 def test_message_edit_owner_left_channel_invalid(create_public_channel, make_user_cd):
+    workspace_reset()
     new_ch, user_ab = create_public_channel
     user_cd = make_user_cd
     channel_join(user_cd["token"], new_ch["channel_id"])
@@ -380,6 +408,7 @@ def test_message_edit_owner_left_channel_invalid(create_public_channel, make_use
 
 # Owner can pin own message in a channel
 def test_message_pin_owner_pins_own_msg(create_public_channel):
+    workspace_reset()
     new_ch, owner_ab = create_public_channel
 
     msg_id = message_send(owner_ab["token"], new_ch["channel_id"], "This message is to be pinned")["message_id"]
@@ -389,6 +418,7 @@ def test_message_pin_owner_pins_own_msg(create_public_channel):
 
 # Owner can pin the message of another
 def test_message_pin_owner_pins_other(create_public_channel, make_user_cd):
+    workspace_reset()
     new_ch, owner_ab = create_public_channel
     user_cd = make_user_cd
 
@@ -407,6 +437,7 @@ def test_message_pin_owner_pins_other(create_public_channel, make_user_cd):
 
 # More than one message may be pinned at once
 def test_message_pin_more_than_one(create_public_channel, make_user_cd):
+    workspace_reset()
     new_ch, owner_ab = create_public_channel
     user_cd = make_user_cd
 
@@ -429,6 +460,7 @@ def test_message_pin_more_than_one(create_public_channel, make_user_cd):
 
 # InputError: message_id is not a valid id
 def test_message_pin_id_invalid(create_public_channel):
+    workspace_reset()
     new_ch, owner_ab = create_public_channel
 
     msg_id0 = message_send(owner_ab["token"], new_ch["channel_id"], "Random msg")["message_id"]
@@ -438,6 +470,7 @@ def test_message_pin_id_invalid(create_public_channel):
     
 # InputError: message_id not valid because no messages exist
 def test_message_pin_no_msgs(create_public_channel):
+    workspace_reset()
     new_ch, owner_ab = create_public_channel
 
     with pytest.raises(InputError):
@@ -445,6 +478,7 @@ def test_message_pin_no_msgs(create_public_channel):
 
 # InputError: auth user is not an owner (of channel or of slackr)
 def test_message_pin_auth_user_not_owner(create_public_channel, make_user_cd):
+    workspace_reset()
     new_ch, owner_ab = create_public_channel
     user_cd = make_user_cd
 
@@ -457,6 +491,7 @@ def test_message_pin_auth_user_not_owner(create_public_channel, make_user_cd):
 
 # InputError: message is already pinned
 def test_message_pin_already_pinned_error(create_public_channel, make_user_cd):
+    workspace_reset()
     new_ch, owner_ab = create_public_channel
     user_cd = make_user_cd
 
@@ -478,6 +513,7 @@ def test_message_pin_already_pinned_error(create_public_channel, make_user_cd):
 
 # AccessError: auth_user is not a member of the channel which contains the message
 def test_message_pin_auth_user_not_owner(create_public_channel, make_user_cd):
+    workspace_reset()
     new_ch, owner_ab = create_public_channel
     user_cd = make_user_cd
 
@@ -490,6 +526,7 @@ def test_message_pin_auth_user_not_owner(create_public_channel, make_user_cd):
 '''------------------testing message_unpin--------------------'''
 # Owner can unpin own message
 def test_message_unpin_owners_own_msg(create_public_channel):
+    workspace_reset()
     new_ch, owner_ab = create_public_channel
 
     msg_id = message_send(owner_ab["token"], new_ch["channel_id"], "This message is to be pinned")["message_id"]
@@ -501,6 +538,7 @@ def test_message_unpin_owners_own_msg(create_public_channel):
 
 # Owner can unpin other message
 def test_message_unpin_others_msg(create_public_channel, make_user_cd):
+    workspace_reset()
     new_ch, owner_ab = create_public_channel
     user_cd = make_user_cd
 
@@ -522,6 +560,7 @@ def test_message_unpin_others_msg(create_public_channel, make_user_cd):
 
 # Unpinning multiple messages from multiple pinned messages
 def test_message_unpin_multiple(create_public_channel, make_user_cd):
+    workspace_reset()
     new_ch, owner_ab = create_public_channel
     user_cd = make_user_cd
 
@@ -557,6 +596,7 @@ def test_message_unpin_multiple(create_public_channel, make_user_cd):
 
 # InputError: message id is not a valid message
 def test_message_unpin_msgid_invalid(create_public_channel):
+    workspace_reset()
     new_ch, owner_ab = create_public_channel
 
     msg_id0 = message_send(owner_ab["token"], new_ch["channel_id"], "Random msg")["message_id"]
@@ -566,6 +606,7 @@ def test_message_unpin_msgid_invalid(create_public_channel):
 
 # InputError: auth user is not an owner
 def test_message_unpin_not_owner(create_public_channel, make_user_cd):
+    workspace_reset()
     new_ch, owner_ab = create_public_channel
     user_cd = make_user_cd
 
@@ -580,6 +621,7 @@ def test_message_unpin_not_owner(create_public_channel, make_user_cd):
 
 # InputError: already unpinned
 def test_message_unpin_already_unpinned_error(create_public_channel):
+    workspace_reset()
     new_ch, owner_ab = create_public_channel
 
     msg_id = message_send(owner_ab["token"], new_ch["channel_id"], "This message is to be pinned")["message_id"]
@@ -594,6 +636,7 @@ def test_message_unpin_already_unpinned_error(create_public_channel):
 
 # AccessError: auth user is not a member of channel
 def test_message_unpin_auth_user_not_owner(create_public_channel, make_user_cd):
+    workspace_reset()
     new_ch, owner_ab = create_public_channel
     user_cd = make_user_cd
 
@@ -611,6 +654,7 @@ def test_message_unpin_auth_user_not_owner(create_public_channel, make_user_cd):
 '''------------------testing message_react--------------------'''
 # Test correct display of messages without any reacts
 def test_message_react_no_react(create_public_channel):
+    workspace_reset()
     new_public_channel, user_ab = create_public_channel
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "No reaccs")
     # grab the list of messages in both channels
@@ -628,6 +672,7 @@ def test_message_react_no_react(create_public_channel):
 # - the user is part of the channel (public, private) the message is in
 # - and the user has not previously reacted with that valid react id
 def test_message_react_valid_react(create_public_channel, make_user_cd):
+    workspace_reset()
     new_public_channel, user_ab = create_public_channel
     user_cd = make_user_cd
     # user_cd creates a private channel
@@ -662,6 +707,7 @@ def test_message_react_valid_react(create_public_channel, make_user_cd):
 # Multiple users can react to one message under similar conditions:
 # - also changes their is_this_user_reacted status to True if sender of message reacted
 def test_message_react_multiple_reacts(create_public_channel, make_user_cd):
+    workspace_reset()
     new_public_channel, user_ab = create_public_channel
     user_cd = make_user_cd
     # user_ab adds user_cd to their public channel
@@ -684,6 +730,7 @@ def test_message_react_multiple_reacts(create_public_channel, make_user_cd):
 
 # InputError: check that attempting to react to a nonexistent message throws exception
 def test_message_react_message_id_not_exist(make_user_ab):
+    workspace_reset()
     user_ab = make_user_ab
 
     with pytest.raises(InputError):
@@ -692,6 +739,7 @@ def test_message_react_message_id_not_exist(make_user_ab):
 
 # InputError: message_id invalid (user not in that channel with the msg)
 def test_message_react_invalid_message_id(create_public_channel, make_user_cd):
+    workspace_reset()
     new_public_channel, user_ab = create_public_channel
     user_cd = make_user_cd
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Message 1")
@@ -703,6 +751,7 @@ def test_message_react_invalid_message_id(create_public_channel, make_user_cd):
 
 # InputError: invalid react ID (AT the moment only valid react ID is 1)
 def test_message_react_invalid_react_id(create_public_channel):
+    workspace_reset()
     new_public_channel, user_ab = create_public_channel
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Hello World?")
     
@@ -712,6 +761,7 @@ def test_message_react_invalid_react_id(create_public_channel):
 
 # InputError: user has already reacted with the react ID to the message with message_id
 def test_message_react_twice(create_public_channel):
+    workspace_reset()
     new_public_channel, user_ab = create_public_channel
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Only once please")
     message_react(user_ab['token'], msg1['message_id'], 1)
@@ -725,6 +775,7 @@ def test_message_react_twice(create_public_channel):
 
 # check that when a user unreacts, they are no longer part of the list of reacted users for that msg
 def test_message_unreact_standard(create_public_channel):
+    workspace_reset()
     new_public_channel, user_ab = create_public_channel
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "React then unreact")
     # functionality of message_react tested above
@@ -745,6 +796,7 @@ def test_message_unreact_standard(create_public_channel):
 
 # check that when multiple users have reacted and then one unreacts, the other one still remains
 def test_message_unreact_multiple_users(create_public_channel, make_user_cd):
+    workspace_reset()
     new_public_channel, user_ab = create_public_channel
     user_cd = make_user_cd
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "two minus one is one")
@@ -761,6 +813,7 @@ def test_message_unreact_multiple_users(create_public_channel, make_user_cd):
 
 # InputError: user that left channel cannot unreact to any messages (incl. their own)
 def test_message_unreact_no_longer_in_channel(create_public_channel, user_cd):
+    workspace_reset()
     new_public_channel, user_ab = create_public_channel
     user_cd = make_user_cd
     # user_ab invites user_cd to channel
@@ -776,6 +829,7 @@ def test_message_unreact_no_longer_in_channel(create_public_channel, user_cd):
 
 # InputError: user cannot unreact if they did not already react with the same id
 def test_message_unreact_no_react(create_public_channel):
+    workspace_reset()
     new_public_channel, user_ab = create_public_channel
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Some message")
 
@@ -784,6 +838,7 @@ def test_message_unreact_no_react(create_public_channel):
 
 # InputError: user cannot unreact using invalid react_id
 def test_message_unreact_invalid_react(create_public_channel):
+    workspace_reset()
     new_public_channel, user_ab = create_public_channel
     message_react(user_ab['token'], msg1['message_id'], 1)
 
@@ -793,6 +848,7 @@ def test_message_unreact_invalid_react(create_public_channel):
 
 # InputError: user cannot unreact a non-existent message
 def test_message_unreact_non_existent_msg(make_user_ab):
+    workspace_reset()
     user_ab = make_user_ab
 
     # no messages yet. Cannot unreact anything
@@ -801,6 +857,7 @@ def test_message_unreact_non_existent_msg(make_user_ab):
 
 # InputError: user cannot unreact (correctly) a message then unreact again
 def test_message_unreact_twice(create_public_channel):
+    workspace_reset()
     new_public_channel, user_ab = create_public_channel
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Keep unreacting!")
     message_react(user_ab['token'], msg1['message_id'], 1)
