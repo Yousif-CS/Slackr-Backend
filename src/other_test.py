@@ -65,12 +65,13 @@ def create_private_channel(make_user_ab):
 
 # start with only one user accessing all users
 
-def test_users_all_one_user(reset_workspace, make_user_ef):
-    ef_token, ef_u_id = make_user_ef
+def test_users_all_one_user():
+    workspace_reset()
+    user_ef = auth_register("edward@gmail.com", "12345687", "Edward", "Frankenstein")
 
-    assert users_all(ef_token)["users"] == [
+    assert users_all(user_ef["token"])["users"] == [
         {
-            'u_id': ef_u_id,
+            'u_id': user_ef["u_id"],
             'email': 'edward@gmail.com',
             'name_first': 'Edward',
             'name_last': 'Frankenstein',
@@ -78,28 +79,29 @@ def test_users_all_one_user(reset_workspace, make_user_ef):
         }
     ]
 
-def test_users_all_access_three_users_at_once_in_order(reset_workspace, make_user_ef, make_user_gh, make_user_ij):
-    gh_token, gh_u_id = make_user_gh
-    ef_token, ef_u_id = make_user_ef
-    ij_token, ij_u_id = make_user_ij
+def test_users_all_access_three_users_at_once_in_order():
+    workspace_reset()
+    user_gh = auth_register("gregory@gmail.com", "ihaveadream", "Gregory", "Heidelberg")
+    user_ef = auth_register("edward@gmail.com", "12345687", "Edward", "Frankenstein")
+    user_ij = auth_register("ian@hotmail.com", "stretchy0urh4mstrinG5thr1c3", "Ian", "Jacobs")
 
-    assert users_all(ij_token)["users"] == [
+    assert users_all(user_ij["token"])["users"] == [
         {
-            'u_id': gh_u_id,
+            'u_id': user_gh["u_id"],
             'email': 'gregory@gmail.com',
             'name_first': 'Gregory',
             'name_last': 'Heidelberg',
             'handle_str': 'gregoryheidelberg'
         }, 
         {
-            'u_id': ef_u_id,
+            'u_id': user_ef["u_id"],
             'email': 'edward@gmail.com',
             'name_first': 'Edward',
             'name_last': 'Frankenstein',
             'handle_str': 'edwardfrankenstein'
         },
         {
-            'u_id': ij_u_id,
+            'u_id': user_ij["u_id"],
             'email': 'ian@hotmail.com',
             'name_first': 'Ian',
             'name_last': 'Jacobs',
@@ -108,20 +110,21 @@ def test_users_all_access_three_users_at_once_in_order(reset_workspace, make_use
     ]
 
 # register the users one at a time and access all the users
-def test_users_all_register_and_call_function_one_at_a_time(reset_workspace, make_user_gh, make_user_ef, make_user_ij):
-    gh_token, gh_u_id = make_user_gh
-    ef_token, ef_u_id = make_user_ef
+def test_users_all_register_and_call_function_one_at_a_time():
+    workspace_reset()
+    user_gh = auth_register("gregory@gmail.com", "ihaveadream", "Gregory", "Heidelberg")
+    user_ef = auth_register("edward@gmail.com", "12345687", "Edward", "Frankenstein")
 
-    assert users_all(ef_token)["users"] == [
+    assert users_all(user_ef["token"])["users"] == [
         {
-            'u_id': gh_u_id,
+            'u_id': user_gh["u_id"],
             'email': 'gregory@gmail.com',
             'name_first': 'Gregory',
             'name_last': 'Heidelberg',
             'handle_str': 'gregoryheidelberg'
         }, 
         {
-            'u_id': ef_u_id,
+            'u_id': user_ef["u_id"],
             'email': 'edward@gmail.com',
             'name_first': 'Edward',
             'name_last': 'Frankenstein',
@@ -129,24 +132,24 @@ def test_users_all_register_and_call_function_one_at_a_time(reset_workspace, mak
         }
     ]
 
-    ij_token, ij_u_id = make_user_ij
-    assert users_all(ij_token)["users"] == [
+    user_ij = auth_register("ian@hotmail.com", "stretchy0urh4mstrinG5thr1c3", "Ian", "Jacobs")
+    assert users_all(user_ij["token"])["users"] == [
         {
-            'u_id': gh_u_id,
+            'u_id': user_gh["u_id"],
             'email': 'gregory@gmail.com',
             'name_first': 'Gregory',
             'name_last': 'Heidelberg',
             'handle_str': 'gregoryheidelberg'
         }, 
         {
-            'u_id': ef_u_id,
+            'u_id': user_ef["u_id"],
             'email': 'edward@gmail.com',
             'name_first': 'Edward',
             'name_last': 'Frankenstein',
             'handle_str': 'edwardfrankenstein'
         },
         {
-            'u_id': ij_u_id,
+            'u_id': user_ij["u_id"],
             'email': 'ian@hotmail.com',
             'name_first': 'Ian',
             'name_last': 'Jacobs',
@@ -154,29 +157,30 @@ def test_users_all_register_and_call_function_one_at_a_time(reset_workspace, mak
         }
     ]
     
-def test_users_all_users_remain_when_logout(reset_workspace, make_user_ef, make_user_gh, make_user_ij):
-    gh_token, gh_u_id = make_user_gh
-    ef_token, ef_u_id = make_user_ef
-    ij_token, ij_u_id = make_user_ij
-    auth_logout(ef_token)
+def test_users_all_users_remain_when_logout():
+    workspace_reset()
+    user_gh = auth_register("gregory@gmail.com", "ihaveadream", "Gregory", "Heidelberg")
+    user_ef = auth_register("edward@gmail.com", "12345687", "Edward", "Frankenstein")
+    user_ij = auth_register("ian@hotmail.com", "stretchy0urh4mstrinG5thr1c3", "Ian", "Jacobs")
+    auth_logout(user_ef["token"])
 
-    assert users_all(ij_token)["users"] == [
+    assert users_all(user_ij["token"])["users"] == [
         {
-            'u_id': gh_u_id,
+            'u_id': user_gh["u_id"],
             'email': 'gregory@gmail.com',
             'name_first': 'Gregory',
             'name_last': 'Heidelberg',
             'handle_str': 'gregoryheidelberg'
         }, 
         {
-            'u_id': ef_u_id,
+            'u_id': user_ef["u_id"],
             'email': 'edward@gmail.com',
             'name_first': 'Edward',
             'name_last': 'Frankenstein',
             'handle_str': 'edwardfrankenstein'
         },
         {
-            'u_id': ij_u_id,
+            'u_id': user_ij["u_id"],
             'email': 'ian@hotmail.com',
             'name_first': 'Ian',
             'name_last': 'Jacobs',
@@ -184,11 +188,12 @@ def test_users_all_users_remain_when_logout(reset_workspace, make_user_ef, make_
         }
     ]
 
-def test_users_all_invalid_token_error(reset_workspace, make_user_ef):
-    ef_token, ef_u_id = make_user_ef
+def test_users_all_invalid_token_error():
+    workspace_reset()
+    user_ef = auth_register("edward@gmail.com", "12345687", "Edward", "Frankenstein")
 
     with pytest.raises(AccessError):
-        users_all(ef_token + "invalid")
+        users_all(user_ef["token"] + "invalid")
 
 '''------------------testing search--------------------'''
 # reminder
@@ -318,7 +323,7 @@ def test_search_invalid_search_string(reset_workspace, create_public_channel):
     new_public_channel, user_ab = create_public_channel
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "My first message")
     
-    with pytest.raises(Exception): 
+    with pytest.raises(InputError): 
         result = search(user_ab['token'], "My first message" + "a" * 999)
     
 
