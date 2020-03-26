@@ -755,7 +755,7 @@ def test_message_react_multiple_reacts(make_users):
     new_public_channel = channels_create(user_ab['token'], 'test_channel_public', True)
 
     # user_ab adds user_cd to their public channel
-    channel_invite(user_ab['token'], new_public_channel['channel_id'], user_cd['token'])
+    channel_invite(user_ab['token'], new_public_channel['channel_id'], user_cd['u_id'])
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "2 reacts ples")
     # both user_ab and cd react to the message; user_cd reacts FIRST
     message_react(user_cd['token'], msg1['message_id'], 1)
@@ -850,14 +850,19 @@ def test_message_unreact_multiple_users(make_users):
     # setting up users and public channel
     user_ab, user_cd = make_users
     new_public_channel = channels_create(user_ab['token'], 'test_channel_public', True)
+    # user_cd joins the public channel
+    channel_join(user_cd['token'], new_public_channel['channel_id'])
 
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "two minus one is one")
     message_react(user_ab['token'], msg1['message_id'], 1)
     message_react(user_cd['token'], msg1['message_id'], 1)
     message_unreact(user_ab['token'], msg1['message_id'], 1)
-
+    
+    # grabbing messages of channel
+    messages_public = channel_messages(user_ab['token'], \
+        new_public_channel['channel_id'], 0)['messages']
     # checking that user_cd still remains on the list after user_ab unreacted
-    assert essages_public[0]['reacts'] == [{
+    assert messages_public[0]['reacts'] == [{
         'react_id': 1,
         'u_ids': [user_cd['u_id']],
         'is_this_user_reacted': False,
