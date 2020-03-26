@@ -542,8 +542,8 @@ def test_message_pin_already_pinned_error(make_users):
     message_pin(user_ab["token"], msg_id1)
 
     msg_dict = channel_messages(user_ab["token"], new_ch["channel_id"], 0)["messages"]
-    assert msg_dict[0]["is_pinned"] == False
-    assert msg_dict[1]["is_pinned"] == True
+    assert msg_dict[0]["is_pinned"] == True
+    assert msg_dict[1]["is_pinned"] == False
     
     with pytest.raises(InputError):
         message_pin(user_ab["token"], msg_id1)
