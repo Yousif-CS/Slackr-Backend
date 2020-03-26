@@ -295,7 +295,7 @@ def has_user_reacted_react_id(token, message_id, react_id):
     # locate the message dictionary in question
     for message in message_list:
         if message_id == message['message_id']:
-            this_msg = message['message_id']
+            this_msg = message
     for react in this_msg['reacts']:
         if react['react_id'] == react_id:
             if u_id in react['u_ids']:
