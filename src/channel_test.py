@@ -273,7 +273,6 @@ def test_channel_messages_more_than_fifty(reset, create_public_channel):
     Testing sending more than 50 messages and checking the function returns only the first 50 (pagination)
     Unfortunately, we have to use a for loop
     '''
-    print(get_store())
     #create a public channel using fixture and return its details and the owner's
     channel_id, owner_info = create_public_channel
     sent_msgs_ids = []
