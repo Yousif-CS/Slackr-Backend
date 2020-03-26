@@ -635,8 +635,8 @@ def test_message_unpin_multiple(make_users):
 # InputError: message id is not a valid message
 def test_message_unpin_msgid_invalid(make_users):
     # setting up users and public channel
-    user_ab, user_cd = make_users
-    new_ch = channels_create(user_ab['token'], 'test_channel_public', True)
+    owner_ab, user_cd = make_users
+    new_ch = channels_create(owner_ab['token'], 'test_channel_public', True)
 
     msg_id0 = message_send(owner_ab["token"], new_ch["channel_id"], "Random msg")["message_id"]
 
@@ -646,8 +646,8 @@ def test_message_unpin_msgid_invalid(make_users):
 # InputError: auth user is not an owner
 def test_message_unpin_not_owner(make_users):
     # setting up users and public channel
-    user_ab, user_cd = make_users
-    new_ch = channels_create(user_ab['token'], 'test_channel_public', True)
+    owner_ab, user_cd = make_users
+    new_ch = channels_create(owner_ab['token'], 'test_channel_public', True)
 
     channel_invite(owner_ab["token"], new_ch["channel_id"], user_cd["u_id"])
 
@@ -661,8 +661,8 @@ def test_message_unpin_not_owner(make_users):
 # InputError: already unpinned
 def test_message_unpin_already_unpinned_error(make_users):
     # setting up users and public channel
-    user_ab, user_cd = make_users
-    new_ch = channels_create(user_ab['token'], 'test_channel_public', True)
+    owner_ab, user_cd = make_users
+    new_ch = channels_create(owner_ab['token'], 'test_channel_public', True)
 
     msg_id = message_send(owner_ab["token"], new_ch["channel_id"], "This message is to be pinned")["message_id"]
     message_pin(owner_ab["token"], msg_id)
