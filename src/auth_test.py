@@ -11,6 +11,7 @@ from other import workspace_reset
 '''------------------testing auth_register--------------------'''
 #Test valid registration details successfully registers a user
 def test_auth_register_correct_details(): 
+	workspace_reset()
 	credentials = auth_register('max.smith@gmail.com', 'great_password101', 'Max', 'Smith')
 	assert user_profile(credentials['token'], credentials['u_id']) == \
 		{"user": {
@@ -228,8 +229,6 @@ def test_logout_unsuccessful():
 	message = auth_logout(rand_token) 
 	assert message['is_success'] == False 
 	
-
-
 #A logged out user trying to join a channel 
 def test_logout_join_fails(): 
 	workspace_reset()
