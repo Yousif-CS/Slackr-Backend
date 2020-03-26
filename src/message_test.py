@@ -455,18 +455,19 @@ def test_message_pin_owner_pins_other(make_users):
     user_ab, user_cd = make_users
     new_ch = channels_create(user_ab['token'], 'test_channel_public', True)
 
-    channel_invite(owner_ab["token"], new_ch["channel_id"], user_cd["u_id"])
+    channel_invite(user_ab["token"], new_ch["channel_id"], user_cd["u_id"])
 
-    msg_id0 = message_send(owner_ab["token"], new_ch["channel_id"],
+    msg_id0 = message_send(user_ab["token"], new_ch["channel_id"],
         "This message by the owner will not be pinned.")["message_id"]
     msg_id1 = message_send(user_cd["token"], new_ch["channel_id"], 
         "This message from a normal member will be pinned by the owner")["message_id"]
 
-    message_pin(owner_ab["token"], msg_id1)
+    message_pin(user_ab["token"], msg_id1)
 
-    msg_dict = channel_messages(owner_ab["token"], new_ch["channel_id"], 0)["messages"]
-    assert msg_dict[0]["is_pinned"] == False
-    assert msg_dict[1]["is_pinned"] == True
+    msg_dict = channel_messages(user_ab["token"], new_ch["channel_id"], 0)["messages"]
+    # ordering of channel_messages list: most recent first in list
+    assert msg_dict[0]["is_pinned"] == True
+    assert msg_dict[1]["is_pinned"] == False
 
 # More than one message may be pinned at once
 def test_message_pin_more_than_one(make_users):
@@ -474,22 +475,23 @@ def test_message_pin_more_than_one(make_users):
     user_ab, user_cd = make_users
     new_ch = channels_create(user_ab['token'], 'test_channel_public', True)
 
-    channel_invite(owner_ab["token"], new_ch["channel_id"], user_cd["u_id"])
+    channel_invite(user_ab["token"], new_ch["channel_id"], user_cd["u_id"])
 
-    msg_id0 = message_send(owner_ab["token"], new_ch["channel_id"],
+    msg_id0 = message_send(user_ab["token"], new_ch["channel_id"],
         "This message by the owner will not be pinned.")["message_id"]
     msg_id1 = message_send(user_cd["token"], new_ch["channel_id"], 
         "This message from a normal member will be pinned by the owner")["message_id"]
-    msg_id2 = message_send(owner_ab["token"], new_ch["channel_id"],
+    msg_id2 = message_send(user_ab["token"], new_ch["channel_id"],
         "This 2nd message from the owner will be pinned.")["message_id"]
     
-    message_pin(owner_ab["token"], msg_id1)
-    message_pin(owner_ab["token"], msg_id2)
+    message_pin(user_ab["token"], msg_id1)
+    message_pin(user_ab["token"], msg_id2)
 
-    msg_dict = channel_messages(owner_ab["token"], new_ch["channel_id"], 0)["messages"]
-    assert msg_dict[0]["is_pinned"] == False
+    msg_dict = channel_messages(user_ab["token"], new_ch["channel_id"], 0)["messages"]
+    # most recent to least recent
+    assert msg_dict[0]["is_pinned"] == True
     assert msg_dict[1]["is_pinned"] == True
-    assert msg_dict[2]["is_pinned"] == True 
+    assert msg_dict[2]["is_pinned"] == False 
 
 # InputError: message_id is not a valid id
 def test_message_pin_id_invalid(make_users):
@@ -497,10 +499,10 @@ def test_message_pin_id_invalid(make_users):
     user_ab, user_cd = make_users
     new_ch = channels_create(user_ab['token'], 'test_channel_public', True)
 
-    msg_id0 = message_send(owner_ab["token"], new_ch["channel_id"], "Random msg")["message_id"]
+    msg_id0 = message_send(user_ab["token"], new_ch["channel_id"], "Random msg")["message_id"]
 
     with pytest.raises(InputError):
-        message_pin(owner_ab["token"], msg_id0 + 1)
+        message_pin(user_ab["token"], msg_id0 + 1)
     
 # InputError: message_id not valid because no messages exist
 def test_message_pin_no_msgs(make_users):
@@ -509,7 +511,7 @@ def test_message_pin_no_msgs(make_users):
     new_ch = channels_create(user_ab['token'], 'test_channel_public', True)
 
     with pytest.raises(InputError):
-        message_pin(owner_ab["token"], 0)
+        message_pin(user_ab["token"], 0)
 
 # InputError: auth user is not an owner (of channel or of slackr)
 def test_message_pin_auth_user_not_owner(make_users):
@@ -517,9 +519,9 @@ def test_message_pin_auth_user_not_owner(make_users):
     user_ab, user_cd = make_users
     new_ch = channels_create(user_ab['token'], 'test_channel_public', True)
 
-    channel_invite(owner_ab["token"], new_ch["channel_id"], user_cd["u_id"])
+    channel_invite(user_ab["token"], new_ch["channel_id"], user_cd["u_id"])
 
-    msg_id0 = message_send(owner_ab["token"], new_ch["channel_id"], "Random msg")["message_id"]
+    msg_id0 = message_send(user_ab["token"], new_ch["channel_id"], "Random msg")["message_id"]
 
     with pytest.raises(InputError):
         message_pin(user_cd["token"], msg_id0)
@@ -530,21 +532,21 @@ def test_message_pin_already_pinned_error(make_users):
     user_ab, user_cd = make_users
     new_ch = channels_create(user_ab['token'], 'test_channel_public', True)
 
-    channel_invite(owner_ab["token"], new_ch["channel_id"], user_cd["u_id"])
+    channel_invite(user_ab["token"], new_ch["channel_id"], user_cd["u_id"])
 
-    msg_id0 = message_send(owner_ab["token"], new_ch["channel_id"],
+    msg_id0 = message_send(user_ab["token"], new_ch["channel_id"],
         "This message by the owner will not be pinned.")["message_id"]
     msg_id1 = message_send(user_cd["token"], new_ch["channel_id"], 
         "This message from a normal member will be pinned by the owner")["message_id"]
 
-    message_pin(owner_ab["token"], msg_id1)
+    message_pin(user_ab["token"], msg_id1)
 
-    msg_dict = channel_messages(owner_ab["token"], new_ch["channel_id"], 0)["messages"]
+    msg_dict = channel_messages(user_ab["token"], new_ch["channel_id"], 0)["messages"]
     assert msg_dict[0]["is_pinned"] == False
     assert msg_dict[1]["is_pinned"] == True
     
     with pytest.raises(InputError):
-        message_pin(owner_ab["token"], msg_id1)
+        message_pin(user_ab["token"], msg_id1)
 
 # AccessError: auth_user is not a member of the channel which contains the message
 def test_message_pin_auth_user_not_owner(make_users):
@@ -552,7 +554,7 @@ def test_message_pin_auth_user_not_owner(make_users):
     user_ab, user_cd = make_users
     new_ch = channels_create(user_ab['token'], 'test_channel_public', True)
 
-    msg_id0 = message_send(owner_ab["token"], new_ch["channel_id"], "Random msg")["message_id"]
+    msg_id0 = message_send(user_ab["token"], new_ch["channel_id"], "Random msg")["message_id"]
 
     with pytest.raises(AccessError):
         message_pin(user_cd["token"], msg_id0)
