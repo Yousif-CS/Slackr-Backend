@@ -875,7 +875,7 @@ def test_message_unreact_no_longer_in_channel(make_users):
     new_public_channel = channels_create(user_ab['token'], 'test_channel_public', True)
 
     # user_ab invites user_cd to channel
-    channel_invite(user_ab['token'], new_public_channel['channel_id'], user_cd['token'])
+    channel_invite(user_ab['token'], new_public_channel['channel_id'], user_cd['u_id'])
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "I don't like you cd")
     # user_cd reacts to msg1, and then leaves channel
     message_react(user_cd['token'], msg1['message_id'], 1)
@@ -901,8 +901,7 @@ def test_message_unreact_invalid_react(make_users):
     # setting up users and public channel
     user_ab, user_cd = make_users
     new_public_channel = channels_create(user_ab['token'], 'test_channel_public', True)
-
-    message_react(user_ab['token'], msg1['message_id'], 1)
+    msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Some message")
 
     with pytest.raises(InputError):
         message_unreact(user_ab['token'], msg1['message_id'], 22222)
