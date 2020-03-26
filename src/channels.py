@@ -96,7 +96,7 @@ def channels_create(token, name, is_public):
         'name': name,
         'all_members': [u_id],
         'owner_members': [u_id],
-        'is_priate': not is_public,
+        'is_private': not is_public,
         'messages': [],
     }
     # 2. adding new channel id to user info
