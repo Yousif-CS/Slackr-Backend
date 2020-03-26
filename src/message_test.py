@@ -590,17 +590,17 @@ def test_message_unpin_others_msg(make_users):
     message_pin(user_ab["token"], msg_id1)
 
     msg_dict = channel_messages(user_ab["token"], new_ch["channel_id"], 0)["messages"]
-    assert msg_dict[0]["is_pinned"] == False
-    assert msg_dict[1]["is_pinned"] == True
+    assert msg_dict[0]["is_pinned"] == True
+    assert msg_dict[1]["is_pinned"] == False
 
-    message_unpin(owner_ab["token"], msg_id1)
-    assert channel_messages(owner_ab["token"], new_ch["channel_id"], 0)["messages"][1]["is_pinned"] == False
+    message_unpin(user_ab["token"], msg_id1)
+    assert channel_messages(user_ab["token"], new_ch["channel_id"], 0)["messages"][0]["is_pinned"] == False
 
 # Unpinning multiple messages from multiple pinned messages
 def test_message_unpin_multiple(make_users):
     # setting up users and public channel
-    user_ab, user_cd = make_users
-    new_ch = channels_create(user_ab['token'], 'test_channel_public', True)
+    owner_ab, user_cd = make_users
+    new_ch = channels_create(owner_ab['token'], 'test_channel_public', True)
 
     channel_invite(owner_ab["token"], new_ch["channel_id"], user_cd["u_id"])
 
@@ -618,18 +618,18 @@ def test_message_unpin_multiple(make_users):
     message_pin(owner_ab["token"], msg_id3)
 
     msg_dict = channel_messages(owner_ab["token"], new_ch["channel_id"], 0)["messages"]
-    assert msg_dict[0]["is_pinned"] == False
+    assert msg_dict[0]["is_pinned"] == True
     assert msg_dict[1]["is_pinned"] == True
     assert msg_dict[2]["is_pinned"] == True
-    assert msg_dict[3]["is_pinned"] == True
+    assert msg_dict[3]["is_pinned"] == False
 
-    message_pin(owner_ab["token"], msg_id1)
-    message_pin(owner_ab["token"], msg_id3)
+    message_unpin(owner_ab["token"], msg_id1)
+    message_unpin(owner_ab["token"], msg_id3)
 
     msg_dict = channel_messages(owner_ab["token"], new_ch["channel_id"], 0)["messages"]
     assert msg_dict[0]["is_pinned"] == False
-    assert msg_dict[1]["is_pinned"] == False
-    assert msg_dict[2]["is_pinned"] == True
+    assert msg_dict[1]["is_pinned"] == True
+    assert msg_dict[2]["is_pinned"] == False
     assert msg_dict[3]["is_pinned"] == False
 
 # InputError: message id is not a valid message
