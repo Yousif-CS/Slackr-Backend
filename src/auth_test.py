@@ -3,7 +3,7 @@ import user
 from auth import auth_register, auth_login, auth_logout
 from channel import channel_join
 from channels import channels_create	 
-from error import InputError 
+from error import InputError, AccessError 
 from user import user_profile
 from other import workspace_reset
 
@@ -229,8 +229,6 @@ def test_logout_unsuccessful():
 	message = auth_logout(rand_token) 
 	assert message['is_success'] == False 
 	
-
-
 #A logged out user trying to join a channel 
 def test_logout_join_fails(): 
 	workspace_reset()
@@ -248,5 +246,7 @@ def test_logout_join_fails():
 
 	ch_id = channels_create(user["token"], "new-channel", True)["channel_id"]
 	
-	with pytest.raises(InputError) as e: 
+	with pytest.raises(AccessError) as e: 
 		channel_join(user_token, ch_id)
+
+
