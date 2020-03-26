@@ -169,7 +169,7 @@ def message_unpin(token, message_id):
         # locate the message dictionary in data['Messages']
         if msg['message_id'] == message_id:
             # not part of channel where message_id is in
-            if msg['channel_id'] not in data['Users']['channels']:
+            if msg['channel_id'] not in data['Users'][u_id]['channels']:
                 raise AccessError(description='You are not part of the channel the message is in')
             # neither admin of channel nor slackr owner
             elif u_id not in data['Channels'][msg['channel_id']]['owner_members']:
