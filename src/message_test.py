@@ -655,7 +655,7 @@ def test_message_unpin_not_owner(make_users):
     message_pin(owner_ab["token"], msg_id0)
     assert channel_messages(owner_ab["token"], new_ch["channel_id"], 0)["messages"][0]["is_pinned"] == True
 
-    with pytest.raises(InputError):
+    with pytest.raises(AccessError):
         message_unpin(user_cd["token"], msg_id0)
 
 # InputError: already unpinned
