@@ -40,7 +40,7 @@ def message_send(token, channel_id, message):
 
     # sending the actual message:
     # 1. append to list of message id's
-    data['Channels'][channel_id]['message'].append(new_msg_id)
+    data['Channels'][channel_id]['messages'].append(new_msg_id)
     # 2. new dictionary in data['Messages']
     data['Messages'].append({
         'message_id': new_msg_id,
