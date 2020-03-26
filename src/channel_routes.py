@@ -30,7 +30,7 @@ def details():
     ''' 
     payload = request.get_json()
     if not payload['token'] or not payload['channel_id']: 
-        raise RequestError(description=f"Missing data in request body")
+        raise RequestError(description="Missing data in request body")
 
     info = channel.channel_details(payload['token'], payload['channel_id'])
     return json.dumps(info)
@@ -43,7 +43,7 @@ def messages():
     payload = request.get_json()
 
     if not payload['token'] or not payload['channel_id'] or not payload['start']:
-        raise RequestError(description=f"Missing data in request body")
+        raise RequestError(description="Missing data in request body")
 
     to_send = channel.channel_messages(payload['token'], \
         payload['channel_id'], payload['start'])
@@ -58,7 +58,7 @@ def leave():
     payload = request.get_json()
 
     if not payload['token'] or not payload['channel_id']:
-        raise RequestError(description=f"Missing data in request body")
+        raise RequestError(description="Missing data in request body")
 
     channel.channel_leave(payload['token'], payload['channel_id'])
     return json.dumps({})
@@ -71,7 +71,7 @@ def join():
     payload = request.get_json()
 
     if not payload['token'] or not payload['channel_id']:
-        raise RequestError(description=f"Missing data in request body")
+        raise RequestError(description="Missing data in request body")
 
     channel.channel_join(payload['token'], payload['channel_id'])
     return json.dumps({})
@@ -84,7 +84,7 @@ def addowner():
     payload = request.get_json()
 
     if not payload['token'] or not payload['channel_id'] or not payload['u_id']:
-        raise RequestError(description=f"Missing data in request body")
+        raise RequestError(description="Missing data in request body")
 
     channel.channel_addowner(payload['token'], \
         payload['channel_id'], payload['u_id'])
@@ -99,7 +99,7 @@ def removeowner():
     payload = request.get_json()
 
     if not payload['token'] or not payload['channel_id'] or not payload['u_id']:
-        raise RequestError(description=f"Missing data in request body")
+        raise RequestError(description="Missing data in request body")
 
     channel.channel_removeowner(payload['token'], \
         payload['channel_id'], payload['u_id'])

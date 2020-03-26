@@ -1,7 +1,7 @@
 import sched
 from time import time, sleep
-from auth import verify_token
 from server import get_store, get_tokens
+from auth import verify_token
 from error import InputError, AccessError
 
 # TODO: check structure for TOKENS dictionary
@@ -33,14 +33,14 @@ def message_send(token, channel_id, message):
     # assigning new message_id MUST BE GLOBALLY UNIQUE!
     # starting from index 0
     if len(data['Messages']) == 0:
-        new_msg_id = 0
+        new_msg_id = 1
     else:
         id_list = [msg['message_id'] for msg in data['Messages']]
         new_msg_id = max(id_list) + 1
 
     # sending the actual message:
     # 1. append to list of message id's
-    data['Channels'][channel_id]['message'].append(new_msg_id)
+    data['Channels'][channel_id]['messages'].append(new_msg_id)
     # 2. new dictionary in data['Messages']
     data['Messages'].append({
         'message_id': new_msg_id,
@@ -382,7 +382,7 @@ def message_unreact(token, message_id, react_id):
             # message not in a channel user has joined
             if msg['channel_id'] not in data['Users'][u_id]['channels']:
                 raise InputError(description='Not valid message ID within channel you have joined')
-            
+
             # message has no existing react by user
             if msg['reacts'] == [] or has_user_reacted_react_id(token, message_id, react_id) is False:
                 raise InputError(description='You do not have an existing react to this message')
