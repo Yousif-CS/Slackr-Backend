@@ -31,9 +31,9 @@ def message_send(token, channel_id, message):
     if channel_id not in data['Users'][u_id]['channels']:
         raise AccessError(description='You do not have access to send message in this channel')
     # assigning new message_id MUST BE GLOBALLY UNIQUE!
-    # starting from index 0
+    # starting from index 1
     if len(data['Messages']) == 0:
-        new_msg_id = 0
+        new_msg_id = 1
     else:
         id_list = [msg['message_id'] for msg in data['Messages']]
         new_msg_id = max(id_list) + 1
