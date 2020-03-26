@@ -2,14 +2,12 @@
 This file contains implementations for authentication functions: register, login and logout, token generation
 along with helper functions used in other files as well
 '''
-from server import get_tokens
-from error import AccessError
-
+import jwt 
+import hashlib
 from server import get_store, get_tokens
 from is_valid_email import is_valid_email
 from error import InputError, AccessError
-import jwt 
-import hashlib
+
 
 SECRET = "Never l3t me g0"
 
@@ -67,7 +65,7 @@ def auth_register(email, password, name_first, name_last):
     # InputError if email not valid
     if is_valid_email(email) is False:
         raise InputError(description="Input is not a valid email")
-
+    
     # InputError if password is too short (less than 6 char)
     if len(password) < 6:
         raise InputError(description="Password too short, must be at least 6 characters")
@@ -123,11 +121,10 @@ def auth_register(email, password, name_first, name_last):
 
 def find_u_id(email):
     data = get_store()
-    size = 1
-    while size <= len(data['Users']):
-        if email == data["Users"][size]['email']:
-                return size
-        size += 1 
+
+    for identity in data["Users"].keys():
+        if email == data["Users"][identity]["email"]:
+            return identity
     return None
     
 

@@ -134,8 +134,8 @@ def test_channel_double_invite(create_user1, create_public_channel):
 	channel_invite(owner_info['token'], channel_id['channel_id'], user_info['u_id']) 
 
     #double inviting
-	with pytest.raises(InputError): 
-		channel_invite(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
+    with pytest.raises(InputError): 
+        channel_invite(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
 
 def test_channel_invite_nonexistent_channel(create_public_channel, create_user1):
 	workspace_reset()
