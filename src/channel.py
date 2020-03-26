@@ -116,7 +116,7 @@ def channel_messages(token, channel_id, start):
         raise AccessError(description="You do not have permission to view this channel's messages")
     #getting the messages of the channel
     message_ids = data['Channels'][channel_id]['messages']
-    messages = [message for message in data['Messages'] if message['u_id'] in message_ids]
+    messages = [message for message in data['Messages'] if message['message_id'] in message_ids]
     #verify the start index is less than the number of messages
     if len(messages) <= start:
         raise InputError(description="Invalid starting index")
