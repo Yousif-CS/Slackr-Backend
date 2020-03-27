@@ -31,7 +31,7 @@ def message_send(token, channel_id, message):
     if channel_id not in data['Users'][u_id]['channels']:
         raise AccessError(description='You do not have access to send message in this channel')
     # assigning new message_id MUST BE GLOBALLY UNIQUE!
-    # starting from index 0
+    # starting from index 1
     if len(data['Messages']) == 0:
         new_msg_id = 1
     else:
@@ -49,7 +49,11 @@ def message_send(token, channel_id, message):
         'u_id': u_id,
         'time_created': time(),
         'is_pinned': False,
-        'reacts': []
+        'reacts': [{
+            'react_id': 1,
+            'u_ids': [],
+            'is_this_user_reacted': False,
+        }]
     })
 
     return {'message_id': new_msg_id}
@@ -99,7 +103,11 @@ def message_sendlater(token, channel_id, message, time_sent):
             'u_id': u_id,
             'time_created': time_sent,
             'is_pinned': False,
-            'reacts': []
+            'reacts': [{
+                'react_id': 1,
+                'u_ids': [],
+                'is_this_user_reacted': False,
+            }]
         })
     # setting up scheduler object
     s = sched.scheduler(time, sleep)
@@ -132,7 +140,7 @@ def message_pin(token, message_id):
         # locate the message dictionary in data['Messages']
         if msg['message_id'] == message_id:
             # not part of channel where message_id is in
-            if msg['channel_id'] not in data['Users']['channels']:
+            if msg['channel_id'] not in data['Users'][u_id]['channels']:
                 raise AccessError(description='You are not part of the channel the message is in')
             # neither admin of channel nor slackr owner
             elif u_id not in data['Channels'][msg['channel_id']]['owner_members']:
@@ -169,7 +177,7 @@ def message_unpin(token, message_id):
         # locate the message dictionary in data['Messages']
         if msg['message_id'] == message_id:
             # not part of channel where message_id is in
-            if msg['channel_id'] not in data['Users']['channels']:
+            if msg['channel_id'] not in data['Users'][u_id]['channels']:
                 raise AccessError(description='You are not part of the channel the message is in')
             # neither admin of channel nor slackr owner
             elif u_id not in data['Channels'][msg['channel_id']]['owner_members']:
@@ -221,7 +229,7 @@ def message_remove(token, message_id):
     # 1. delete from message_id list in Channels info
     data['Channels'][matching_channel_id]['messages'].remove(message_id)
     # 2. delete message dictionary from Messages list
-    data['Messages'].remove(msg_pos)
+    data['Messages'].remove(data['Messages'][msg_pos])
 
     return {}
 
@@ -287,7 +295,7 @@ def has_user_reacted_react_id(token, message_id, react_id):
     # locate the message dictionary in question
     for message in message_list:
         if message_id == message['message_id']:
-            this_msg = message['message_id']
+            this_msg = message
     for react in this_msg['reacts']:
         if react['react_id'] == react_id:
             if u_id in react['u_ids']:
