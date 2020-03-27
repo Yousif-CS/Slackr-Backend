@@ -365,7 +365,7 @@ def test_userpermission_change_permission_denied(reset_workspace, create_public_
     user_cd_info = make_user_cd
     #changing permissions
     with pytest.raises(AccessError):
-        userpermission_change(user_ab_info['token'], user_cd_info['u_id'], SLACKR_OWNER)
+        userpermission_change(user_cd_info['token'], user_ab_info['u_id'], SLACKR_OWNER)
 
 def test_userpermission_change_invalid_permission(reset_workspace, create_public_channel, make_user_ab):
     '''
