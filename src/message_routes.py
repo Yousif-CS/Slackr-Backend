@@ -3,6 +3,7 @@ This module contains all the routes for message functionalities
 '''
 from json import dumps
 from flask import request
+
 import message
 from server import APP
 from error import RequestError
@@ -14,7 +15,7 @@ def send():
     '''
     data = request.get_json()
 
-    if not data["token"] or not data["channel_id"] or not data["message"]:
+    if not data['token'] or not data['channel_id'] or not data['message']:
         raise RequestError(description="Missing data in request body")
 
     response = message.message_send(data['token'], data['channel_id'], data['message'])
@@ -27,7 +28,7 @@ def sendlater():
     '''
     data = request.get_json()
 
-    if not data["token"] or not data["channel_id"] or not data["message"] or not data["time_sent"]:
+    if not data['token'] or not data['channel_id'] or not data['message'] or not data['time_sent']:
         raise RequestError(description="Missing data in request body")
 
     response = message.message_sendlater(data['token'], data['channel_id'],\
@@ -41,7 +42,7 @@ def react():
     '''
     data = request.get_json()
 
-    if not data["token"] or not data["message_id"] or not data["react_id"]:
+    if not data['token'] or not data['message_id'] or not data['react_id']:
         raise RequestError(description="Missing data in request body")
 
     message.message_react(data['token'], data['message_id'], data['react_id'])
@@ -54,7 +55,7 @@ def unreact():
     '''
     data = request.get_json()
 
-    if not data["token"] or not data["message_id"] or not data["react_id"]:
+    if not data['token'] or not data['message_id'] or not data['react_id']:
         raise RequestError(description="Missing data in request body")
 
     message.message_unreact(data['token'], data['message_id'], data['react_id'])
@@ -67,7 +68,7 @@ def pin():
     '''
     data = request.get_json()
 
-    if not data["token"] or not data["message_id"]:
+    if not data['token'] or not data['message_id']:
         raise RequestError(description="Missing data in request body")
 
     message.message_pin(data['token'], data['message_id'])
@@ -80,7 +81,7 @@ def unpin():
     '''
     data = request.get_json()
 
-    if not data["token"] or not data["message_id"]:
+    if not data['token'] or not data['message_id']:
         raise RequestError(description="Missing data in request body")
 
     message.message_unpin(data['token'], data['message_id'])
@@ -93,7 +94,7 @@ def delete():
     '''
     data = request.get_json()
 
-    if not data["token"] or not data["message_id"]:
+    if not data['token'] or not data['message_id']:
         raise RequestError(description="Missing data in request body")
 
     message.message_remove(data['token'], data['message_id'])

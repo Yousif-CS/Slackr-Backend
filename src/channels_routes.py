@@ -4,6 +4,7 @@ This module contains all the routes for channels functionalities
 
 from json import dumps
 from flask import request
+
 from channels import channels_list, channels_listall, channels_create
 from server import APP
 from error import RequestError
@@ -15,7 +16,7 @@ def c_list():
     '''
     data = request.get_json()
 
-    if not data["token"]:
+    if not data['token']:
         raise RequestError(description="Missing data in request body")
 
     response = channels_list(data['token'])
@@ -28,7 +29,7 @@ def listall():
     '''
     data = request.get_json()
 
-    if not data["token"]:
+    if not data['token']:
         raise RequestError(description="Missing data in request body")
 
     response = channels_listall(data['token'])
@@ -41,7 +42,7 @@ def create():
     '''
     data = request.get_json()
 
-    if not data["token"] or not data["name"] or not data["is_public"]:
+    if not data['token'] or not data['name'] or not data['is_public']:
         raise RequestError(description="Missing data in request body")
 
     response = channels_create(data['token'], data['name'], data['is_public'])
