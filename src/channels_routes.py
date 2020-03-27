@@ -47,4 +47,3 @@ def create():
 
     response = channels_create(data['token'], data['name'], data['is_public'])
     return dumps(response)
-
