@@ -81,20 +81,27 @@ def search(token, query_str):
     { message_id, u_id, message, time_created, reacts, is_pinned  }
     '''
 
+    data = get_store()
+    auth_u_id = get_tokens()[token]
+
     # verify the token is valid
     if verify_token(token) is False:
         raise InputError(description='Invalid token')
+
+    if len(query_str) > 1000:
+        raise InputError(description="query_str over 1000 characaters; too long")
 
     matching_msgs = {"messages": []}
     # empty query_str returns an empty list
     if query_str == "":
         return matching_msgs
-
-    # search for the query_str in the messages
-    data = get_store()
-    for msg_dict in data["Messages"]:
-        if query_str in msg_dict["message"]:
-            matching_msgs["messages"].append(msg_dict)
+    
+    # find all the channels the user is a part of and search for query_str in the messages
+    for ch_id in data["Users"][auth_u_id]["channels"]:
+        for msg_dict in data["Messages"]:
+            if msg_dict["message_id"] in data["Channels"][ch_id]["messages"] and \
+                query_str in msg_dict["message"]:
+                matching_msgs["messages"].append(msg_dict)
 
     return matching_msgs
 
