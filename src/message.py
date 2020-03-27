@@ -1,7 +1,7 @@
 import sched
 from time import time, sleep
-from auth import verify_token
 from server import get_store, get_tokens
+from auth import verify_token
 from error import InputError, AccessError
 
 # TODO: check structure for TOKENS dictionary
@@ -390,7 +390,7 @@ def message_unreact(token, message_id, react_id):
             # message not in a channel user has joined
             if msg['channel_id'] not in data['Users'][u_id]['channels']:
                 raise InputError(description='Not valid message ID within channel you have joined')
-            
+
             # message has no existing react by user
             if msg['reacts'] == [] or has_user_reacted_react_id(token, message_id, react_id) is False:
                 raise InputError(description='You do not have an existing react to this message')
