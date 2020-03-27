@@ -3,13 +3,14 @@ This module contains all the routes for standup functionalities
 '''
 
 import json
-from flask import request
+from flask import request, Blueprint
 
 import standup
-from server import APP
 from error import RequestError
 
-@APP.route('/standup/start', methods=['POST'])
+STANDUP = Blueprint('standup', __name__)
+
+@STANDUP.route('/start', methods=['POST'])
 def st_start():
     '''
     Wrapper for standup_start
@@ -24,7 +25,7 @@ def st_start():
 
     return json.dumps(to_send)
 
-@APP.route('/standup/active', methods=['GET'])
+@STANDUP.route('/active', methods=['GET'])
 def st_active():
     '''
     Wrapper for standup_active
@@ -38,7 +39,7 @@ def st_active():
 
     return json.dumps(to_send)
 
-@APP.route('/standup/send', methods=['POST'])
+@STANDUP.route('/send', methods=['POST'])
 def st_send():
     '''
     Wrapper for standup_send

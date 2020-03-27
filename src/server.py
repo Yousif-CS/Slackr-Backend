@@ -5,6 +5,8 @@ The server that handles the routes for slackr
 import sys
 import pickle
 from flask import Flask, request
+from flask_cors import CORS
+from error import InputError
 
 #This dictionary will contain all of the database
 #once the server starts and we unpickle the database file
@@ -72,19 +74,17 @@ def get_tokens():
 
 from threading import Timer
 from json import dumps
-from flask_cors import CORS
 
 #these are routes imports
-'''
-import channel_routes
-import channels_routes
-import user_routes
-import auth_routes
-import standup_routes
-import message_routes
-'''
-from error import InputError
-       
+
+from channel_routes import CHANNEL
+from auth_routes import AUTH
+from channels_routes import CHANNELS
+from user_routes import USER
+from other_routes import OTHER
+from standup_routes import STANDUP
+from message_routes import MESSAGE
+
 #A constant to update the database every hour
 SECONDS_TO_UPDATE = 3600
 
@@ -149,6 +149,16 @@ CORS(APP)
 
 APP.config['TRAP_HTTP_EXCEPTIONS'] = True
 APP.register_error_handler(Exception, defaultHandler)
+
+#registering the routes in other files
+
+APP.register_blueprint(OTHER)
+APP.register_blueprint(CHANNEL, url_prefix='/channel')
+APP.register_blueprint(CHANNELS, url_prefix='/channels')
+APP.register_blueprint(AUTH, url_prefix='/auth')
+APP.register_blueprint(USER, url_prefix='/user')
+APP.register_blueprint(MESSAGE, url_prefix='/message')
+APP.register_blueprint(STANDUP, url_prefix='/standup')
 
 initialize_store()
 

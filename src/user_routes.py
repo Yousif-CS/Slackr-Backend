@@ -4,10 +4,11 @@ This module contains all the routes for user functionalities
 
 import json
 import user
-from server import APP
-from flask import request
+from flask import request, Blueprint
 
-@APP.route('/user/profile', methods=['GET'])
+USER = Blueprint('user', __name__)
+
+@USER.route('/profile', methods=['GET'])
 def profile():
     '''
     A route to call user_profile
@@ -16,7 +17,7 @@ def profile():
     to_send = user.user_profile(payload["token"], payload["u_id"])
     return json.dumps(to_send)
 
-@APP.route('/user/profile/setname', methods=['PUT'])
+@USER.route('/profile/setname', methods=['PUT'])
 def profile_setname():
     '''
     A route to call user_profile_setname
@@ -25,7 +26,7 @@ def profile_setname():
     user.user_profile_setname(payload["token"], payload["name_first"], payload["name_last"])
     return json.dumps({})
 
-@APP.route('/user/profile/setemail', methods=['PUT'])
+@USER.route('/profile/setemail', methods=['PUT'])
 def profile_setemail():
     '''
     A route to call user_profile_setemail
@@ -34,7 +35,7 @@ def profile_setemail():
     user.user_profile_setemail(payload["token"], payload["email"])
     return json.dumps({})
 
-@APP.route('/user/profile/sethandle', methods=['PUT'])
+@USER.route('/profile/sethandle', methods=['PUT'])
 def profile_sethandle():
     '''
     A route to call user_profile_sethandle

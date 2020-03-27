@@ -3,13 +3,14 @@ This module contains all the routes for channels functionalities
 '''
 
 from json import dumps
-from flask import request
+from flask import request, Blueprint
 
 from channels import channels_list, channels_listall, channels_create
-from server import APP
 from error import RequestError
 
-@APP.route("/channels/list", methods=['GET'])
+CHANNELS = Blueprint('channels', __name__)
+
+@CHANNELS.route("/list", methods=['GET'])
 def c_list():
     '''
     a route which calls channels_list
@@ -22,7 +23,7 @@ def c_list():
     response = channels_list(data['token'])
     return dumps(response)
 
-@APP.route("/channels/listall", methods=['GET'])
+@CHANNELS.route("/listall", methods=['GET'])
 def listall():
     '''
     a route which calls channels_listall
@@ -35,7 +36,7 @@ def listall():
     response = channels_listall(data['token'])
     return dumps(response)
 
-@APP.route("/channels/create", methods=['POST'])
+@CHANNELS.route("/create", methods=['POST'])
 def create():
     '''
     a route which calls channels_create

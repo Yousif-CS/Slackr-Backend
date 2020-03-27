@@ -2,28 +2,29 @@
 This module contains all the routes for channel functionalities
 '''
 
+from flask import request, Blueprint
+CHANNEL = Blueprint('channel', __name__)
 import json
-from flask import Flask, request
 
 import channel
 from server import APP
 from error import RequestError
 
 
-@APP.route('/channel/invite', methods= ['POST'])
+@CHANNEL.route('/invite', methods= ['POST'])
 def invite(): 
     '''
     A route to call channel invites
     '''
     payload = request.get_json()
     if not payload['token'] or not payload['channel_id'] or not payload['u_id']: 
-        raise RequestError(description=f"Missing data in request body")
+        raise RequestError(description="Missing data in request body")
 
     channel.channel_invite(payload['token'], payload['channel_id'], payload['u_id'])
     return json.dumps({})
 
 
-@APP.route('/channel/details', methods= ['GET'])
+@CHANNEL.route('/details', methods= ['GET'])
 def details(): 
     ''' 
     A route to gather a channel's details
@@ -35,14 +36,18 @@ def details():
     info = channel.channel_details(payload['token'], payload['channel_id'])
     return json.dumps(info)
 
-@APP.route('/channel/messages', methods=['GET'])
+@CHANNEL.route('/messages', methods=['GET'])
 def messages():
     '''
     A route to call channel_messages
     '''
     payload = request.get_json()
+    print(payload)
+    
+    if not payload:
+        raise RequestError(description="No payload")
 
-    if not payload['token'] or not payload['channel_id'] or not payload['start']:
+    if not payload['token'] or not payload['channel_id'] or payload['start'] is None:
         raise RequestError(description="Missing data in request body")
 
     to_send = channel.channel_messages(payload['token'], \
@@ -50,7 +55,7 @@ def messages():
 
     return json.dumps(to_send)
 
-@APP.route('/channel/leave', methods=['POST'])
+@CHANNEL.route('/leave', methods=['POST'])
 def leave():
     '''
     A route to call channel_leave
@@ -63,7 +68,7 @@ def leave():
     channel.channel_leave(payload['token'], payload['channel_id'])
     return json.dumps({})
 
-@APP.route('/channel/join', methods=['POST'])
+@CHANNEL.route('/join', methods=['POST'])
 def join():
     '''
     A route to call channel_join
@@ -76,7 +81,7 @@ def join():
     channel.channel_join(payload['token'], payload['channel_id'])
     return json.dumps({})
 
-@APP.route('/channel/addowner', methods=['POST'])
+@CHANNEL.route('/addowner', methods=['POST'])
 def addowner():
     '''
     A route to call channel_addowner
@@ -91,7 +96,7 @@ def addowner():
 
     return json.dumps({})
 
-@APP.route('/channel/removeowner', methods=['POST'])
+@CHANNEL.route('/removeowner', methods=['POST'])
 def removeowner():
     '''
     A route to call channel_removeowner

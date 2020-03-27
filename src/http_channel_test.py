@@ -3,14 +3,16 @@ Using requests module to test channel functions
 '''
 
 import json 
-import requests
-import pytest
 import time
+import urllib.request
+from urllib.error import HTTPError
+import pytest
 
 import urls
-from http_helpers import (reset, register, login, message_send, channels_create, 
-                        channel_messages, channels_list)
 from error import AccessError, InputError
+from http_helpers import (reset, register, login, logout, 
+                            message_send, channels_create, 
+                             channel_messages, channels_list)
 
 MESSAGE_BLOCK = 50
 
@@ -20,9 +22,8 @@ def test_channel_messages_empty(reset):
     Tests sending a request to get an empty messages list
     '''
     my_token = register('z5236259@unsw.edu.au', '1231FFF!', 'Yousif', 'Khalid')[1]
-
     channel_id = channels_create(my_token, 'Yousifs Channel', is_public=True)
-    with pytest.raises(InputError):
+    with pytest.raises(HTTPError):
         channel_messages(my_token, channel_id, start=0)
 
 def test_channel_messages_one_message(reset):
@@ -43,10 +44,12 @@ def test_channel_messages_one_message(reset):
     assert messages[0]['message_id'] == msg_id
     assert messages[0]['channel_id'] == channel_id
     assert messages[0]['u_id'] == my_uid
-    assert messages[0]['time_created'] == time_created
-    assert messages[0]['reacts'] == []
+    assert time_created - messages[0]['time_created'] < 1 
+    assert messages[0]['reacts'][0]['u_ids'] == []
     assert start == 0
     assert end == -1
+    #logging out as next test requires logging in
+    logout(my_token)
 
 def test_channel_messages_two_messages():
     '''
@@ -63,7 +66,7 @@ def test_channel_messages_two_messages():
     #asserting
     assert messages[0]['message'] == 'second message!'
     assert messages[0]['message_id'] == msg_id
-    assert messages[0]['time_created'] == time_created
+    assert time_created - messages[0]['time_created'] < 1
     assert messages[1]['message'] == 'first message!'
     assert start == 0
     assert end == -1
@@ -80,10 +83,10 @@ def test_channel_messages_more_than_fifty(reset):
         message_send(my_token, channel_id, f"message {i}")
         time.sleep(0.2)  #just so that we can see a difference in timestamps
     #getting the messages
-    messages, start, end = channel_messages(my_token, channel_messages, start=0)
+    messages, start, end = channel_messages(my_token, channel_id, start=0)
     #asserting
     assert len(messages) == MESSAGE_BLOCK
     assert messages[0]['message'] == 'message 50' #last message sent
-    assert messages[-1]['message'] == 'message 0' #first message sent
+    assert messages[-1]['message'] == 'message 1' #oldest message sent
     assert start == 0
     assert end == MESSAGE_BLOCK

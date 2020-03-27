@@ -2,14 +2,15 @@
 This module contains all the routes for miscellaneous functionalities
 '''
 
-import json
-from flask import request
+from flask import request, Blueprint
+OTHER = Blueprint('other', __name__)
 
+import json
 import other
-from server import APP
 from error import RequestError
 
-@APP.route('/admin/userpermission/change', methods=['POST'])
+
+@OTHER.route('/admin/userpermission/change', methods=['POST'])
 def u_per_change():
     '''
     A wrapper for userpermission_change
@@ -21,4 +22,12 @@ def u_per_change():
 
     other.userpermission_change(payload['token'], \
         payload['u_id'], payload['permission_id'])
+    return json.dumps({})
+
+@OTHER.route('/workspace/reset', methods=['POST'])
+def reset():
+    '''
+    A wrapper for reseting the workspace
+    '''
+    other.workspace_reset()
     return json.dumps({})
