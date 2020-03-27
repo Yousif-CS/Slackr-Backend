@@ -49,4 +49,8 @@ def search():
     matching_msgs = other.search(payload["token"], payload["query_str"])
     return json.dumps(matching_msgs)
 
+@APP.route('/workspace/reset', methods=['POST'])
+def reset():
+    other.workspace_reset()
+    return json.dumps({})
     
