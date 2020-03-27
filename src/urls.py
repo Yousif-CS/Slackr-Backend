@@ -23,6 +23,7 @@ REMOVEOWNER_URL = f"http://{HOSTNAME}:{PORT}/channel/removeowner"
 
 #channels urls
 CHANNELS_CREATE_URL = f"http://{HOSTNAME}:{PORT}/channels/create"
+CHANNELS_LIST_URL = f"http://{HOSTNAME}:{PORT}/channels/list"
 
 #message urls
 SEND_URL = f"http://{HOSTNAME}:{PORT}/message/send"
