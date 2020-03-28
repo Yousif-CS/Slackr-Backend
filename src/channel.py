@@ -127,7 +127,7 @@ def channel_messages(token, channel_id, start):
     if start + MESSAGE_BLOCK >= len(messages):
         return {"messages": messages[start:], "start": start, "end": -1}
     #we return 50 messages with more to give
-    return {"messages": messages[start: start + MESSAGE_BLOCK + 1],
+    return {"messages": messages[start: start + MESSAGE_BLOCK],
             "start": start,
             "end": start + MESSAGE_BLOCK}
 

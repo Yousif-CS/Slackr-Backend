@@ -2,13 +2,13 @@
 This module contains all the routes for message functionalities
 '''
 from json import dumps
-from flask import request
+from flask import request, Blueprint
 
 import message
-from server import APP
 from error import RequestError
 
-@APP.route("/message/send", methods=['POST'])
+MESSAGE = Blueprint('messages', __name__)
+@MESSAGE.route("/send", methods=['POST'])
 def send():
     '''
     calls message_send from message
@@ -21,7 +21,7 @@ def send():
     response = message.message_send(data['token'], data['channel_id'], data['message'])
     return dumps(response)
 
-@APP.route("/message/sendlater", methods=['POST'])
+@MESSAGE.route("/sendlater", methods=['POST'])
 def sendlater():
     '''
     calls message_send from message
@@ -35,7 +35,7 @@ def sendlater():
         data['message'], data['time_sent'])
     return dumps(response)
 
-@APP.route("/message/react", methods=['POST'])
+@MESSAGE.route("/react", methods=['POST'])
 def react():
     '''
     a route that calls message_react from message
@@ -48,7 +48,7 @@ def react():
     message.message_react(data['token'], data['message_id'], data['react_id'])
     return dumps({})
 
-@APP.route("/message/unreact", methods=['POST'])
+@MESSAGE.route("/unreact", methods=['POST'])
 def unreact():
     '''
     a route that calls message_unreact from message
@@ -61,7 +61,7 @@ def unreact():
     message.message_unreact(data['token'], data['message_id'], data['react_id'])
     return dumps({})
 
-@APP.route("/message/pin", methods=['POST'])
+@MESSAGE.route("/pin", methods=['POST'])
 def pin():
     '''
     a route which calls message_pin from message
@@ -74,7 +74,7 @@ def pin():
     message.message_pin(data['token'], data['message_id'])
     return dumps({})
 
-@APP.route("/message/unpin", methods=['POST'])
+@MESSAGE.route("/unpin", methods=['POST'])
 def unpin():
     '''
     a route which calls message_pin from message
@@ -87,7 +87,7 @@ def unpin():
     message.message_unpin(data['token'], data['message_id'])
     return dumps({})
 
-@APP.route("/message/remove", methods=['DELETE'])
+@MESSAGE.route("/remove", methods=['DELETE'])
 def delete():
     '''
     a route which calls message_delete from message

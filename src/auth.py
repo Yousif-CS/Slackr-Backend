@@ -13,6 +13,9 @@ SECRET = "Never l3t me g0"
 
 # checks that the token given is in the TOKENS dictionary as described in server.py
 def verify_token(token):
+    '''
+    A function that validates a token
+    '''
     token_dict = get_tokens()
     if token not in token_dict.keys():
         return False
@@ -20,6 +23,9 @@ def verify_token(token):
 
 # generates a token for a user and adds him to the global tokens dictionary
 def generate_token(u_id):
+    '''
+    use jwt to generate a token
+    '''
     return jwt.encode({"u_id": u_id}, SECRET, algorithm="HS256").decode('utf-8')
 
 # retrieves token given a user id, returns None if the user is logged out FOR AUTH_LOGOUT
@@ -31,7 +37,6 @@ def get_token(u_id):
     return None
 
 def create_handle(name_first, name_last):
-    data = get_store()
     count = 0
     handle_str = name_first.lower() + name_last.lower()
     handle_str = handle_str[:20]
@@ -173,7 +178,7 @@ def auth_logout(token):
     del tokens[token]
     # checking if user is logged out
     if get_token(u_id) is None:
-        return { 'is_success' : True}
+        return {'is_success' : True}
 
     return {'is_success' : False}
 
