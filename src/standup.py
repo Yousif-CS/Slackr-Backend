@@ -41,9 +41,10 @@ def flush_standup(channel_id):
         standups = get_standup()
         for standup in standups:
             #get specific standup with channel id
+            #TODO: what happens if the condition fails?
             if standup['channel_id'] == channel_id:
                 #remove it
-                to_remove = standups.pop(standup)
+                to_remove = standups.remove(standup)
                 #prepare messages
                 to_send = '\n'.join(to_remove['messages'])
                 user_token = get_token(to_remove['u_id'])
@@ -77,7 +78,7 @@ def standup_start(token, channel_id, length):
 
     #verify the channel exists
     if channel_id not in data['Channels']:
-        raise AccessError(description="Invalid channel id")
+        raise InputError(description="Invalid channel id")
 
     #getting all the standups
     standups_info = get_standup()
@@ -117,7 +118,7 @@ def standup_active(token, channel_id):
 
     #verify the channel exists
     if channel_id not in data['Channels']:
-        raise AccessError(description="Invalid channel id")
+        raise InputError(description="Invalid channel id")
 
     #getting all the standups
     standups_info = get_standup()

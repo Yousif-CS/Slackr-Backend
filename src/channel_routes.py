@@ -11,7 +11,7 @@ from server import APP
 from error import RequestError
 
 
-@CHANNEL.route('/invite', methods= ['POST'])
+@APP.route('/channel/invite', methods=['POST'])
 def invite(): 
     '''
     A route to call channel invites
@@ -24,7 +24,7 @@ def invite():
     return json.dumps({})
 
 
-@CHANNEL.route('/details', methods= ['GET'])
+@APP.route('/channel/details', methods=['GET'])
 def details(): 
     ''' 
     A route to gather a channel's details
