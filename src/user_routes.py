@@ -4,7 +4,6 @@ This module contains all the routes for user functionalities
 
 import json
 import user
-from server import APP
 from flask import request, Blueprint
 from error import RequestError
 
