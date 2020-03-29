@@ -151,7 +151,7 @@ def channel_leave(token, channel_id):
 
     #verify the user is a member of the channel
     if channel_id not in data['Users'][u_id]['channels']:
-        raise AccessError(description="You do not have permission leave channel: not a member")
+        raise AccessError(description="Cannot leave channel: not a member")
 
     #verify the leaving is not the only member of a private channel
     if len(data['Channels'][channel_id]['all_members']) is 1 \
@@ -238,6 +238,7 @@ def channel_addowner(token, channel_id, u_id):
 
     #add user as owner
     data['Channels'][channel_id]['owner_members'].append(u_id)
+    print(data['Channels'][channel_id])
 
 def channel_removeowner(token, channel_id, u_id):
     '''
@@ -263,7 +264,7 @@ def channel_removeowner(token, channel_id, u_id):
     
     #verify the user to remove is not a Slackr owner
     if data['Users'][u_id]['global_permission'] == SLACKR_OWNER:
-        raise AccessError(description="You do not have permission to the current user")
+        raise AccessError(description="You do not have permission to remove the current user")
     
     #verify the invoker is either an owner of the channel or slackr
     if u_id_invoker not in data['Channels'][channel_id]['owner_members'] \

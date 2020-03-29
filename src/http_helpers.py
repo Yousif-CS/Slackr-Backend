@@ -11,7 +11,6 @@ def reset():
     '''
     HTTP request to reset server state
     '''
-    #requests.post(urls.RESET_URL)
     request = urllib.request.Request(urls.RESET_URL, method='POST')
     urllib.request.urlopen(request)
 
@@ -98,6 +97,68 @@ def channel_messages(token, channel_id, start):
         method='GET', headers={'Content-Type':'application/json'})
     messages = json.load(urllib.request.urlopen(request))
     return messages['messages'], messages['start'], messages['end']
+
+def channel_join(token, channel_id):
+    '''
+    HTTP request to join a channel
+    '''
+    data = json.dumps({
+        'token': token,
+        'channel_id': channel_id
+    }).encode()
+    request = urllib.request.Request(urls.JOIN_URL, data=data, \
+        method='POST', headers={'Content-Type':'application/json'})
+    urllib.request.urlopen(request)
+
+def channel_leave(token, channel_id):
+    '''
+    HTTP request to leave a channel
+    '''
+    data = json.dumps({
+        'token': token,
+        'channel_id': channel_id
+    }).encode()
+    request = urllib.request.Request(urls.LEAVE_URL, data=data, \
+        method='POST', headers={'Content-Type':'application/json'})
+    urllib.request.urlopen(request)
+
+def channel_addowner(token, channel_id, u_id):
+    '''
+    HTTP request to add owner
+    '''
+    data = json.dumps({
+        'token': token,
+        'channel_id': channel_id,
+        'u_id': u_id
+    }).encode()
+    request = urllib.request.Request(urls.ADDOWNER_URL, data=data, \
+        method='POST', headers={'Content-Type':'application/json'})
+    urllib.request.urlopen(request)
+
+def channel_removeowner(token, channel_id, u_id):
+    '''
+    HTTP request to remove owner
+    '''
+    data = json.dumps({
+        'token': token,
+        'channel_id': channel_id,
+        'u_id': u_id
+    }).encode()
+    request = urllib.request.Request(urls.REMOVEOWNER_URL, data=data, \
+        method='POST', headers={'Content-Type':'application/json'})
+    urllib.request.urlopen(request)
+
+def message_remove(token, message_id):
+    '''
+    HTTP request to remove a message
+    '''
+    data = json.dumps({
+        'token': token,
+        'message_id': message_id
+    }).encode()
+    request = urllib.request.Request(urls.MESSAGE_REMOVE_URL, data=data, \
+        method='DELETE', headers={'Content-Type':'application/json'})
+    urllib.request.urlopen(request)
 
 def channels_list(token):
     '''

@@ -7,11 +7,10 @@ CHANNEL = Blueprint('channel', __name__)
 import json
 
 import channel
-from server import APP
 from error import RequestError
 
 
-@APP.route('/channel/invite', methods=['POST'])
+@CHANNEL.route('/channel/invite', methods=['POST'])
 def invite(): 
     '''
     A route to call channel invites
@@ -24,7 +23,7 @@ def invite():
     return json.dumps({})
 
 
-@APP.route('/channel/details', methods=['GET'])
+@CHANNEL.route('/channel/details', methods=['GET'])
 def details(): 
     ''' 
     A route to gather a channel's details
@@ -41,9 +40,7 @@ def messages():
     '''
     A route to call channel_messages
     '''
-    payload = request.get_json()
-    print(payload)
-    
+    payload = request.get_json()    
     if not payload:
         raise RequestError(description="No payload")
 
