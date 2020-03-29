@@ -24,7 +24,7 @@ def u_per_change():
         payload['u_id'], payload['permission_id'])
     return json.dumps({})
 
-@APP.route('/users/all', methods=['GET'])
+@OTHER.route('/users/all', methods=['GET'])
 def users_all():
     '''
     Wrapper for users_all
@@ -37,7 +37,7 @@ def users_all():
     every_user = other.users_all(payload["token"])
     return json.dumps(every_user)
 
-@APP.route('/search', methods=['GET'])
+@OTHER.route('/search', methods=['GET'])
 def search():
     '''
     Wrapper for search
@@ -50,7 +50,7 @@ def search():
     matching_msgs = other.search(payload["token"], payload["query_str"])
     return json.dumps(matching_msgs)
 
-@APP.route('/workspace/reset', methods=['POST'])
+@OTHER.route('/workspace/reset', methods=['POST'])
 def reset():
     other.workspace_reset()
     return json.dumps({})

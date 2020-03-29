@@ -100,7 +100,7 @@ def delete():
     message.message_remove(data['token'], data['message_id'])
     return dumps({})
 
-@APP.route("/message/edit", methods=['PUT'])
+@MESSAGE.route("/message/edit", methods=['PUT'])
 def edit():
     '''
     a route which calls message_edit from message

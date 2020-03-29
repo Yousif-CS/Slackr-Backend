@@ -3,8 +3,10 @@ Module contains fixtures used in http tests
 '''
 import json
 import urllib.request
+import urllib.parse
 import pytest
 import urls
+import requests
 
 @pytest.fixture
 def reset():
@@ -110,3 +112,37 @@ def channels_list(token):
         method='GET', headers={'Content-Type':'application/json'})
     channel_list = json.load(urllib.request.urlopen(request))
     return channel_list['channels']
+
+def user_profile(token, u_id):
+    '''
+    HTTP request to retrieve infomration about another user
+    '''
+    data = json.dumps({
+        'token': token,
+        'u_id': u_id
+    }).encode()
+
+    request = urllib.request.Request(urls.PROFILE_URL, data=data, \
+        method='GET', headers={'Content-Type':'application/json'})
+
+    profile = json.load(urllib.request.urlopen(request))
+
+    return profile['user']
+
+def user_profile_setname(token, name_first, name_last):
+    '''
+    HTTP request to set the name of the authorised user
+    '''
+    data = json.dumps({
+        'token': token,
+        'name_first': name_first,
+        'name_last': name_last
+    }).encode()
+    request = urllib.request.Request(urls.SETNAME_URL, data=data, \
+        method='PUT', headers={'Content-Type': 'applications/json'})
+
+def user_profile_setemail(token, email):
+    pass
+
+def user_profile_sethandle(token, handle_str):
+    pass
