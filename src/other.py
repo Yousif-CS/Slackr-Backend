@@ -5,6 +5,7 @@ that do not belong to a specific category
 
 import pickle
 from server import get_store, get_tokens
+from standup import get_standup, get_lock
 from auth import verify_token
 from error import InputError, AccessError
 
@@ -29,7 +30,7 @@ def userpermission_change(token, u_id, permission_id):
         raise InputError(description="User does not exist")
 
     #verify permission_id is valid (1 or 2)
-    if not isinstance(permission_id, int) or permission_id not in list([SLACKR_MEMBER, SLACKR_OWNER]):
+    if not isinstance(permission_id, int) or permission_id not in [SLACKR_MEMBER, SLACKR_OWNER]:
         raise InputError(description="Invalid permission id")
 
     #verify the invoker is an admin
@@ -95,7 +96,7 @@ def search(token, query_str):
     # empty query_str returns an empty list
     if query_str == "":
         return matching_msgs
-    
+
     # find all the channels the user is a part of and search for query_str in the messages
     for ch_id in data["Users"][auth_u_id]["channels"]:
         for msg_dict in data["Messages"]:
@@ -119,6 +120,10 @@ def workspace_reset():
     data["Slack_owners"].clear()
     data["Channels"].clear()
     data["Messages"].clear()
+    #clear standups
+    with get_lock():
+        standups = get_standup()
+        standups.clear()
 
     with open("database.p", "wb") as database_file:
         pickle.dump(data, database_file)
