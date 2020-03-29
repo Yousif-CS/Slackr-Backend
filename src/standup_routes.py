@@ -30,12 +30,12 @@ def st_active():
     '''
     Wrapper for standup_active
     '''
-    payload = request.get_json()
-
-    if not payload['token'] or not payload['channel_id']:
+    token = request.args.get('token')
+    channel_id = int(request.args.get('channel_id'))
+    if not token or not channel_id:
         raise RequestError(description=f"Missing data in request body")
 
-    to_send = standup.standup_active(payload['token'], payload['channel_id'])
+    to_send = standup.standup_active(token, channel_id)
 
     return json.dumps(to_send)
 

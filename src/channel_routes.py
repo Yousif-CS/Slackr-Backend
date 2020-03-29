@@ -2,21 +2,21 @@
 This module contains all the routes for channel functionalities
 '''
 
-from flask import request, Blueprint
-CHANNEL = Blueprint('channel', __name__)
 import json
-
+from flask import request, Blueprint
 import channel
 from error import RequestError
+CHANNEL = Blueprint('channel', __name__)
+
 
 
 @CHANNEL.route('/channel/invite', methods=['POST'])
-def invite(): 
+def invite():
     '''
     A route to call channel invites
     '''
     payload = request.get_json()
-    if not payload['token'] or not payload['channel_id'] or not payload['u_id']: 
+    if not payload['token'] or not payload['channel_id'] or not payload['u_id']:
         raise RequestError(description="Missing data in request body")
 
     channel.channel_invite(payload['token'], payload['channel_id'], payload['u_id'])
@@ -24,15 +24,16 @@ def invite():
 
 
 @CHANNEL.route('/channel/details', methods=['GET'])
-def details(): 
-    ''' 
+def details():
+    '''
     A route to gather a channel's details
-    ''' 
-    payload = request.get_json()
-    if not payload['token'] or not payload['channel_id']: 
+    '''
+    token = request.args.get('token')
+    channel_id = int(request.args('channel_id'))
+    if not token or not channel_id:
         raise RequestError(description="Missing data in request body")
 
-    info = channel.channel_details(payload['token'], payload['channel_id'])
+    info = channel.channel_details(token, channel_id)
     return json.dumps(info)
 
 @CHANNEL.route('/messages', methods=['GET'])
@@ -40,15 +41,14 @@ def messages():
     '''
     A route to call channel_messages
     '''
-    payload = request.get_json()    
-    if not payload:
-        raise RequestError(description="No payload")
+    token = request.args.get('token')
+    channel_id = int(request.args.get('channel_id'))
+    start = int(request.args.get('start'))
 
-    if not payload['token'] or not payload['channel_id'] or payload['start'] is None:
+    if not token or not channel_id or start is None:
         raise RequestError(description="Missing data in request body")
 
-    to_send = channel.channel_messages(payload['token'], \
-        payload['channel_id'], payload['start'])
+    to_send = channel.channel_messages(token, channel_id, start)
 
     return json.dumps(to_send)
 

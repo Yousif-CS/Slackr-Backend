@@ -89,14 +89,12 @@ def channel_messages(token, channel_id, start):
     '''
     HTTP request to get channel messages
     '''
-    data = json.dumps({
+    query = urllib.parse.urlencode({
         'token': token,
         'channel_id': channel_id,
         'start': start,
-    }).encode()
-    request = urllib.request.Request(urls.MESSAGES_URL, data=data, \
-        method='GET', headers={'Content-Type':'application/json'})
-    messages = json.load(urllib.request.urlopen(request))
+    })
+    messages = json.load(urllib.request.urlopen(f"{urls.MESSAGES_URL}?{query}"))
     return messages['messages'], messages['start'], messages['end']
 
 def channel_join(token, channel_id):
@@ -165,12 +163,10 @@ def channels_list(token):
     '''
     HTTP request to get the channels the user is part of
     '''
-    data = json.dumps({
+    query = urllib.parse.urlencode({
         'token': token
-    }).encode()
-    request = urllib.request.Request(urls.CHANNELS_LIST_URL, data=data, \
-        method='GET', headers={'Content-Type':'application/json'})
-    channel_list = json.load(urllib.request.urlopen(request))
+    })
+    channel_list = json.load(urllib.request.urlopen(f"{urls.CHANNELS_LIST_URL}?{query}"))
     return channel_list['channels']
 
 def standup_start(token, channel_id, length):
@@ -192,14 +188,11 @@ def standup_active(token, channel_id):
     '''
     HTTP request to check a standup is active
     '''
-    data = json.dumps({
+    query = urllib.parse.urlencode({
         'token': token,
         'channel_id': channel_id,
-    }).encode()
-
-    request = urllib.request.Request(urls.STANDUP_ACTIVE_URL, data=data, \
-        method='GET', headers={'Content-Type':'application/json'})
-    payload = json.load(urllib.request.urlopen(request))
+    })
+    payload = json.load(urllib.request.urlopen(f"{urls.STANDUP_ACTIVE_URL}?{query}"))
     return payload['is_active'], payload['time_finish']
 
 def standup_send(token, channel_id, message):
@@ -220,15 +213,11 @@ def user_profile(token, u_id):
     '''
     HTTP request to retrieve infomration about another user
     '''
-    data = json.dumps({
+    query = urllib.parse.urlencode({
         'token': token,
         'u_id': u_id
-    }).encode()
-
-    request = urllib.request.Request(urls.PROFILE_URL, data=data, \
-        method='GET', headers={'Content-Type':'application/json'})
-
-    profile = json.load(urllib.request.urlopen(request))
+    })
+    profile = json.load(urllib.request.urlopen(f"{urls.PROFILE_URL}?{query}"))
 
     return profile['user']
 
@@ -241,10 +230,12 @@ def user_profile_setname(token, name_first, name_last):
         'name_first': name_first,
         'name_last': name_last
     }).encode()
+    # creating the request - "preparing"
     request = urllib.request.Request(urls.SETNAME_URL, data=data, \
-        method='PUT', headers={'Content-Type': 'application/json'}) # creating the request - "preparing"
+        method='PUT', headers={'Content-Type': 'application/json'})
 
-    urllib.request.urlopen(request) # actually sends the request
+    # actually sends the request
+    urllib.request.urlopen(request)
 
 def user_profile_setemail(token, email):
     '''

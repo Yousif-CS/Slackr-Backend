@@ -15,12 +15,11 @@ def c_list():
     '''
     a route which calls channels_list
     '''
-    data = request.get_json()
-
-    if not data['token']:
+    token = request.args.get('token')
+    if not token:
         raise RequestError(description="Missing data in request body")
 
-    response = channels_list(data['token'])
+    response = channels_list(token)
     return dumps(response)
 
 @CHANNELS.route("/listall", methods=['GET'])
@@ -28,12 +27,11 @@ def listall():
     '''
     a route which calls channels_listall
     '''
-    data = request.get_json()
-
-    if not data['token']:
+    token = request.args.get('token')
+    if not token:
         raise RequestError(description="Missing data in request body")
 
-    response = channels_listall(data['token'])
+    response = channels_listall(token)
     return dumps(response)
 
 @CHANNELS.route("/create", methods=['POST'])

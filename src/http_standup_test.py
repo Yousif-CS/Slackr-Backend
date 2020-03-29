@@ -6,11 +6,11 @@ import time
 from urllib.error import HTTPError
 import pytest
 
-from http_helpers import (reset, register, login, logout,
+from http_helpers import (reset, register,
                           message_send, channels_create,
                           channel_messages, channel_join,
                           standup_start, standup_active,
-                          standup_send, message_remove, channels_list)
+                          standup_send)
 
 #testing standup start
 
