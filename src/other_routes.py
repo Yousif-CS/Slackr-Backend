@@ -29,12 +29,12 @@ def users_all():
     '''
     Wrapper for users_all
     '''
-    payload = request.get_json()
+    token = request.args.get('token')
 
-    if not payload["token"]:
+    if not token:
         raise RequestError(description="Missing data in request body")
     
-    every_user = other.users_all(payload["token"])
+    every_user = other.users_all(token)
     return json.dumps(every_user)
 
 @OTHER.route('/search', methods=['GET'])
@@ -42,12 +42,13 @@ def search():
     '''
     Wrapper for search
     '''
-    payload = request.get_json()
+    token = request.args.get('token')
+    query_str = request.args.get('query_str')
 
-    if not payload["token"] or not payload["query_str"]:
+    if not token or not query_str:
         raise RequestError(description="Missing data in request body")
 
-    matching_msgs = other.search(payload["token"], payload["query_str"])
+    matching_msgs = other.search(token, query_str)
     return json.dumps(matching_msgs)
 
 @OTHER.route('/workspace/reset', methods=['POST'])
