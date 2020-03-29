@@ -171,3 +171,15 @@ def channels_list(token):
         method='GET', headers={'Content-Type':'application/json'})
     channel_list = json.load(urllib.request.urlopen(request))
     return channel_list['channels']
+
+def channels_listall(token):
+    '''
+    HTTP request to get all the channels that exist in slackr
+    '''
+    data = json.dumps({
+        'token': token
+    }).encode()
+    request = urllib.request.Request(urls.CHANNELS_LISTALL_URL, data=data, \
+        method='GET', headers={'Content-Type':'application/json'})
+    all_list = json.load(urllib.request.urlopen(request))
+    return all_list['channels']

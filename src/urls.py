@@ -3,7 +3,7 @@ Module contains urls used for testing
 '''
 
 HOSTNAME = '127.0.0.1'
-PORT = 5000
+PORT = 8085
 
 RESET_URL = f"http://{HOSTNAME}:{PORT}/workspace/reset"
 
@@ -24,6 +24,7 @@ REMOVEOWNER_URL = f"http://{HOSTNAME}:{PORT}/channel/removeowner"
 #channels urls
 CHANNELS_CREATE_URL = f"http://{HOSTNAME}:{PORT}/channels/create"
 CHANNELS_LIST_URL = f"http://{HOSTNAME}:{PORT}/channels/list"
+CHANNELS_LISTALL_URL = f"http://{HOSTNAME}:{PORT}/channels/listall"
 
 #message urls
 MESSAGE_REMOVE_URL = f"http://{HOSTNAME}:{PORT}/message/remove"
