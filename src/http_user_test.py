@@ -9,7 +9,6 @@ from error import RequestError
 from urllib.error import HTTPError
 from http_helpers import reset, register, login, logout, user_profile, user_profile_setname, user_profile_setemail, \
     user_profile_sethandle
-from time import sleep
 
 
 def test_user_profile_own(reset):

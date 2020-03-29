@@ -16,6 +16,8 @@ def reset():
     request = urllib.request.Request(urls.RESET_URL, method='POST')
     urllib.request.urlopen(request)
 
+'''--------------------------auth--------------------------'''
+
 def register(email, password, name_first, name_last):
     '''
     HTTP request to register user
@@ -57,6 +59,7 @@ def logout(token):
 
     return success['is_success']
 
+'''--------------------------message--------------------------'''
 
 def message_send(token, channel_id, message):
     '''
@@ -72,6 +75,36 @@ def message_send(token, channel_id, message):
     msg_details = json.load(urllib.request.urlopen(request))
     return msg_details['message_id']
 
+def message_remove(token, message_id):
+    '''
+    HTTP request to remove a message
+    '''
+    data = json.dumps({
+        'token': token,
+        'message_id': message_id
+    }).encode()
+    request = urllib.request.Request(urls.MESSAGE_REMOVE_URL, data=data, \
+        method='DELETE', headers={'Content-Type':'application/json'})
+    urllib.request.urlopen(request)
+
+def message_edit(token, message_id, message):
+    '''
+    HTTP request to edit a message
+    '''
+    data = json.dumps({
+        'token': token,
+        'message_id': message_id,
+        'message': message
+    }).encode()
+
+    request = urllib.request.Request(urls.EDIT_URL, data=data, \
+        method='PUT', headers={'Content-Type': 'application/json'})
+
+    urllib.request.urlopen(request)
+
+
+'''--------------------------channels--------------------------'''
+
 def channels_create(token, name, is_public):
     '''
     HTTP request to create a channel
@@ -85,6 +118,20 @@ def channels_create(token, name, is_public):
         method='POST', headers={'Content-Type':'application/json'})
     channel_info = json.load(urllib.request.urlopen(request))
     return channel_info['channel_id']
+
+def channels_list(token):
+    '''
+    HTTP request to get the channels the user is part of
+    '''
+    data = json.dumps({
+        'token': token
+    }).encode()
+    request = urllib.request.Request(urls.CHANNELS_LIST_URL, data=data, \
+        method='GET', headers={'Content-Type':'application/json'})
+    channel_list = json.load(urllib.request.urlopen(request))
+    return channel_list['channels']
+
+'''--------------------------channel--------------------------'''
 
 def channel_messages(token, channel_id, start):
     '''
@@ -150,30 +197,10 @@ def channel_removeowner(token, channel_id, u_id):
         method='POST', headers={'Content-Type':'application/json'})
     urllib.request.urlopen(request)
 
-def message_remove(token, message_id):
-    '''
-    HTTP request to remove a message
-    '''
-    data = json.dumps({
-        'token': token,
-        'message_id': message_id
-    }).encode()
-    request = urllib.request.Request(urls.MESSAGE_REMOVE_URL, data=data, \
-        method='DELETE', headers={'Content-Type':'application/json'})
-    urllib.request.urlopen(request)
 
-def channels_list(token):
-    '''
-    HTTP request to get the channels the user is part of
-    '''
-    data = json.dumps({
-        'token': token
-    }).encode()
-    request = urllib.request.Request(urls.CHANNELS_LIST_URL, data=data, \
-        method='GET', headers={'Content-Type':'application/json'})
-    channel_list = json.load(urllib.request.urlopen(request))
-    return channel_list['channels']
 
+
+'''--------------------------user--------------------------'''
 def user_profile(token, u_id):
     '''
     HTTP request to retrieve infomration about another user
@@ -231,3 +258,51 @@ def user_profile_sethandle(token, handle_str):
         method='PUT', headers={"Content-Type": "application/json"})
 
     urllib.request.urlopen(request)
+
+'''--------------------------other--------------------------'''
+def userpermission_change(token, u_id, permission_id):
+    '''
+    HTTP request to change user permissions
+    '''
+    data = json.dumps({
+        'token': token,
+        'u_id': u_id,
+        'permission_id': permission_id
+    }).encode()
+
+    request = urllib.request.Request(urls.PERMISSION_CHANGE_URL, data=data, \
+        method='POST', headers={'Content-Type': 'application/json'})
+
+def users_all(token):
+    '''
+    HTTP request to access the profiles of all users
+    '''
+    data = json.dumps({
+        'token': token
+    }).encode()
+
+    request = urllib.request.Request(urls.USERS_ALL_URL, data=data, \
+        method='GET', headers={"Content-Type": "application/json"})
+
+    response = urllib.request.urlopen(request)
+    payload = json.load(response)
+
+    return payload
+
+
+def search(token, query_str):
+    '''
+    HTTP request to search messages for the query_str
+    '''
+    data = json.dumps({
+        'token': token,
+        'query_str': query_str
+    }).encode()
+
+    request = urllib.request.Request(urls.SEARCH_URL, data=data, \
+        method='GET', headers={'Content-Type': 'application/json'})
+    
+    response = urllib.request.urlopen(request)
+    payload = json.load(response)
+
+    return payload
