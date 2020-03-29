@@ -43,7 +43,7 @@ def create():
     '''
     data = request.get_json()
 
-    if not data['token'] or not data['name'] or not data['is_public']:
+    if not data['token'] or not data['name'] or data['is_public'] is None:
         raise RequestError(description="Missing data in request body")
 
     response = channels_create(data['token'], data['name'], data['is_public'])
