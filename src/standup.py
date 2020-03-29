@@ -4,12 +4,11 @@ along with all its related schedulers and data structures
 '''
 import time
 import sched
-from threading import Lock
+from threading import Lock, Thread
 from server import get_store, get_tokens
 from auth import verify_token, get_token, generate_token, auth_logout
 from message import message_send
 from error import InputError, AccessError
-from message import message_send
 
 MAX_LENGTH = 1000
 
@@ -25,6 +24,12 @@ STANDUP_LOCK = Lock()
 #this is a scheduler that handles scheduling events for standup_start
 MY_SCHEDULER = sched.scheduler(time.time, time.sleep)
 
+def get_lock():
+    '''
+    Give access to STANDUP_LOCK
+    '''
+    global STANDUP_LOCK #pylint: disable=global-statement
+    return STANDUP_LOCK
 def get_standup():
     '''
     Provide access to the standup list
@@ -41,16 +46,17 @@ def flush_standup(channel_id):
         standups = get_standup()
         for standup in standups:
             #get specific standup with channel id
-            #TODO: what happens if the condition fails?
             if standup['channel_id'] == channel_id:
                 #remove it
-                to_remove = standups.remove(standup)
-                #prepare messages
-                to_send = '\n'.join(to_remove['messages'])
-                user_token = get_token(to_remove['u_id'])
+                standups.remove(standup)
+                #if empty do not bother sending
+                if not standup['messages']:
+                    continue
+                to_send = '\n'.join(standup['messages'])
+                user_token = get_token(standup['u_id'])
                 #the user has logged out: generate a temporary token
                 if user_token is None:
-                    user_token = generate_token(to_remove['u_id'])
+                    user_token = generate_token(standup['u_id'])
                     message_send(user_token, channel_id, to_send)
                     auth_logout(user_token)
                 else:
@@ -101,7 +107,10 @@ def standup_start(token, channel_id, length):
             'messages': [],
         })
     #schedule flushing the standup
-    run_scheduler(target=flush_standup, running_time=time.time() + length, args=(channel_id,))
+    running_time = time.time() + length
+    sched_thread = Thread(target=run_scheduler, args=(flush_standup, running_time, (channel_id, )))
+    #run_scheduler(target=flush_standup, running_time=time.time() + length, args=(channel_id,))
+    sched_thread.start()
     return {'time_finish': time_finish}
 
 def standup_active(token, channel_id):
@@ -124,7 +133,7 @@ def standup_active(token, channel_id):
     standups_info = get_standup()
     for standup in standups_info:
         if standup['channel_id'] == channel_id:
-            return {"is_active":True, "time_finish": standup['finish_time']}
+            return {"is_active":True, "time_finish": standup['time_finish']}
     return {"is_active": False, "time_finish": None}
 
 def standup_send(token, channel_id, message):
@@ -146,7 +155,7 @@ def standup_send(token, channel_id, message):
         raise InputError(description="Invalid channel id")
 
     #verify user is within channel
-    if u_id not in data['Channels'][channel_id]['users']:
+    if u_id not in data['Channels'][channel_id]['all_members']:
         raise AccessError(description="You do not have permission to send a standup message")
 
     #verify message is not more than 1000 characters or not less than 1
@@ -156,9 +165,9 @@ def standup_send(token, channel_id, message):
     #verify there is an active standup
     #getting all the standups
     standups_info = get_standup()
-    for standup in standups_info:
-        if standup['channel_id'] == channel_id:
-            with STANDUP_LOCK:
+    with STANDUP_LOCK:
+        for standup in standups_info:
+            if standup['channel_id'] == channel_id:
                 standup['messages'].append(message)
-            return {}
+                return {}
     raise InputError(description="No active standup in this channel")

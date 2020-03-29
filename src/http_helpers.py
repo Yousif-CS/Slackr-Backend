@@ -174,6 +174,49 @@ def channels_list(token):
     channel_list = json.load(urllib.request.urlopen(request))
     return channel_list['channels']
 
+def standup_start(token, channel_id, length):
+    '''
+    HTTP request to start a standup
+    '''
+    data = json.dumps({
+        'token': token,
+        'channel_id': channel_id,
+        'length': length
+    }).encode()
+
+    request = urllib.request.Request(urls.STANDUP_START_URL, data=data, \
+        method='POST', headers={'Content-Type':'application/json'})
+    payload = json.load(urllib.request.urlopen(request))
+    return payload['time_finish']
+
+def standup_active(token, channel_id):
+    '''
+    HTTP request to check a standup is active
+    '''
+    data = json.dumps({
+        'token': token,
+        'channel_id': channel_id,
+    }).encode()
+
+    request = urllib.request.Request(urls.STANDUP_ACTIVE_URL, data=data, \
+        method='GET', headers={'Content-Type':'application/json'})
+    payload = json.load(urllib.request.urlopen(request))
+    return payload['is_active'], payload['time_finish']
+
+def standup_send(token, channel_id, message):
+    '''
+    HTTP request to start a standup
+    '''
+    data = json.dumps({
+        'token': token,
+        'channel_id': channel_id,
+        'message': message
+    }).encode()
+
+    request = urllib.request.Request(urls.STANDUP_SEND_URL, data=data, \
+        method='POST', headers={'Content-Type':'application/json'})
+    urllib.request.urlopen(request)
+
 def user_profile(token, u_id):
     '''
     HTTP request to retrieve infomration about another user

@@ -2,12 +2,12 @@
 This module contains all the routes for miscellaneous functionalities
 '''
 
-from flask import request, Blueprint
-OTHER = Blueprint('other', __name__)
-
 import json
+from flask import request, Blueprint
 import other
 from error import RequestError
+
+OTHER = Blueprint('other', __name__)
 
 
 @OTHER.route('/admin/userpermission/change', methods=['POST'])
