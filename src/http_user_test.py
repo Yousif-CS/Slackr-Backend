@@ -8,8 +8,6 @@ import urllib.request
 from urllib.error import HTTPError
 from http_helpers import reset, register, login, logout, user_profile, user_profile_setname, user_profile_setemail, \
     user_profile_sethandle
-from time import sleep
-
 
 def test_user_profile_own(reset):
     j_id, j_token = register("joshwang@gmail.com", "cre4t1v3p4s5", "Joshua", "Wang")
@@ -211,3 +209,24 @@ def test_user_profile_sethandle_data_missing(reset):
 
     with pytest.raises(HTTPError):
         urllib.request.urlopen(request)
+
+# tests for invalid token
+def test_user_profile_invalid_token(reset):
+    j_id, j_token = register("joshwang@gmail.com", "cre4t1v3p4s5", "Joshua", "Wang")
+    with pytest.raises(HTTPError):
+        user_profile(j_token + 'x', j_id)
+
+def test_user_profile_setname_invalid_token(reset):
+    j_id, j_token = register("joshwang@gmail.com", "cre4t1v3p4s5", "Joshua", "Wang")
+    with pytest.raises(HTTPError):
+        user_profile_setname(j_token + 'x', "Freddie", "Mercury")
+
+def test_user_profile_setemail_invalid_token(reset):
+    j_id, j_token = register("joshwang@gmail.com", "cre4t1v3p4s5", "Joshua", "Wang")
+    with pytest.raises(HTTPError):
+        user_profile_setemail(j_token + 'x', "yoshidino266@gmia.com")
+
+def test_user_profile_sethandle_invalid_token(reset):
+    j_id, j_token = register("joshwang@gmail.com", "cre4t1v3p4s5", "Joshua", "Wang")
+    with pytest.raises(HTTPError):
+        user_profile_sethandle(j_token + 'x', "joshwang234")

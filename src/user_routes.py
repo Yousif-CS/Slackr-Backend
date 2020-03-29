@@ -14,13 +14,12 @@ def profile():
     '''
     A route to call user_profile
     '''
-    token = request.args.get('token')
-    u_id = request.args.get('u_id')
+    payload = request.get_json()
 
-    if not token or not u_id:
+    if not payload["token"] or not payload["u_id"]:
         raise RequestError(description="Missing data in request body")
 
-    to_send = user.user_profile(token, int(u_id))
+    to_send = user.user_profile(payload['token'], payload['u_id'])
     return json.dumps(to_send)
 
 @USER.route('/profile/setname', methods=['PUT'])
