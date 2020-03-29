@@ -89,3 +89,9 @@ def test_channels_listall_empty(reset):
     
     assert channels_listall(a_token) == []
     logout(a_token)
+
+def test_channels_listall_invalid_token():
+    a_id, a_token = login('admin@gmail.com', 'pass123456')
+    # chuck in invalid token
+    with pytest.raises(HTTPError):
+        channels_listall(a_token + 'invalid')
