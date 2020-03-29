@@ -1,15 +1,11 @@
 '''
-Using requests module to test channel functions
+Using urllib module to test channel functions (check http_helpers.py)
 '''
-
-import json
+#pylint: disable=unused-import
 import time
-import urllib.request
 from urllib.error import HTTPError
 import pytest
 
-import urls
-from error import AccessError, InputError
 from http_helpers import (reset, register, login, logout,
                           message_send, channels_create,
                           channel_messages, channel_join, channel_leave,
@@ -234,7 +230,7 @@ def test_channel_addowner_as_reg_member(reset):
     imposer_token = register('z232332@unsw.edu.au', '1234151', 'Koko', 'Lime')[1]
     #create a channel
     channel_id = channels_create(owner_token, 'Yousifs Channel', is_public=True)
-    channel_join(imposer_token, channel_id)   
+    channel_join(imposer_token, channel_id)
     #assertion
     with pytest.raises(HTTPError):
         channel_addowner(imposer_token, channel_id, user_id)
