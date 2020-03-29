@@ -33,3 +33,8 @@ SEND_URL = f"http://{HOSTNAME}:{PORT}/message/send"
 STANDUP_START_URL = f"http://{HOSTNAME}:{PORT}/standup/start"
 STANDUP_ACTIVE_URL = f"http://{HOSTNAME}:{PORT}/standup/active"
 STANDUP_SEND_URL = f"http://{HOSTNAME}:{PORT}/standup/send"
+#user urls
+PROFILE_URL = f"http://{HOSTNAME}:{PORT}/user/profile"
+SETNAME_URL = f"http://{HOSTNAME}:{PORT}/user/profile/setname"
+SETEMAIL_URL = f"http://{HOSTNAME}:{PORT}/user/profile/setemail"
+SETHANDLE_URL = f"http://{HOSTNAME}:{PORT}/user/profile/sethandle"

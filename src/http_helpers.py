@@ -3,6 +3,7 @@ Module contains fixtures used in http tests
 '''
 import json
 import urllib.request
+import urllib.parse
 import pytest
 import urls
 
@@ -213,4 +214,62 @@ def standup_send(token, channel_id, message):
 
     request = urllib.request.Request(urls.STANDUP_SEND_URL, data=data, \
         method='POST', headers={'Content-Type':'application/json'})
+    urllib.request.urlopen(request)
+
+def user_profile(token, u_id):
+    '''
+    HTTP request to retrieve infomration about another user
+    '''
+    data = json.dumps({
+        'token': token,
+        'u_id': u_id
+    }).encode()
+
+    request = urllib.request.Request(urls.PROFILE_URL, data=data, \
+        method='GET', headers={'Content-Type':'application/json'})
+
+    profile = json.load(urllib.request.urlopen(request))
+
+    return profile['user']
+
+def user_profile_setname(token, name_first, name_last):
+    '''
+    HTTP request to set the name of the authorised user
+    '''
+    data = json.dumps({
+        'token': token,
+        'name_first': name_first,
+        'name_last': name_last
+    }).encode()
+    request = urllib.request.Request(urls.SETNAME_URL, data=data, \
+        method='PUT', headers={'Content-Type': 'application/json'}) # creating the request - "preparing"
+
+    urllib.request.urlopen(request) # actually sends the request
+
+def user_profile_setemail(token, email):
+    '''
+    HTTP request to set the email of the authorised user
+    '''
+
+    data = json.dumps({
+        'token': token,
+        'email': email
+    }).encode()
+    request = urllib.request.Request(urls.SETEMAIL_URL, data=data, \
+        method='PUT', headers={'Content-Type': 'application/json'})
+
+    urllib.request.urlopen(request)
+
+def user_profile_sethandle(token, handle_str):
+    '''
+    HTTP request to set the handle of the authorised user
+    '''
+    data = json.dumps({
+        'token': token,
+        'handle_str': handle_str
+    }).encode()
+
+    request = urllib.request.Request(urls.SETHANDLE_URL, data=data, \
+        method='PUT', headers={"Content-Type": "application/json"})
+
     urllib.request.urlopen(request)
