@@ -41,7 +41,7 @@ def profile_setemail():
     '''
     A route to call user_profile_setemail
     '''
-    payload = request.getjson()
+    payload = request.get_json()
 
     if not payload["token"] or not payload["email"]:
         raise RequestError(description="Missing data in request body")
@@ -54,7 +54,7 @@ def profile_sethandle():
     '''
     A route to call user_profile_sethandle
     '''
-    payload = request.getjson()
+    payload = request.get_json()
 
     if not payload["token"] or not payload["handle_str"]:
         raise RequestError(description="Missing data in request body")

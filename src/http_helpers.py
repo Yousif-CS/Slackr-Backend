@@ -139,10 +139,34 @@ def user_profile_setname(token, name_first, name_last):
         'name_last': name_last
     }).encode()
     request = urllib.request.Request(urls.SETNAME_URL, data=data, \
-        method='PUT', headers={'Content-Type': 'applications/json'})
+        method='PUT', headers={'Content-Type': 'application/json'}) # creating the request - "preparing"
+
+    urllib.request.urlopen(request) # actually sends the request
 
 def user_profile_setemail(token, email):
-    pass
+    '''
+    HTTP request to set the email of the authorised user
+    '''
+
+    data = json.dumps({
+        'token': token,
+        'email': email
+    }).encode()
+    request = urllib.request.Request(urls.SETEMAIL_URL, data=data, \
+        method='PUT', headers={'Content-Type': 'application/json'})
+
+    urllib.request.urlopen(request)
 
 def user_profile_sethandle(token, handle_str):
-    pass
+    '''
+    HTTP request to set the handle of the authorised user
+    '''
+    data = json.dumps({
+        'token': token,
+        'handle_str': handle_str
+    }).encode()
+
+    request = urllib.request.Request(urls.SETHANDLE_URL, data=data, \
+        method='PUT', headers={"Content-Type": "application/json"})
+
+    urllib.request.urlopen(request)

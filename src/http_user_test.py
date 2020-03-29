@@ -1,6 +1,7 @@
 '''
 HTTP tests for user.py functions
 '''
+import pytest
 import urls
 import json
 import urllib.request
@@ -8,7 +9,8 @@ from error import RequestError
 from urllib.error import HTTPError
 from http_helpers import reset, register, login, logout, user_profile, user_profile_setname, user_profile_setemail, \
     user_profile_sethandle
-import pytest
+from time import sleep
+
 
 def test_user_profile_own(reset):
     j_id, j_token = register("joshwang@gmail.com", "cre4t1v3p4s5", "Joshua", "Wang")
@@ -54,7 +56,7 @@ def test_user_profile_data_missing():
     request = urllib.request.Request(urls.PROFILE_URL, data=data, \
         method='GET', headers={'Content-Type':'application/json'})
 
-    with pytest.raises(RequestError):
+    with pytest.raises(urllib.error.HTTPError):
         urllib.request.urlopen(request)
 
 # can set name
@@ -64,35 +66,36 @@ def test_user_profile_setname():
     '''
     j_id, j_token = login("joshwang@gmail.com", "cre4t1v3p4s5")
     
-    data = json.dumps({
-        'token': j_token,
-        'name_first': "Freddie",
-        'name_last': "Mercury"
-    })
-    request = urllib.request.Request(urls.SETNAME_URL, data=data, \
-        method='PUT', headers={'Content-Type': 'applications/json'})
-
-    data = json.dumps({
-        'token': j_token,
-        'u_id': j_id
-    }).encode()
-
-    request = urllib.request.Request(urls.PROFILE_URL, data=data, \
-        method='GET', headers={'Content-Type':'application/json'})
-
-    profile = json.load(urllib.request.urlopen(request))['user']
+    user_profile_setname(j_token, "Freddie", "Mercury")
+    profile = user_profile(j_token, j_id)
 
     assert profile["name_first"] == "Freddie"
     assert profile["name_last"] == "Mercury"
 
-
+    logout(j_token)
 
 # reject empty names and too long names
 
 # can set email
+def test_user_profile_setemail(reset):
+    j_id, j_token = register("joshwang@gmail.com", "cre4t1v3p4s5", "Joshua", "Wang")
+
+    user_profile_setemail(j_token, "yoshidino6263@gmail.com")
+    profile = user_profile(j_token, j_id)
+
+    assert profile["email"] == "yoshidino6263@gmail.com"
+
 # reject if not unique
 # reject if not valid email
 
 # can set handle
+def test_user_profile_sethandle(reset):
+    j_id, j_token = register("joshwang@gmail.com", "cre4t1v3p4s5", "Joshua", "Wang")
+
+    user_profile_sethandle(j_token, "fredmerc1")
+    profile = user_profile(j_token, j_id)
+
+    assert profile["handle_str"] == "fredmerc1"
+
 # reject if not between 2 and 20 char
 # reject if not unique
