@@ -8,6 +8,8 @@ import pytest
 import urls
 import requests
 
+BASE_URL = "http://127.0.0.1:5000"
+
 @pytest.fixture
 def reset():
     '''
@@ -123,12 +125,10 @@ def channels_list(token):
     '''
     HTTP request to get the channels the user is part of
     '''
-    data = json.dumps({
+    query = urllib.parse.urlencode({
         'token': token
-    }).encode()
-    request = urllib.request.Request(urls.CHANNELS_LIST_URL, data=data, \
-        method='GET', headers={'Content-Type':'application/json'})
-    channel_list = json.load(urllib.request.urlopen(request))
+    })
+    channel_list = json.load(urllib.request.urlopen(f"{BASE_URL}/channels/list?{query}"))
     return channel_list['channels']
 
 '''--------------------------channel--------------------------'''
@@ -137,14 +137,13 @@ def channel_messages(token, channel_id, start):
     '''
     HTTP request to get channel messages
     '''
-    data = json.dumps({
+    query = urllib.parse.urlencode({
         'token': token,
         'channel_id': channel_id,
         'start': start,
-    }).encode()
-    request = urllib.request.Request(urls.MESSAGES_URL, data=data, \
-        method='GET', headers={'Content-Type':'application/json'})
-    messages = json.load(urllib.request.urlopen(request))
+    })
+    messages = json.load(urllib.request.urlopen(f"{BASE_URL}/channel/messages?{query}"))
+
     return messages['messages'], messages['start'], messages['end']
 
 def channel_join(token, channel_id):
@@ -218,14 +217,13 @@ def standup_active(token, channel_id):
     '''
     HTTP request to check a standup is active
     '''
-    data = json.dumps({
+    query = urllib.parse.urlencode({
         'token': token,
         'channel_id': channel_id,
-    }).encode()
+    })
 
-    request = urllib.request.Request(urls.STANDUP_ACTIVE_URL, data=data, \
-        method='GET', headers={'Content-Type':'application/json'})
-    payload = json.load(urllib.request.urlopen(request))
+    payload = json.load(urllib.request.urlopen(f"{BASE_URL}/standup/active?{query}"))
+
     return payload['is_active'], payload['time_finish']
 
 def standup_send(token, channel_id, message):
@@ -247,17 +245,14 @@ def user_profile(token, u_id):
     '''
     HTTP request to retrieve infomration about another user
     '''
-    data = json.dumps({
+    query = urllib.parse.urlencode({
         'token': token,
         'u_id': u_id
-    }).encode()
+    })
 
-    request = urllib.request.Request(urls.PROFILE_URL, data=data, \
-        method='GET', headers={'Content-Type':'application/json'})
+    payload = json.load(urllib.request.urlopen(f"{BASE_URL}/user/profile?{query}"))
 
-    profile = json.load(urllib.request.urlopen(request))
-
-    return profile['user']
+    return payload['user']
 
 def user_profile_setname(token, name_first, name_last):
     '''
@@ -321,15 +316,11 @@ def users_all(token):
     '''
     HTTP request to access the profiles of all users
     '''
-    data = json.dumps({
+    query = urllib.parse.urlencode({
         'token': token
-    }).encode()
+    })
 
-    request = urllib.request.Request(urls.USERS_ALL_URL, data=data, \
-        method='GET', headers={"Content-Type": "application/json"})
-
-    response = urllib.request.urlopen(request)
-    payload = json.load(response)
+    payload = json.load(urllib.request.urlopen(f"{BASE_URL}/users/all?{query}"))
 
     return payload
 
@@ -338,15 +329,10 @@ def search(token, query_str):
     '''
     HTTP request to search messages for the query_str
     '''
-    data = json.dumps({
+    query = urllib.parse.urlencode({
         'token': token,
         'query_str': query_str
-    }).encode()
+    })
 
-    request = urllib.request.Request(urls.SEARCH_URL, data=data, \
-        method='GET', headers={'Content-Type': 'application/json'})
-    
-    response = urllib.request.urlopen(request)
-    payload = json.load(response)
-
+    payload = json.load(urllib.request.urlopen(f"{BASE_URL}/search?{query}"))
     return payload
