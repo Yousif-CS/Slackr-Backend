@@ -28,3 +28,8 @@ CHANNELS_LIST_URL = f"http://{HOSTNAME}:{PORT}/channels/list"
 #message urls
 MESSAGE_REMOVE_URL = f"http://{HOSTNAME}:{PORT}/message/remove"
 SEND_URL = f"http://{HOSTNAME}:{PORT}/message/send"
+
+#standup urls
+STANDUP_START_URL = f"http://{HOSTNAME}:{PORT}/standup/start"
+STANDUP_ACTIVE_URL = f"http://{HOSTNAME}:{PORT}/standup/active"
+STANDUP_SEND_URL = f"http://{HOSTNAME}:{PORT}/standup/send"
