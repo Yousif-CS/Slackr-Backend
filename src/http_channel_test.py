@@ -322,3 +322,27 @@ def test_channel_removeowner_reg_member(reset):
     channel_join(user_token, channel_id)
     with pytest.raises(HTTPError):
         channel_removeowner(user_token, channel_id, owner_id)
+
+def test_channel_removeowner_already_not(reset):
+    '''
+    Invalid request to remove ownership from a non-owner
+    '''
+    owner_token = register('z5236259@unsw.edu.au', '1231FFF!', 'Yousif', 'Khalid')[1]
+    user_id, user_token = register('z123456@unsw.edu.au', 'bananaboy!', 'Jack', 'Robbers')
+    #create a channel
+    channel_id = channels_create(owner_token, 'Yousifs Channel', is_public=True)
+    #join channel
+    channel_join(user_token, channel_id)
+    with pytest.raises(HTTPError):
+        channel_removeowner(owner_token, channel_id, user_id)
+
+def test_channel_removeowner_not_a_member(reset):
+    '''
+    Invalid request to remove ownership being a non-member
+    '''
+    owner_id, owner_token = register('z5236259@unsw.edu.au', '1231FFF!', 'Yousif', 'Khalid')
+    user_token = register('z123456@unsw.edu.au', 'bananaboy!', 'Jack', 'Robbers')[1]
+    #create a channel
+    channel_id = channels_create(owner_token, 'Yousifs Channel', is_public=True)
+    with pytest.raises(HTTPError):
+        channel_removeowner(user_token, channel_id, owner_id)
