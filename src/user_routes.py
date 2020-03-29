@@ -14,12 +14,13 @@ def profile():
     '''
     A route to call user_profile
     '''
-    payload = request.get_json()
+    token = request.args.get('token')
+    u_id = request.args.get('u_id')
 
-    if not payload["token"] or not payload["u_id"]:
+    if not token or not u_id:
         raise RequestError(description="Missing data in request body")
 
-    to_send = user.user_profile(payload["token"], payload["u_id"])
+    to_send = user.user_profile(token, int(u_id))
     return json.dumps(to_send)
 
 @USER.route('/profile/setname', methods=['PUT'])
@@ -40,7 +41,7 @@ def profile_setemail():
     '''
     A route to call user_profile_setemail
     '''
-    payload = request.getjson()
+    payload = request.get_json()
 
     if not payload["token"] or not payload["email"]:
         raise RequestError(description="Missing data in request body")
@@ -53,7 +54,7 @@ def profile_sethandle():
     '''
     A route to call user_profile_sethandle
     '''
-    payload = request.getjson()
+    payload = request.get_json()
 
     if not payload["token"] or not payload["handle_str"]:
         raise RequestError(description="Missing data in request body")

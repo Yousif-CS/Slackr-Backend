@@ -29,3 +29,9 @@ CHANNELS_LISTALL_URL = f"http://{HOSTNAME}:{PORT}/channels/listall"
 #message urls
 MESSAGE_REMOVE_URL = f"http://{HOSTNAME}:{PORT}/message/remove"
 SEND_URL = f"http://{HOSTNAME}:{PORT}/message/send"
+
+#user urls
+PROFILE_URL = f"http://{HOSTNAME}:{PORT}/user/profile"
+SETNAME_URL = f"http://{HOSTNAME}:{PORT}/user/profile/setname"
+SETEMAIL_URL = f"http://{HOSTNAME}:{PORT}/user/profile/setemail"
+SETHANDLE_URL = f"http://{HOSTNAME}:{PORT}/user/profile/sethandle"
