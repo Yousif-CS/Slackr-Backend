@@ -3,7 +3,7 @@ Module contains urls used for testing
 '''
 
 HOSTNAME = '127.0.0.1'
-PORT = 8085
+PORT = 5000
 
 RESET_URL = f"http://{HOSTNAME}:{PORT}/workspace/reset"
 

@@ -121,6 +121,7 @@ def channels_create(token, name, is_public):
     channel_info = json.load(urllib.request.urlopen(request))
     return channel_info['channel_id']
 
+
 def channels_list(token):
     '''
     HTTP request to get the channels the user is part of
@@ -130,6 +131,18 @@ def channels_list(token):
     })
     channel_list = json.load(urllib.request.urlopen(f"{BASE_URL}/channels/list?{query}"))
     return channel_list['channels']
+
+
+def channels_listall(token):
+    '''
+    HTTP request to get all the channels that exist in slackr
+    '''
+    query = urllib.parse.urlencode({
+        'token': token
+    })
+
+    all_list = json.load(urllib.request.urlopen(f"{BASE_URL}/channels/listall?{query}"))
+    return all_list['channels']
 
 '''--------------------------channel--------------------------'''
 
@@ -194,21 +207,6 @@ def channel_removeowner(token, channel_id, u_id):
     request = urllib.request.Request(urls.REMOVEOWNER_URL, data=data, \
         method='POST', headers={'Content-Type':'application/json'})
     urllib.request.urlopen(request)
-
-
-def channels_listall(token):
-    '''
-    HTTP request to get all the channels that exist in slackr
-    '''
-    data = json.dumps({
-        'token': token
-    }).encode()
-    request = urllib.request.Request(urls.CHANNELS_LISTALL_URL, data=data, \
-        method='GET', headers={'Content-Type':'application/json'})
-    all_list = json.load(urllib.request.urlopen(request))
-    return all_list['channels']
-
-
 
 '''--------------------------standup--------------------------'''
 def standup_start(token, channel_id, length):

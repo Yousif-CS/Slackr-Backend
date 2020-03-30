@@ -15,11 +15,13 @@ def test_channels_create_ok(reset):
     '''
     a_id, a_token = register('admin@gmail.com', 'pass123456', 'Alan', 'Brown')
     channels_create(a_token, 'test_public', True)
-    payload = channels_list(a_token)[0]
+    payload = channels_list(a_token)
     # asserting
-    assert payload['channel_id'] == 1
-    assert payload['name'] == 'test_public'
+    assert len(payload) == 1
+    assert payload[0]['channel_id'] == 1
+    assert payload[0]['name'] == 'test_public'
     logout(a_token)
+
 
 def test_channels_create_bad():
     '''
@@ -104,7 +106,9 @@ def test_channels_listall_ok():
     a_id, a_token = login('admin@gmail.com', 'pass123456')
     k_id, k_token = login('ken@gmail.com', 'kenisaperson')
     # assert both users get the same list when calling listall
-    assert channels_listall(a_token) == channels_listall(k_token) == [
+    payload = channels_listall(a_token)
+    payload2 = channels_listall(k_token)
+    assert payload == [
         {
             'channel_id': 1,
             'name': 'test_public',
@@ -124,7 +128,7 @@ def test_channels_listall_empty(reset):
     '''
     Testing return of empty payload when no channels exist
     '''
-    a_id, a_token = register('admin@gmail.com', 'pass123456', 'Alan', 'Brown')
+    a_token = register('admin@gmail.com', 'pass123456', 'Alan', 'Brown')[1]
  
     assert channels_listall(a_token) == []
     logout(a_token)
