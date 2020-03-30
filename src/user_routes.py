@@ -3,8 +3,8 @@ This module contains all the routes for user functionalities
 '''
 
 import json
-import user
 from flask import request, Blueprint
+import user
 from error import RequestError
 
 USER = Blueprint('user', __name__)
