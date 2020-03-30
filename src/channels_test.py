@@ -1,12 +1,12 @@
 # please edit this file for channels functions
 # TODO: write fixtures for creating channel, creating / registering users
 
-import pytest
+from channel import channel_invite, channel_details
+from auth import auth_register
 from channels import channels_list, channels_listall, channels_create
 from error import InputError, AccessError
-from channel import channel_invite, channel_details
-from auth import auth_login, auth_register
 from other import workspace_reset
+import pytest
 
 
 '''------------------testing channels_list--------------------'''
