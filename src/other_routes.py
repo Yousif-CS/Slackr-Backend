@@ -53,6 +53,8 @@ def search():
 
 @OTHER.route('/workspace/reset', methods=['POST'])
 def reset():
+    '''
+    A route to reset the whole server database
+    '''
     other.workspace_reset()
     return json.dumps({})
-    

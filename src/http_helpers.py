@@ -142,8 +142,7 @@ def channel_messages(token, channel_id, start):
         'channel_id': channel_id,
         'start': start,
     })
-    messages = json.load(urllib.request.urlopen(f"{BASE_URL}/channel/messages?{query}"))
-
+    messages = json.load(urllib.request.urlopen(f"{urls.MESSAGES_URL}?{query}"))
     return messages['messages'], messages['start'], messages['end']
 
 def channel_join(token, channel_id):
@@ -221,9 +220,7 @@ def standup_active(token, channel_id):
         'token': token,
         'channel_id': channel_id,
     })
-
-    payload = json.load(urllib.request.urlopen(f"{BASE_URL}/standup/active?{query}"))
-
+    payload = json.load(urllib.request.urlopen(f"{urls.STANDUP_ACTIVE_URL}?{query}"))
     return payload['is_active'], payload['time_finish']
 
 def standup_send(token, channel_id, message):
@@ -249,8 +246,7 @@ def user_profile(token, u_id):
         'token': token,
         'u_id': u_id
     })
-
-    payload = json.load(urllib.request.urlopen(f"{BASE_URL}/user/profile?{query}"))
+    profile = json.load(urllib.request.urlopen(f"{urls.PROFILE_URL}?{query}"))
 
     return payload['user']
 
@@ -263,10 +259,12 @@ def user_profile_setname(token, name_first, name_last):
         'name_first': name_first,
         'name_last': name_last
     }).encode()
+    # creating the request - "preparing"
     request = urllib.request.Request(urls.SETNAME_URL, data=data, \
-        method='PUT', headers={'Content-Type': 'application/json'}) # creating the request - "preparing"
+        method='PUT', headers={'Content-Type': 'application/json'})
 
-    urllib.request.urlopen(request) # actually sends the request
+    # actually sends the request
+    urllib.request.urlopen(request)
 
 def user_profile_setemail(token, email):
     '''
