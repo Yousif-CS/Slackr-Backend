@@ -8,7 +8,7 @@ from urllib.error import HTTPError
 from http_helpers import reset, register, login, logout, \
     message_send, message_sendlater, channel_messages, channels_create, \
     message_react, message_unreact, message_pin, message_unpin, \
-    channel_join, channel_leave
+    channel_join, channel_leave, message_remove, message_edit
 
 
 def test_message_send_ok(reset):
@@ -115,7 +115,7 @@ def test_message_react_ok(reset):
 def test_message_react_not_in_channel():
     k_token = register('ken@gmail.com', 'kenis123', 'Ken', 'Li')[1]
     with pytest.raises(HTTPError):
-        message_react(k_token, 0, 1)
+        message_react(k_token, 1, 1)
 
 def test_message_react_nonexistent_message_id():
     a_token = login('admin@gmail.com', 'pass123456')[1]
@@ -296,6 +296,62 @@ def test_message_unpin_user_not_in_channel():
     c_token = register('cen@gmail.com', 'ssap12652', 'Chen', 'Bee')[1]
 
     with pytest.raises(HTTPError):
-        message_unpin(c_token, 0)
+        message_unpin(c_token, 1)
+
+def test_message_unpin_invalid_token():
+    a_token = login('admin@gmail.com', 'pass123456')[1]
+    with pytest.raises(HTTPError):
+        message_unpin(a_token + 'x', 1)
+
 
 # testing message_remove
+def test_message_remove_own(reset):
+    '''
+    Testing removing a valid message by a valid authorised user
+    '''
+    a_token = register('admin@gmail.com', 'pass123456', 'Alan', 'Brown')[1]
+    channel_id = channels_create(a_token, 'test_public', True)
+    msg0_id = message_send(a_token, channel_id, 'test message to be removed')
+    # check list is now empty after removal
+    message_remove(a_token, msg0_id)
+    message_send(a_token, channel_id, 'new_test_message')
+    msg_list = channel_messages(a_token, channel_id, 0)[0]
+    assert len(msg_list) == 1
+    assert msg_list[0]['message'] == 'new_test_message'
+    logout(a_token)
+
+def test_message_remove_twice(reset):
+    a_token = register('admin@gmail.com', 'pass123456', 'Alan', 'Brown')[1]
+    channel_id = channels_create(a_token, 'test_public', True)
+    msg0_id = message_send(a_token, channel_id, 'test message to be removed')
+
+    message_remove(a_token, msg0_id)
+
+    with pytest.raises(HTTPError):
+        message_remove(a_token, 0)
+    
+def test_message_remove_slackr_owner(reset):
+    # slackr owner
+    a_token = register('admin@gmail.com', 'pass123456', 'Alan', 'Brown')[1]
+    k_token = register('ken@gmail.com', 'kenis123', 'Ken', 'Li')[1]
+    # ken creates a channel
+    channel_id = channels_create(k_token, 'test_public', True)
+    msg0_id = message_send(k_token, channel_id, 'test message in ken channel')
+    msg1_id = message_send(k_token, channel_id, 'test message2 in ken channel')
+
+    message_remove(a_token, msg0_id)
+    msg_list = channel_messages(k_token, channel_id, 0)[0]
+    assert len(msg_list) == 1
+    assert msg_list[0]['message'] == 'test message2 in ken channel'
+    # unremoved message (2nd one sent) retains its ID
+    assert msg_list[0]['message_id'] == 2
+
+def test_message_remove_regular_user_not_in_channel():
+    c_token = register('cen@gmail.com', 'ssap12652', 'Chen', 'Bee')[1]
+    with pytest.raises(HTTPError):
+        message_remove(c_token, 2)
+
+def test_message_remove_invalid_token():
+    a_token = login('admin@gmail.com', 'pass123456')[1]
+    with pytest.raises(HTTPError):
+        message_remove(a_token + 'x', 2)
