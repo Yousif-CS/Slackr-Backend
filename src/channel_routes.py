@@ -2,12 +2,14 @@
 This module contains all the routes for channel functionalities
 '''
 
+import json
 from flask import request, Blueprint
 CHANNEL = Blueprint('channel', __name__)
-import json
 
 import channel
 from error import RequestError
+
+
 
 
 @CHANNEL.route('/invite', methods=['POST'])
@@ -16,7 +18,7 @@ def invite():
     A route to call channel invites
     '''
     payload = request.get_json()
-    if not payload['token'] or not payload['channel_id'] or not payload['u_id']: 
+    if not payload['token'] or not payload['channel_id'] or not payload['u_id']:
         raise RequestError(description="Missing data in request body")
 
     channel.channel_invite(payload['token'], payload['channel_id'], payload['u_id'])

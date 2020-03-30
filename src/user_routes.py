@@ -3,8 +3,8 @@ This module contains all the routes for user functionalities
 '''
 
 import json
-import user
 from flask import request, Blueprint
+import user
 from error import RequestError
 
 USER = Blueprint('user', __name__)
@@ -15,12 +15,12 @@ def profile():
     A route to call user_profile
     '''
     token = request.args.get('token')
-    u_id = request.args.get('u_id')
+    u_id = int(request.args.get('u_id'))
 
     if not token or not u_id:
         raise RequestError(description="Missing data in request body")
 
-    to_send = user.user_profile(token, int(u_id))
+    to_send = user.user_profile(token, u_id)
     return json.dumps(to_send)
 
 @USER.route('/profile/setname', methods=['PUT'])
