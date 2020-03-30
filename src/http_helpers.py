@@ -158,6 +158,34 @@ def channels_listall(token):
 # --------------------------channel--------------------------
 
 
+def channel_invite(token, channel_id, user_id): 
+    '''
+    HTTP request to invite user to a channel
+    '''
+    data = json.dumps({
+        'token': token,
+        'channel_id': channel_id,
+        'u_id' : user_id
+    }).encode()
+
+    request = urllib.request.Request(urls.INVITE_URL, data=data, method='POST', headers={'Content-Type': 'application/json'})
+    urllib.request.urlopen(request)
+
+
+def channel_details(token, channel_id):
+    ''' 
+    HTTP request to gather details of a channel user is part of
+    '''
+    query = urllib.parse.urlencode({
+        'token': token,
+        'channel_id': channel_id
+    })
+    details = json.load(urllib.request.urlopen(
+        f"{urls.CHANNEL_DETAILS_URL}?{query}"))
+    return details['name'], details['owner_membs'], details['all_members']
+ 
+
+
 def channel_messages(token, channel_id, start):
     '''
     HTTP request to get channel messages
