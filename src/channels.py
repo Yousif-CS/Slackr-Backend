@@ -1,9 +1,10 @@
 '''
 This file contains implementation for channels functions
 '''
-from server import get_store, get_tokens
+from state import get_store, get_tokens
 from auth import verify_token
 from error import InputError, AccessError
+
 
 def channels_list(token):
     '''
@@ -61,6 +62,7 @@ def channels_listall(token):
         })
     return all_channels_dict
 
+
 def channels_create(token, name, is_public):
     '''
     Input: token, name, is_public status
@@ -88,7 +90,7 @@ def channels_create(token, name, is_public):
     if len(channels_listall(token)['channels']) == 0:
         new_id = 1
     else:
-        new_id = max([i for i in data['Channels']]) + 1
+        new_id = max(data['Channels'].keys()) + 1
 
     # updating database:
     # 1. adding new key value pair into data.Channels

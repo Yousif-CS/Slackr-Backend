@@ -10,6 +10,7 @@ from error import RequestError
 
 STANDUP = Blueprint('standup', __name__)
 
+
 @STANDUP.route('/start', methods=['POST'])
 def st_start():
     '''
@@ -20,10 +21,11 @@ def st_start():
     if not payload['token'] or not payload['channel_id'] or not payload['length']:
         raise RequestError(description=f"Missing data in request body")
 
-    to_send = standup.standup_start(payload['token'], \
-        payload['channel_id'], payload['length'])
+    to_send = standup.standup_start(payload['token'],
+                                    payload['channel_id'], payload['length'])
 
     return json.dumps(to_send)
+
 
 @STANDUP.route('/active', methods=['GET'])
 def st_active():
@@ -40,6 +42,7 @@ def st_active():
 
     return json.dumps(to_send)
 
+
 @STANDUP.route('/send', methods=['POST'])
 def st_send():
     '''
@@ -50,7 +53,7 @@ def st_send():
     if not payload['token'] or not payload['channel_id'] or not payload['message']:
         raise RequestError(description=f"Missing data in request body")
 
-    standup.standup_send(payload['token'], \
-        payload['channel_id'], payload['message'])
+    standup.standup_send(payload['token'],
+                         payload['channel_id'], payload['message'])
 
     return json.dumps({})

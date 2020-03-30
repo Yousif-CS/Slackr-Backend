@@ -9,6 +9,7 @@ from error import RequestError
 
 USER = Blueprint('user', __name__)
 
+
 @USER.route('/profile', methods=['GET'])
 def profile():
     '''
@@ -23,6 +24,7 @@ def profile():
     to_send = user.user_profile(token, u_id)
     return json.dumps(to_send)
 
+
 @USER.route('/profile/setname', methods=['PUT'])
 def profile_setname():
     '''
@@ -33,8 +35,10 @@ def profile_setname():
     if not payload["token"] or not payload["name_first"] or not payload["name_last"]:
         raise RequestError(description="Missing data in request body")
 
-    user.user_profile_setname(payload["token"], payload["name_first"], payload["name_last"])
+    user.user_profile_setname(
+        payload["token"], payload["name_first"], payload["name_last"])
     return json.dumps({})
+
 
 @USER.route('/profile/setemail', methods=['PUT'])
 def profile_setemail():
@@ -49,6 +53,7 @@ def profile_setemail():
     user.user_profile_setemail(payload["token"], payload["email"])
     return json.dumps({})
 
+
 @USER.route('/profile/sethandle', methods=['PUT'])
 def profile_sethandle():
     '''
@@ -61,4 +66,3 @@ def profile_sethandle():
 
     user.user_profile_sethandle(payload["token"], payload["handle_str"])
     return json.dumps({})
-    
