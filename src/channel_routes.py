@@ -4,9 +4,11 @@ This module contains all the routes for channel functionalities
 
 import json
 from flask import request, Blueprint
+CHANNEL = Blueprint('channel', __name__)
+
 import channel
 from error import RequestError
-CHANNEL = Blueprint('channel', __name__)
+
 
 
 
