@@ -24,6 +24,7 @@ REMOVEOWNER_URL = f"http://{HOSTNAME}:{PORT}/channel/removeowner"
 # channels urls
 CHANNELS_CREATE_URL = f"http://{HOSTNAME}:{PORT}/channels/create"
 CHANNELS_LIST_URL = f"http://{HOSTNAME}:{PORT}/channels/list"
+CHANNELS_LISTALL_URL = f"http://{HOSTNAME}:{PORT}/channels/listall"
 
 # message urls
 MESSAGE_REMOVE_URL = f"http://{HOSTNAME}:{PORT}/message/remove"

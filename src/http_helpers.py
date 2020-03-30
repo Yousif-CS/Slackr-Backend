@@ -208,6 +208,18 @@ def channels_list(token):
     return channel_list['channels']
 
 
+def channels_listall(token):
+    '''
+    HTTP request to get all the channels that exist in slackr
+    '''
+    query = urllib.parse.urlencode({
+        'token': token
+    })
+
+    all_list = json.load(urllib.request.urlopen(f"{BASE_URL}/channels/listall?{query}"))
+    return all_list['channels']
+
+
 # --------------------------channel--------------------------
 
 
