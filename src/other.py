@@ -19,7 +19,7 @@ def userpermission_change(token, u_id, permission_id):
     '''
     #verify the user
     if verify_token(token) is False:
-        raise InputError(description='Invalid token')
+        raise AccessError(description='Invalid token')
     #get database information
     data = get_store()
     #getting id of the user
@@ -81,13 +81,13 @@ def search(token, query_str):
     which is a list of dictionaries containing types
     { message_id, u_id, message, time_created, reacts, is_pinned  }
     '''
+    # verify the token is valid
+    if verify_token(token) is False:
+        raise AccessError(description='Invalid token')
 
     data = get_store()
     auth_u_id = get_tokens()[token]
 
-    # verify the token is valid
-    if verify_token(token) is False:
-        raise InputError(description='Invalid token')
 
     if len(query_str) > 1000:
         raise InputError(description="query_str over 1000 characaters; too long")

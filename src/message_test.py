@@ -57,7 +57,7 @@ new_private_channel = channels_create(user_ab['token'], 'test_channel_private', 
 # using channel_messages to check
 def test_message_send_correct_output(make_users):
     # setting up users and public channel
-    user_ab, user_cd = make_users
+    user_ab = make_users[0]
     new_public_channel = channels_create(user_ab['token'], 'test_channel_public', True)
 
     # user_ab sends a message on the public channel
@@ -73,14 +73,14 @@ def test_message_send_correct_output(make_users):
 # check type of message_id to be int and that user messages' message_id's are unique
 def test_message_send_type_id(make_users):
     # setting up users and public channel
-    user_ab, user_cd = make_users
+    user_ab = make_users[0]
     new_public_channel = channels_create(user_ab['token'], 'test_channel_public', True)
 
     # user_ab sends 2 messages on the public channel
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Message1")
     msg2 = message_send(user_ab['token'], new_public_channel['channel_id'], "Message2")
 
-    assert isinstance(msg1['message_id'], int) 
+    assert isinstance(msg1['message_id'], int)
     assert isinstance(msg2['message_id'], int)
     assert msg1['message_id'] != msg2['message_id']
 
@@ -93,8 +93,8 @@ def test_message_send_identical_msgs(make_users):
 
     # user_cd joins the channel
     channel_join(user_cd['token'], new_public_channel['channel_id'])
-    msg1_ab = message_send(user_ab['token'], new_public_channel['channel_id'], "We are identical!")
-    msg2_cd = message_send(user_cd['token'], new_public_channel['channel_id'], "We are identical!")
+    message_send(user_ab['token'], new_public_channel['channel_id'], "We are identical!")
+    message_send(user_cd['token'], new_public_channel['channel_id'], "We are identical!")
 
     # retrieving messages
     msgs_view = channel_messages(user_ab['token'], new_public_channel['channel_id'], 0)
@@ -110,12 +110,12 @@ def test_message_send_identical_msgs(make_users):
 # 1. messages with white space and symbols, as long as length is under 1000 characters
 def test_message_send_msg_good(make_users):
     # setting up users and public channel
-    user_ab, user_cd = make_users
+    user_ab = make_users[0]
     new_public_channel = channels_create(user_ab['token'], 'test_channel_public', True)
 
     # sending messages
-    msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "awf;l#5)(*#&  #W*%(hi")
-    msg2 = message_send(user_ab['token'], new_public_channel['channel_id'], "m" * 1000)
+    message_send(user_ab['token'], new_public_channel['channel_id'], "awf;l#5)(*#&  #W*%(hi")
+    message_send(user_ab['token'], new_public_channel['channel_id'], "m" * 1000)
     msgs_view = channel_messages(user_ab['token'], new_public_channel['channel_id'], 0)
     # checking that all the above messages sent successfully
     assert len(msgs_view['messages']) == 2
@@ -127,7 +127,7 @@ def test_message_send_msg_good(make_users):
 # 3. a mixture of characters
 def test_message_send_msg_bad_symbols(make_users):
     # setting up users and public channel
-    user_ab, user_cd = make_users
+    user_ab = make_users[0]
     new_public_channel = channels_create(user_ab['token'], 'test_channel_public', True)
 
     with pytest.raises(InputError):
@@ -135,7 +135,7 @@ def test_message_send_msg_bad_symbols(make_users):
 
 def test_message_send_msg_bad_spaces(make_users):
     # setting up users and public channel
-    user_ab, user_cd = make_users
+    user_ab = make_users[0]
     new_public_channel = channels_create(user_ab['token'], 'test_channel_public', True)
 
     with pytest.raises(InputError):
@@ -143,7 +143,7 @@ def test_message_send_msg_bad_spaces(make_users):
 
 def test_message_send_msg_bad_message(make_users):
     # setting up users and public channel
-    user_ab, user_cd = make_users
+    user_ab = make_users[0]
     new_public_channel = channels_create(user_ab['token'], 'test_channel_public', True)
 
     with pytest.raises(InputError):
@@ -188,7 +188,7 @@ def test_message_send_channel_not_found():
 # assuming empty strings are bad
 def test_message_send_empty_string_bad(make_users):
     # setting up users and public channel
-    user_ab, user_cd = make_users
+    user_ab = make_users[0]
     new_public_channel = channels_create(user_ab['token'], 'test_channel_public', True)
 
     with pytest.raises(Exception):
@@ -199,7 +199,7 @@ def test_message_send_empty_string_bad(make_users):
 # assuming token with string 'invalid' is an invalid token
 def test_message_send_invalid_token(make_users):
     # setting up users and public channel
-    user_ab, user_cd = make_users
+    user_ab = make_users[0]
     new_public_channel = channels_create(user_ab['token'], 'test_channel_public', True)
 
     with pytest.raises(AccessError):
@@ -211,7 +211,7 @@ def test_message_send_invalid_token(make_users):
 # testing that owner of channel can remove their own message
 def test_message_remove_owner_remove_own(make_users):
     # setting up users and public channel
-    user_ab, user_cd = make_users
+    user_ab = make_users[0]
     new_public_channel = channels_create(user_ab['token'], 'test_channel_public', True)
 
     msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Hello world!")
@@ -251,10 +251,15 @@ def test_message_remove_owner_remove_user_msg(make_users):
     # user_cd joins channel
     channel_join(user_cd['token'], new_public_channel['channel_id'])
     # messages sent
-    msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Hello world!")
-    msg2 = message_send(user_ab['token'], new_public_channel['channel_id'], "Welcome to my channel.")
-    msg3 = message_send(user_ab['token'], new_public_channel['channel_id'], "Please do not leave inappropriate messages.")
-    msg4 = message_send(user_cd['token'], new_public_channel['channel_id'], "Inappropriate messages.")
+    msg1 = message_send(user_ab['token'], \
+                        new_public_channel['channel_id'], "Hello world!")
+    msg2 = message_send(user_ab['token'], \
+                        new_public_channel['channel_id'], "Welcome to my channel.")
+    msg3 = message_send(user_ab['token'], \
+                        new_public_channel['channel_id'], \
+                        "Please do not leave inappropriate messages.")
+    msg4 = message_send(user_cd['token'], \
+                        new_public_channel['channel_id'], "Inappropriate messages.")
     # user_ab (creator of channel) removes message made by user_cd
     message_remove(user_ab['token'], msg4['message_id'])
     msgs_view = channel_messages(user_ab['token'], new_public_channel['channel_id'], 0)['messages']
@@ -271,7 +276,8 @@ def test_message_remove_nolonger_exist_id(make_users):
     user_ab, user_cd = make_users
     new_public_channel = channels_create(user_ab['token'], 'test_channel_public', True)
 
-    msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Removing the same message twice.")
+    msg1 = message_send(user_ab['token'], \
+                        new_public_channel['channel_id'], "Removing the same message twice.")
     # storing msg1 ID for later reference
     temp_msg1_id = msg1['message_id']
     message_remove(user_ab['token'], msg1['message_id'])
@@ -336,7 +342,7 @@ def test_message_edit_one_member_channel(make_users):
     new_ch = channels_create(user_ab['token'], 'test_channel_public', True)
 
     msg_id = message_send(user_ab["token"], new_ch["channel_id"], "First message.")["message_id"]
-    
+
     message_edit(user_ab["token"], msg_id, "Edited first message")
     assert search(user_ab["token"], "Edited first message")["messages"][0]["message"] == \
         "Edited first message"
@@ -357,7 +363,7 @@ def test_message_edit_empty(make_users):
     new_ch = channels_create(user_ab['token'], 'test_channel_public', True)
     msg1_id = message_send(user_ab["token"], new_ch["channel_id"], "First message.")["message_id"]
     msg2_id = message_send(user_ab["token"], new_ch["channel_id"], "Second message.")["message_id"]
-    
+
     message_edit(user_ab["token"], msg2_id, "Edited second message")
     message_edit(user_ab["token"], msg1_id, "") # should delete the first message
 
@@ -371,10 +377,11 @@ def test_message_edit_sender_edit_self(make_users):
     new_ch = channels_create(user_ab['token'], 'test_channel_public', True)
     channel_join(user_cd["token"], new_ch["channel_id"])
 
-    msg_id = message_send(user_cd["token"], new_ch["channel_id"], "This is the sender's message.")["message_id"]
-    message_edit(user_cd["token"], msg_id, 
-                 "This is the sender's message, and now the sender has edited it.")
-    
+    msg_id = message_send(user_cd["token"], new_ch["channel_id"], \
+                        "This is the sender's message.")["message_id"]
+    message_edit(user_cd["token"], msg_id, \
+                "This is the sender's message, and now the sender has edited it.")
+
     assert search(user_ab["token"], "message")["messages"][0]["message"] == \
         "This is the sender's message, and now the sender has edited it."
 
@@ -385,10 +392,11 @@ def test_message_edit_owner_edits_another_sender(make_users):
     new_ch = channels_create(user_ab['token'], 'test_channel_public', True)
     channel_join(user_cd["token"], new_ch["channel_id"])
 
-    msg_id = message_send(user_cd["token"], new_ch["channel_id"], "This is the sender's message.")["message_id"]
-    message_edit(user_ab["token"], msg_id, 
+    msg_id = message_send(user_cd["token"], new_ch["channel_id"], \
+                        "This is the sender's message.")["message_id"]
+    message_edit(user_ab["token"], msg_id, \
                  "This is the sender's message, and now the owner has edited it.")
-    
+
     assert search(user_ab["token"], "message")["messages"][0]["message"] == \
         "This is the sender's message, and now the owner has edited it."
 

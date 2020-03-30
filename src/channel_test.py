@@ -68,6 +68,15 @@ def create_private_channel(create_owner):
 ''' -------------------------testing channel_invite -------------------------------- '''
 
 
+def test_channel_invite_invalid_token(reset, create_user1, create_public_channel):
+    '''
+    testing inputting an invalid token
+    '''
+    user_info = create_user1
+    channel_id, owner_info = create_public_channel
+    with pytest.raises(AccessError):
+        channel_invite(owner_info['token'] + 'a', channel_id['channel_id'], user_info['u_id'])
+
 def test_channel_invite_valid(reset, create_user1, create_public_channel):
     ''' 
     testing owner of a channel can invite a registered user
@@ -729,7 +738,7 @@ def test_channel_removeowner_no_owner(reset, create_public_channel, create_user1
 
 def test_channel_removeowner_as_non_owner(reset, create_public_channel, create_user1):
     '''
-    Removing an owner as a general member
+    Removing an owner who happens to be a slackr owner as a general member
     '''
     #creating a public channel
     channel_id, owner_info = create_public_channel
@@ -739,6 +748,21 @@ def test_channel_removeowner_as_non_owner(reset, create_public_channel, create_u
     channel_join(user_info['token'], channel_id['channel_id'])
     with pytest.raises(AccessError):
         channel_removeowner(user_info['token'], channel_id['channel_id'], owner_info['u_id'])
+
+def test_channel_removeowner_as_non_owner_not_admin(reset, create_public_channel, \
+                                                    create_user1, create_user2):
+    '''
+    Removing an owner who is not an admin as a regular member
+    '''
+    #creating a public channel
+    channel_id, owner_info = create_public_channel
+    #creating normal users
+    user_info = create_user1
+    another_user = create_user2
+    #joining as a general member and trying to removing another user as an owner
+    channel_addowner(owner_info['token'], channel_id['channel_id'], user_info['u_id'])
+    with pytest.raises(AccessError):
+        channel_removeowner(another_user['token'], channel_id['channel_id'], user_info['u_id'])
 
 def test_channel_removeowner_as_non_member(reset, create_public_channel, create_user1):
     '''

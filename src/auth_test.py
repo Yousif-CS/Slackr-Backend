@@ -171,6 +171,14 @@ def test_login():
 	assert user['u_id'] == user_logging_in['u_id'] 
 
 
+#invalid email login
+def test_login_invalid_email():
+	'''
+	Testing an invalid email
+	'''
+	with pytest.raises(InputError):
+		auth_login('ken-@gmail.com', 'HolaMan')
+
 #Wrong password given
 
 def test_login_password(): 

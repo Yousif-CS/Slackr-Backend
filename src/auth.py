@@ -180,5 +180,3 @@ def auth_logout(token):
     if get_token(u_id) is None:
         return {'is_success' : True}
 
-    return {'is_success' : False}
-

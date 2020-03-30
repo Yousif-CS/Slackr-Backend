@@ -1,5 +1,6 @@
-# please edit this file for channels functions
-# TODO: write fixtures for creating channel, creating / registering users
+'''
+Tests for channels functionalities
+'''
 
 from channel import channel_invite, channel_details
 from auth import auth_register
@@ -193,6 +194,16 @@ def test_channels_create_correct_details():
             {'u_id': user_kli['u_id'], 'name_first': 'Ken', 'name_last': 'L'},
             {'u_id': user_bwang['u_id'], 'name_first': 'Bob', 'name_last': 'Wang'}
         ]
+
+def test_channels_create_invalid_status():
+    '''
+    Testing giving create an invalid is_public status
+    '''
+    workspace_reset()
+    # creating and registering user
+    user_kli = auth_register("ken@gmail.com", "new_pass", "Ken", "L")
+    with pytest.raises(InputError):
+        channels_create(user_kli['token'], 'some_channel_name', is_public='maybe?')
 
 # testing that 2 different channels (maybe with same name) does not have same ID
 def test_channels_create_unique_id():

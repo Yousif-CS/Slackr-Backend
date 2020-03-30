@@ -325,23 +325,33 @@ def test_search_invalid_search_string(reset_workspace, create_public_channel):
     
     with pytest.raises(InputError): 
         result = search(user_ab['token'], "My first message" + "a" * 999)
-    
 
-# invalid token 
+# invalid token
 # assuming the token with string "invalid" is an invalid token
 def test_search_invalid_token(reset_workspace, create_public_channel):
     new_public_channel, user_ab = create_public_channel
 
-    with pytest.raises(Exception):
-        result = search("invalid", "Search string")
+    with pytest.raises(AccessError):
+        result = search(user_ab['token'] + 'a', "Search string")
 
 '''Testing userpermission_change'''
+
+def test_userpermission_change_invalid_token(reset_workspace, create_public_channel, make_user_ab):
+    '''
+    Testing using an invalid token
+    '''
+
+    #creating a public channel
+    channel_id, owner_info = create_public_channel
+    user1 = make_user_ab
+    with pytest.raises(AccessError):
+        userpermission_change(owner_info['token'] + 'a', user1['u_id'], SLACKR_OWNER)
 
 def test_userpermission_change_invalid_u_id(reset_workspace, create_public_channel, make_user_ab):
     '''
     Changing permissions of a non-existent user
     '''
-    
+
     #creating a public channel
     channel_id, owner_info = create_public_channel
     #since owner is the first user who signs up in this
