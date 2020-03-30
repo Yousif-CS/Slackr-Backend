@@ -1,11 +1,11 @@
-# TODO: import more modules / functions as needed
-
-
 import pytest
-from message import message_send, message_remove, message_edit, message_pin, message_unpin, message_react, message_unreact
+from time import time
+from message import message_send, message_remove, message_edit, message_pin, \
+    message_unpin, message_react, message_unreact, message_sendlater
 from error import AccessError, InputError
 from auth import auth_login, auth_register
-from channel import channel_invite, channel_details, channel_messages, channel_leave, channel_join, channel_addowner, channel_removeowner
+from channel import channel_invite, channel_details, channel_messages, channel_leave, \
+    channel_join, channel_addowner, channel_removeowner
 from channels import channels_create
 from other import search, workspace_reset
 
@@ -21,14 +21,6 @@ def make_users():
     return (ab, cd)
 
 
-'''
-For copying and pasting: functions where AB creates
-new_public_channel = channels_create(user_ab['token'], 'test_channel_public', True)
-
-new_private_channel = channels_create(user_ab['token'], 'test_channel_private', False)
-'''
-
-
 '''------------------testing message_send--------------------'''
 # inputs: (token, channel_id, message); output: {message_id}
 
@@ -37,6 +29,9 @@ new_private_channel = channels_create(user_ab['token'], 'test_channel_private', 
 
 
 def test_message_send_correct_output(make_users):
+    '''
+    test for correct functionality
+    '''
     # setting up users and public channel
     user_ab = make_users[0]
     new_public_channel = channels_create(
@@ -56,6 +51,9 @@ def test_message_send_correct_output(make_users):
 
 # check type of message_id to be int and that user messages' message_id's are unique
 def test_message_send_type_id(make_users):
+    '''
+    test for correct ID type 
+    '''
     # setting up users and public channel
     user_ab = make_users[0]
     new_public_channel = channels_create(
@@ -74,6 +72,9 @@ def test_message_send_type_id(make_users):
 
 # testing that identical messages (messages with identical strings) are processed correctly
 def test_message_send_identical_msgs(make_users):
+    '''
+    check identical messages processed correctly
+    '''
     # setting up users and public channel
     user_ab, user_cd = make_users
     new_public_channel = channels_create(
@@ -100,6 +101,9 @@ def test_message_send_identical_msgs(make_users):
 # # but any longer strings will throw InputError
 # 1. messages with white space and symbols, as long as length is under 1000 characters
 def test_message_send_msg_good(make_users):
+    '''
+    test for unique message strings
+    '''
     # setting up users and public channel
     user_ab = make_users[0]
     new_public_channel = channels_create(
@@ -121,6 +125,9 @@ def test_message_send_msg_good(make_users):
 # 2. All white spaces
 # 3. a mixture of characters
 def test_message_send_msg_bad_symbols(make_users):
+    '''
+    test for detecting invalid messages
+    '''
     # setting up users and public channel
     user_ab = make_users[0]
     new_public_channel = channels_create(
@@ -132,6 +139,9 @@ def test_message_send_msg_bad_symbols(make_users):
 
 
 def test_message_send_msg_bad_spaces(make_users):
+    '''
+    test for bad spaces
+    '''
     # setting up users and public channel
     user_ab = make_users[0]
     new_public_channel = channels_create(
@@ -143,6 +153,9 @@ def test_message_send_msg_bad_spaces(make_users):
 
 
 def test_message_send_msg_bad_message(make_users):
+    '''
+    test for more invalid messages
+    '''
     # setting up users and public channel
     user_ab = make_users[0]
     new_public_channel = channels_create(
@@ -155,6 +168,9 @@ def test_message_send_msg_bad_message(make_users):
 
 # testing for AccessError: when user is not part of a channel
 def test_message_send_not_part_of_channel(make_users):
+    '''
+    test for user not part of a channel
+    '''
     # setting up users and public channel
     user_ab, user_cd = make_users
     new_private_channel = channels_create(
@@ -216,6 +232,14 @@ def test_message_send_invalid_token(make_users):
     with pytest.raises(AccessError):
         message_send(user_ab['token'] + "invalid",
                      new_public_channel['channel_id'], "Invalid token")
+
+
+'''------------------testing message_sendlater--------------------'''
+def test_message_sendlater_invalid_token(make_users):
+    # setting up users and public channel
+    user_ab = make_users[0]
+    with pytest.raises(AccessError):
+        message_sendlater(user_ab['token'] + "invalid", 1, "Invalid token message", time())
 
 
 '''------------------testing message_remove--------------------'''
@@ -655,6 +679,18 @@ def test_message_pin_auth_user_not_owner(make_users):
     with pytest.raises(AccessError):
         message_pin(user_cd["token"], msg_id0)
 
+def test_message_pin_invalid_token(make_users):
+    # setting up users and public channel
+    user_ab = make_users[0]
+    new_ch = channels_create(
+        user_ab['token'], 'test_channel_public', True)
+
+    msg_id0 = message_send(user_ab["token"], new_ch["channel_id"], "Random msg")[
+        "message_id"]
+
+    with pytest.raises(AccessError):
+        message_pin(user_ab['token'] + "invalid", msg_id0)
+
 
 '''------------------testing message_unpin--------------------'''
 # Owner can unpin own message
@@ -814,6 +850,18 @@ def test_message_unpin_auth_user_not_owner(make_users):
     with pytest.raises(AccessError):
         message_unpin(user_cd["token"], msg_id0)
 
+def test_message_unpin_invalid_token(make_users):
+    # setting up users and public channel
+    user_ab = make_users[0]
+    new_ch = channels_create(
+        user_ab['token'], 'test_channel_public', True)
+
+    msg_id0 = message_send(user_ab["token"], new_ch["channel_id"], "Random msg")[
+        "message_id"]
+
+    with pytest.raises(AccessError):
+        message_unpin(user_ab['token'] + "invalid", msg_id0)
+
 
 '''------------------testing message_react--------------------'''
 # Test correct display of messages without any reacts
@@ -960,8 +1008,19 @@ def test_message_react_twice(make_users):
     # check that InputError is thrown when user_ab tries to react again with same react_id
     with pytest.raises(InputError):
         message_react(user_ab['token'], msg1['message_id'], 1)
-#
 
+
+def test_message_react_invalid_token(make_users):
+    # setting up users and public channel
+    user_ab = make_users[0]
+    new_ch = channels_create(
+        user_ab['token'], 'test_channel_public', True)
+
+    msg_id0 = message_send(user_ab["token"], new_ch["channel_id"], "Random msg")[
+        "message_id"]
+
+    with pytest.raises(AccessError):
+        message_react(user_ab['token'] + "invalid", msg_id0, 1)
 
 '''------------------testing message_unreact--------------------'''
 
@@ -1094,3 +1153,16 @@ def test_message_unreact_twice(make_users):
     # but they cannot unreact again
     with pytest.raises(InputError):
         message_unreact(user_ab['token'], msg1['message_id'], 1)
+
+
+def test_message_unreact_invalid_token(make_users):
+    # setting up users and public channel
+    user_ab = make_users[0]
+    new_ch = channels_create(
+        user_ab['token'], 'test_channel_public', True)
+
+    msg_id0 = message_send(user_ab["token"], new_ch["channel_id"], "Random msg")[
+        "message_id"]
+
+    with pytest.raises(AccessError):
+        message_unreact(user_ab['token'] + "invalid", msg_id0, 1)

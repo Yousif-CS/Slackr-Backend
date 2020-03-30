@@ -97,7 +97,7 @@ def message_sendlater(token, channel_id, message, time_sent):
             description='You do not have access to send message in this channel')
 
     # checking time_sent is valid (it is a time in the future)
-    if time_sent <= time():
+    if time_sent < time():
         raise InputError(description='Scheduled send time is invalid')
 
     # assigning new message_id MUST BE GLOBALLY UNIQUE!
@@ -112,7 +112,7 @@ def message_sendlater(token, channel_id, message, time_sent):
     # the action to be completed at time time_sent
     sched_thread = Thread(target=run_scheduler, args=(
         message_send, time_sent, (token, channel_id, message, )))
-    # run the schedular (target=message_send, time_sent, )
+    # run the schedular (target=message_send, time_sent=time_sent, )
     sched_thread.start()
 
     return {'message_id': new_msg_id}
