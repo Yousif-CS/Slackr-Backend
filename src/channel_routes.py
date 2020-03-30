@@ -9,11 +9,8 @@ CHANNEL = Blueprint('channel', __name__)
 import channel
 from error import RequestError
 
-
-
-
 @CHANNEL.route('/invite', methods=['POST'])
-def invite(): 
+def invite():
     '''
     A route to call channel invites
     '''
@@ -26,13 +23,13 @@ def invite():
 
 
 @CHANNEL.route('/details', methods=['GET'])
-def details(): 
-    ''' 
+def details():
+    '''
     A route to gather a channel's details
-    ''' 
+    '''
     token = request.args.get('token')
     channel_id = request.args.get('channel_id')
-    if not token or not channel_id: 
+    if not token or not channel_id:
         raise RequestError(description="Missing data in request body")
 
     info = channel.channel_details(token, int(channel_id))
