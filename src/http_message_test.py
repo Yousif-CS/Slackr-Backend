@@ -1,11 +1,12 @@
 import pytest
+import time
 import urls
 import json
 import urllib.request
 from urllib.error import HTTPError
 
 from http_helpers import reset, register, login, logout, \
-    message_send, channel_messages, channels_create
+    message_send, message_sendlater, channel_messages, channels_create
 
 
 def test_message_send_ok(reset):
@@ -44,3 +45,24 @@ def test_message_send_not_in_channel():
     with pytest.raises(HTTPError):
         message_send(k_token, 1, 'Bad message')
 
+
+# testing message sendlater
+def test_message_sendlater_ok(reset):
+    '''
+    Testing message send later request
+    '''
+    '''a_token = register('admin@gmail.com', 'pass123456', 'Alan', 'Brown')[1]
+    channel_id = channels_create(a_token, 'test_public', True)
+
+    message_sendlater(a_token, channel_id, 'sending later', int(time.time()) + 1)
+    msg_list = channel_messages(a_token, channel_id, 0)[0]'''
+    pass
+# testing message react
+
+# testing message_unreact 
+
+# testing message_pin
+
+# testing message_unpin
+
+# testing message_remove
