@@ -77,6 +77,21 @@ def message_send(token, channel_id, message):
     msg_details = json.load(urllib.request.urlopen(request))
     return msg_details['message_id']
 
+def message_sendlater(token, channel_id, message, time_sent):
+    '''
+    HTTP request to send message at specified time
+    '''
+    data = json.dumps({
+        'token': token,
+        'channel_id': channel_id,
+        'message': message,
+        'time_sent': time_sent,
+    }).encode()
+    request = urllib.request.Request(urls.SENDLATER_URL, data=data, \
+        method='POST', headers={'Content-Type':'application/json'})
+    msg_details = json.load(urllib.request.urlopen(request))
+    return msg_details['message_id']
+    
 def message_remove(token, message_id):
     '''
     HTTP request to remove a message

@@ -3,7 +3,7 @@ Module contains urls used for testing
 '''
 
 HOSTNAME = '127.0.0.1'
-PORT = 5000
+PORT = 8080
 
 RESET_URL = f"http://{HOSTNAME}:{PORT}/workspace/reset"
 
@@ -29,6 +29,7 @@ CHANNELS_LIST_URL = f"http://{HOSTNAME}:{PORT}/channels/list"
 MESSAGE_REMOVE_URL = f"http://{HOSTNAME}:{PORT}/message/remove"
 SEND_URL = f"http://{HOSTNAME}:{PORT}/message/send"
 EDIT_URL = f"http://{HOSTNAME}:{PORT}/message/edit"
+SENDLATER_URL = f"http://{HOSTNAME}:{PORT}/message/sendlater"
 
 #standup urls
 STANDUP_START_URL = f"http://{HOSTNAME}:{PORT}/standup/start"
