@@ -6,9 +6,9 @@ import urllib.request
 import urllib.parse
 import pytest
 import urls
-import requests
 
 BASE_URL = "http://127.0.0.1:5000"
+
 
 @pytest.fixture
 def reset():
@@ -18,7 +18,9 @@ def reset():
     request = urllib.request.Request(urls.RESET_URL, method='POST')
     urllib.request.urlopen(request)
 
-'''--------------------------auth--------------------------'''
+
+# --------------------------auth--------------------------
+
 
 def register(email, password, name_first, name_last):
     '''
@@ -30,10 +32,11 @@ def register(email, password, name_first, name_last):
         'name_first': name_first,
         'name_last': name_last,
     }).encode()
-    request = urllib.request.Request(urls.REGISTER_URL, data=payload, \
-        method='POST', headers={'Content-Type':'application/json'})
+    request = urllib.request.Request(urls.REGISTER_URL, data=payload,
+                                     method='POST', headers={'Content-Type': 'application/json'})
     reg_details = json.load(urllib.request.urlopen(request))
     return reg_details['u_id'], reg_details['token']
+
 
 def login(email, password):
     '''
@@ -43,10 +46,11 @@ def login(email, password):
         'email': email,
         'password': password,
     }).encode()
-    request = urllib.request.Request(urls.LOGIN_URL, data=payload, \
-        method='POST', headers={'Content-Type':'application/json'})
+    request = urllib.request.Request(urls.LOGIN_URL, data=payload,
+                                     method='POST', headers={'Content-Type': 'application/json'})
     log_details = json.load(urllib.request.urlopen(request))
     return log_details['u_id'], log_details['token']
+
 
 def logout(token):
     '''
@@ -55,13 +59,15 @@ def logout(token):
     payload = json.dumps({
         'token': token
     }).encode()
-    request = urllib.request.Request(urls.LOGOUT_URL, data=payload, \
-        method='POST', headers={'Content-Type':'application/json'})
+    request = urllib.request.Request(urls.LOGOUT_URL, data=payload,
+                                     method='POST', headers={'Content-Type': 'application/json'})
     success = json.load(urllib.request.urlopen(request))
 
     return success['is_success']
 
-'''--------------------------message--------------------------'''
+
+# --------------------------message--------------------------
+
 
 def message_send(token, channel_id, message):
     '''
@@ -72,10 +78,11 @@ def message_send(token, channel_id, message):
         'channel_id': channel_id,
         'message': message,
     }).encode()
-    request = urllib.request.Request(urls.SEND_URL, data=data, \
-        method='POST', headers={'Content-Type':'application/json'})
+    request = urllib.request.Request(urls.SEND_URL, data=data,
+                                     method='POST', headers={'Content-Type': 'application/json'})
     msg_details = json.load(urllib.request.urlopen(request))
     return msg_details['message_id']
+
 
 def message_sendlater(token, channel_id, message, time_sent):
     '''
@@ -92,6 +99,7 @@ def message_sendlater(token, channel_id, message, time_sent):
     msg_details = json.load(urllib.request.urlopen(request))
     return msg_details['message_id']
     
+
 def message_remove(token, message_id):
     '''
     HTTP request to remove a message
@@ -100,9 +108,10 @@ def message_remove(token, message_id):
         'token': token,
         'message_id': message_id
     }).encode()
-    request = urllib.request.Request(urls.MESSAGE_REMOVE_URL, data=data, \
-        method='DELETE', headers={'Content-Type':'application/json'})
+    request = urllib.request.Request(urls.MESSAGE_REMOVE_URL, data=data,
+                                     method='DELETE', headers={'Content-Type': 'application/json'})
     urllib.request.urlopen(request)
+
 
 def message_edit(token, message_id, message):
     '''
@@ -114,13 +123,14 @@ def message_edit(token, message_id, message):
         'message': message
     }).encode()
 
-    request = urllib.request.Request(urls.EDIT_URL, data=data, \
-        method='PUT', headers={'Content-Type': 'application/json'})
+    request = urllib.request.Request(urls.EDIT_URL, data=data,
+                                     method='PUT', headers={'Content-Type': 'application/json'})
 
     urllib.request.urlopen(request)
 
 
-'''--------------------------channels--------------------------'''
+# --------------------------channels--------------------------
+
 
 def channels_create(token, name, is_public):
     '''
@@ -131,10 +141,11 @@ def channels_create(token, name, is_public):
         'name': name,
         'is_public': is_public,
     }).encode()
-    request = urllib.request.Request(urls.CHANNELS_CREATE_URL, data=data, \
-        method='POST', headers={'Content-Type':'application/json'})
+    request = urllib.request.Request(urls.CHANNELS_CREATE_URL, data=data,
+                                     method='POST', headers={'Content-Type': 'application/json'})
     channel_info = json.load(urllib.request.urlopen(request))
     return channel_info['channel_id']
+
 
 def channels_list(token):
     '''
@@ -143,10 +154,13 @@ def channels_list(token):
     query = urllib.parse.urlencode({
         'token': token
     })
-    channel_list = json.load(urllib.request.urlopen(f"{BASE_URL}/channels/list?{query}"))
+    channel_list = json.load(urllib.request.urlopen(
+        f"{BASE_URL}/channels/list?{query}"))
     return channel_list['channels']
 
-'''--------------------------channel--------------------------'''
+
+# --------------------------channel--------------------------
+
 
 def channel_messages(token, channel_id, start):
     '''
@@ -157,8 +171,10 @@ def channel_messages(token, channel_id, start):
         'channel_id': channel_id,
         'start': start,
     })
-    messages = json.load(urllib.request.urlopen(f"{urls.MESSAGES_URL}?{query}"))
+    messages = json.load(urllib.request.urlopen(
+        f"{urls.MESSAGES_URL}?{query}"))
     return messages['messages'], messages['start'], messages['end']
+
 
 def channel_join(token, channel_id):
     '''
@@ -168,9 +184,10 @@ def channel_join(token, channel_id):
         'token': token,
         'channel_id': channel_id
     }).encode()
-    request = urllib.request.Request(urls.JOIN_URL, data=data, \
-        method='POST', headers={'Content-Type':'application/json'})
+    request = urllib.request.Request(urls.JOIN_URL, data=data,
+                                     method='POST', headers={'Content-Type': 'application/json'})
     urllib.request.urlopen(request)
+
 
 def channel_leave(token, channel_id):
     '''
@@ -180,9 +197,10 @@ def channel_leave(token, channel_id):
         'token': token,
         'channel_id': channel_id
     }).encode()
-    request = urllib.request.Request(urls.LEAVE_URL, data=data, \
-        method='POST', headers={'Content-Type':'application/json'})
+    request = urllib.request.Request(urls.LEAVE_URL, data=data,
+                                     method='POST', headers={'Content-Type': 'application/json'})
     urllib.request.urlopen(request)
+
 
 def channel_addowner(token, channel_id, u_id):
     '''
@@ -193,9 +211,10 @@ def channel_addowner(token, channel_id, u_id):
         'channel_id': channel_id,
         'u_id': u_id
     }).encode()
-    request = urllib.request.Request(urls.ADDOWNER_URL, data=data, \
-        method='POST', headers={'Content-Type':'application/json'})
+    request = urllib.request.Request(urls.ADDOWNER_URL, data=data,
+                                     method='POST', headers={'Content-Type': 'application/json'})
     urllib.request.urlopen(request)
+
 
 def channel_removeowner(token, channel_id, u_id):
     '''
@@ -206,12 +225,14 @@ def channel_removeowner(token, channel_id, u_id):
         'channel_id': channel_id,
         'u_id': u_id
     }).encode()
-    request = urllib.request.Request(urls.REMOVEOWNER_URL, data=data, \
-        method='POST', headers={'Content-Type':'application/json'})
+    request = urllib.request.Request(urls.REMOVEOWNER_URL, data=data,
+                                     method='POST', headers={'Content-Type': 'application/json'})
     urllib.request.urlopen(request)
 
 
-'''--------------------------standup--------------------------'''
+# --------------------------standup--------------------------
+
+
 def standup_start(token, channel_id, length):
     '''
     HTTP request to start a standup
@@ -222,10 +243,11 @@ def standup_start(token, channel_id, length):
         'length': length
     }).encode()
 
-    request = urllib.request.Request(urls.STANDUP_START_URL, data=data, \
-        method='POST', headers={'Content-Type':'application/json'})
+    request = urllib.request.Request(urls.STANDUP_START_URL, data=data,
+                                     method='POST', headers={'Content-Type': 'application/json'})
     payload = json.load(urllib.request.urlopen(request))
     return payload['time_finish']
+
 
 def standup_active(token, channel_id):
     '''
@@ -235,8 +257,10 @@ def standup_active(token, channel_id):
         'token': token,
         'channel_id': channel_id,
     })
-    payload = json.load(urllib.request.urlopen(f"{urls.STANDUP_ACTIVE_URL}?{query}"))
+    payload = json.load(urllib.request.urlopen(
+        f"{urls.STANDUP_ACTIVE_URL}?{query}"))
     return payload['is_active'], payload['time_finish']
+
 
 def standup_send(token, channel_id, message):
     '''
@@ -248,11 +272,14 @@ def standup_send(token, channel_id, message):
         'message': message
     }).encode()
 
-    request = urllib.request.Request(urls.STANDUP_SEND_URL, data=data, \
-        method='POST', headers={'Content-Type':'application/json'})
+    request = urllib.request.Request(urls.STANDUP_SEND_URL, data=data,
+                                     method='POST', headers={'Content-Type': 'application/json'})
     urllib.request.urlopen(request)
 
-'''--------------------------user--------------------------'''
+
+# --------------------------user--------------------------
+
+
 def user_profile(token, u_id):
     '''
     HTTP request to retrieve infomration about another user
@@ -265,6 +292,7 @@ def user_profile(token, u_id):
 
     return payload['user']
 
+
 def user_profile_setname(token, name_first, name_last):
     '''
     HTTP request to set the name of the authorised user
@@ -275,11 +303,12 @@ def user_profile_setname(token, name_first, name_last):
         'name_last': name_last
     }).encode()
     # creating the request - "preparing"
-    request = urllib.request.Request(urls.SETNAME_URL, data=data, \
-        method='PUT', headers={'Content-Type': 'application/json'})
+    request = urllib.request.Request(urls.SETNAME_URL, data=data,
+                                     method='PUT', headers={'Content-Type': 'application/json'})
 
     # actually sends the request
     urllib.request.urlopen(request)
+
 
 def user_profile_setemail(token, email):
     '''
@@ -290,10 +319,11 @@ def user_profile_setemail(token, email):
         'token': token,
         'email': email
     }).encode()
-    request = urllib.request.Request(urls.SETEMAIL_URL, data=data, \
-        method='PUT', headers={'Content-Type': 'application/json'})
+    request = urllib.request.Request(urls.SETEMAIL_URL, data=data,
+                                     method='PUT', headers={'Content-Type': 'application/json'})
 
     urllib.request.urlopen(request)
+
 
 def user_profile_sethandle(token, handle_str):
     '''
@@ -304,12 +334,15 @@ def user_profile_sethandle(token, handle_str):
         'handle_str': handle_str
     }).encode()
 
-    request = urllib.request.Request(urls.SETHANDLE_URL, data=data, \
-        method='PUT', headers={"Content-Type": "application/json"})
+    request = urllib.request.Request(urls.SETHANDLE_URL, data=data,
+                                     method='PUT', headers={"Content-Type": "application/json"})
 
     urllib.request.urlopen(request)
 
-'''--------------------------other--------------------------'''
+
+# --------------------------other--------------------------
+
+
 def userpermission_change(token, u_id, permission_id):
     '''
     HTTP request to change user permissions
@@ -320,10 +353,11 @@ def userpermission_change(token, u_id, permission_id):
         'permission_id': permission_id
     }).encode()
 
-    request = urllib.request.Request(urls.PERMISSION_CHANGE_URL, data=data, \
-        method='POST', headers={'Content-Type': 'application/json'})
+    request = urllib.request.Request(urls.PERMISSION_CHANGE_URL, data=data,
+                                     method='POST', headers={'Content-Type': 'application/json'})
 
     urllib.request.urlopen(request)
+
 
 def users_all(token):
     '''
@@ -333,7 +367,8 @@ def users_all(token):
         'token': token
     })
 
-    payload = json.load(urllib.request.urlopen(f"{BASE_URL}/users/all?{query}"))
+    payload = json.load(urllib.request.urlopen(
+        f"{BASE_URL}/users/all?{query}"))
 
     return payload
 
