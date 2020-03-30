@@ -125,7 +125,7 @@ The main assumption is that we only need to register the user once, and afterwar
 #### search(token, query_str):
 1. Assume that valid search strings are no longer than 1000 characters in length 
 2. Assume that the list 'messages' orders the results from oldest to newest (e.g. time_created in ascending order) 
-3. Assume that empty search strings return empty 'messages' list
+3. Assume that empty search strings return empty 'messages' list and does NOT cause the function to break
 4. Assume that if the query_str is greater than 1000 characters long that it would throw an InputError because
 message_send does.
 
