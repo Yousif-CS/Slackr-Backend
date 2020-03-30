@@ -2,15 +2,17 @@
 This file contains implementations for user functions
 '''
 
-from server import get_store, get_tokens
+from state import get_store, get_tokens
 from auth import verify_token
 from error import InputError, AccessError
 from is_valid_email import is_valid_email
 
+
 def user_profile(token, u_id):
     '''
     input: a token and a user id.
-    output: information about their user id, email, first name, last name, and handle if a valid user.
+    output: information about their user id, email, first name, last name,
+    and handle if a valid user.
     error: AccessError for invalid token, InputError if u_id is invalid.
     '''
 
@@ -24,7 +26,8 @@ def user_profile(token, u_id):
         raise InputError(description="user id not valid")
 
     # if so, return the corresponding information by retrieving from the database
-    user_info = {"user": {
+    user_info = {
+        "user": {
             "u_id": u_id,
             "email": data["Users"][u_id]["email"],
             "name_first": data["Users"][u_id]["name_first"],
@@ -34,6 +37,7 @@ def user_profile(token, u_id):
     }
 
     return user_info
+
 
 def user_profile_setname(token, name_first, name_last):
     '''
@@ -46,16 +50,20 @@ def user_profile_setname(token, name_first, name_last):
 
     # verify that changes to name are allowed
     if len(name_first) < 1 or len(name_last) < 1 \
-        or len(name_first) > 50 or len(name_last) > 50 \
-        or name_first.isspace() or name_last.isspace():
+            or len(name_first) > 50 or len(name_last) > 50:
         raise InputError(description="Names must be between 1 and 50 characters long inclusive, \
             and cannot contain exclusively whitespaces.")
+    # another verification that names are not just spaces
+    if name_first.isspace() or name_last.isspace():
+        raise InputError(
+            description="Names cannot exclusively contain whitespaces.")
 
     # modify name_first and name_last in the database as per the user's changes
     u_id = get_tokens()[token]
     data = get_store()
     data["Users"][u_id]["name_first"] = name_first
     data["Users"][u_id]["name_last"] = name_last
+
 
 def user_profile_sethandle(token, handle_str):
     '''
@@ -70,9 +78,11 @@ def user_profile_sethandle(token, handle_str):
 
     # verify the new handle_str is of the correct length
     if len(handle_str) < 2:
-        raise InputError(description="handle_str too short - it must be between 2 and 20 characters inclusive")
+        raise InputError(
+            description="handle_str too short - it must be between 2 and 20 characters inclusive")
     if len(handle_str) > 20:
-        raise InputError(description="handle_str too long - - it must be between 2 and 20 characters inclusive")
+        raise InputError(
+            description="handle_str too long - - it must be between 2 and 20 characters inclusive")
 
     # verify the new handle_str is unique
     # allow the "change" if the authorised user's new handle_str is identical to their old one.
@@ -82,10 +92,12 @@ def user_profile_sethandle(token, handle_str):
     if data["Users"][u_id]["handle"] != handle_str:
         for identity in data["Users"]:
             if data["Users"][identity]["handle"] == handle_str:
-                raise InputError(description="new handle_str not unique to this user")
+                raise InputError(
+                    description="new handle_str not unique to this user")
 
     # change the handle_str in the database
     data["Users"][u_id]["handle"] = handle_str
+
 
 def user_profile_setemail(token, email):
     '''
@@ -108,8 +120,8 @@ def user_profile_setemail(token, email):
     if email != data["Users"][u_id]["email"]:
         for identity in data["Users"].values():
             if identity["email"] == email:
-                raise InputError(description="this email is already being used by another user")
-    
+                raise InputError(
+                    description="this email is already being used by another user")
+
     # Change the user's email in the STORE databas if the above hurdles are passed
     data["Users"][u_id]["email"] = email
-    

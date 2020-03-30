@@ -4,10 +4,11 @@ This module contains all the routes for channel functionalities
 
 import json
 from flask import request, Blueprint
+from error import RequestError
+import channel
+
 CHANNEL = Blueprint('channel', __name__)
 
-import channel
-from error import RequestError
 
 @CHANNEL.route('/invite', methods=['POST'])
 def invite():
@@ -18,7 +19,8 @@ def invite():
     if not payload['token'] or not payload['channel_id'] or not payload['u_id']:
         raise RequestError(description="Missing data in request body")
 
-    channel.channel_invite(payload['token'], payload['channel_id'], payload['u_id'])
+    channel.channel_invite(
+        payload['token'], payload['channel_id'], payload['u_id'])
     return json.dumps({})
 
 
@@ -35,6 +37,7 @@ def details():
     info = channel.channel_details(token, int(channel_id))
     return json.dumps(info)
 
+
 @CHANNEL.route('/messages', methods=['GET'])
 def messages():
     '''
@@ -47,10 +50,11 @@ def messages():
     if not token or not channel_id or start is None:
         raise RequestError(description="Missing data in request body")
 
-    to_send = channel.channel_messages(token, \
-        int(channel_id), int(start))
+    to_send = channel.channel_messages(token,
+                                       int(channel_id), int(start))
 
     return json.dumps(to_send)
+
 
 @CHANNEL.route('/leave', methods=['POST'])
 def leave():
@@ -65,6 +69,7 @@ def leave():
     channel.channel_leave(payload['token'], payload['channel_id'])
     return json.dumps({})
 
+
 @CHANNEL.route('/join', methods=['POST'])
 def join():
     '''
@@ -78,6 +83,7 @@ def join():
     channel.channel_join(payload['token'], payload['channel_id'])
     return json.dumps({})
 
+
 @CHANNEL.route('/addowner', methods=['POST'])
 def addowner():
     '''
@@ -88,10 +94,11 @@ def addowner():
     if not payload['token'] or not payload['channel_id'] or not payload['u_id']:
         raise RequestError(description="Missing data in request body")
 
-    channel.channel_addowner(payload['token'], \
-        payload['channel_id'], payload['u_id'])
+    channel.channel_addowner(payload['token'],
+                             payload['channel_id'], payload['u_id'])
 
     return json.dumps({})
+
 
 @CHANNEL.route('/removeowner', methods=['POST'])
 def removeowner():
@@ -103,7 +110,7 @@ def removeowner():
     if not payload['token'] or not payload['channel_id'] or not payload['u_id']:
         raise RequestError(description="Missing data in request body")
 
-    channel.channel_removeowner(payload['token'], \
-        payload['channel_id'], payload['u_id'])
+    channel.channel_removeowner(payload['token'],
+                                payload['channel_id'], payload['u_id'])
 
     return json.dumps({})

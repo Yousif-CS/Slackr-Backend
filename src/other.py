@@ -5,46 +5,49 @@ that do not belong to a specific category
 
 import pickle
 from standup import get_standup, get_lock
-from server import get_store, get_tokens
+from state import get_store, get_tokens
 from auth import verify_token
 from error import InputError, AccessError
 
 SLACKR_OWNER = 1
 SLACKR_MEMBER = 2
 
+
 def userpermission_change(token, u_id, permission_id):
     '''
     input: a token, a user id and a permission id
     output: Changes the global permissions of the user to permission_id
     '''
-    #verify the user
+    # verify the user
     if verify_token(token) is False:
         raise AccessError(description='Invalid token')
-    #get database information
+    # get database information
     data = get_store()
-    #getting id of the user
+    # getting id of the user
     u_id_invoker = get_tokens()[token]
 
-    #verify that u_id is a valid user
+    # verify that u_id is a valid user
     if u_id not in data['Users']:
         raise InputError(description="User does not exist")
 
-    #verify permission_id is valid (1 or 2)
+    # verify permission_id is valid (1 or 2)
     if not isinstance(permission_id, int) or permission_id not in [SLACKR_MEMBER, SLACKR_OWNER]:
         raise InputError(description="Invalid permission id")
 
-    #verify the invoker is an admin
+    # verify the invoker is an admin
     if data['Users'][u_id_invoker]['global_permission'] != SLACKR_OWNER:
-        raise AccessError(description="You do not have permission to change permissions")
+        raise AccessError(
+            description="You do not have permission to change permissions")
 
-    #set new permissions
+    # set new permissions
     data['Users'][u_id]['global_permission'] = permission_id
-    #update the Slack_owners dictionary in the database
+    # update the Slack_owners dictionary in the database
     if permission_id is SLACKR_MEMBER:
         if u_id not in data['Slack_owners']:
             data['Slack_owners'].append(u_id)
     elif u_id in data['Slack_owners']:
         data['Slack_owners'].remove(u_id)
+
 
 def users_all(token):
     '''
@@ -72,6 +75,7 @@ def users_all(token):
 
     return every_user
 
+
 def search(token, query_str):
     '''
     Given a query string, return a collection of messages
@@ -88,9 +92,9 @@ def search(token, query_str):
     data = get_store()
     auth_u_id = get_tokens()[token]
 
-
     if len(query_str) > 1000:
-        raise InputError(description="query_str over 1000 characaters; too long")
+        raise InputError(
+            description="query_str over 1000 characaters; too long")
 
     matching_msgs = {"messages": []}
     # empty query_str returns an empty list
@@ -101,10 +105,11 @@ def search(token, query_str):
     for ch_id in data["Users"][auth_u_id]["channels"]:
         for msg_dict in data["Messages"]:
             if msg_dict["message_id"] in data["Channels"][ch_id]["messages"] and \
-                query_str in msg_dict["message"]:
+                    query_str in msg_dict["message"]:
                 matching_msgs["messages"].append(msg_dict)
 
     return matching_msgs
+
 
 def workspace_reset():
     '''
@@ -120,7 +125,7 @@ def workspace_reset():
     data["Slack_owners"].clear()
     data["Channels"].clear()
     data["Messages"].clear()
-    #clear standups
+    # clear standups
     with get_lock():
         standups = get_standup()
         standups.clear()
