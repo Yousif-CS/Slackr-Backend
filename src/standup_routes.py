@@ -31,11 +31,12 @@ def st_active():
     Wrapper for standup_active
     '''
     token = request.args.get('token')
-    channel_id = int(request.args.get('channel_id'))
+    channel_id = request.args.get('channel_id')
+
     if not token or not channel_id:
         raise RequestError(description=f"Missing data in request body")
 
-    to_send = standup.standup_active(token, channel_id)
+    to_send = standup.standup_active(token, int(channel_id))
 
     return json.dumps(to_send)
 

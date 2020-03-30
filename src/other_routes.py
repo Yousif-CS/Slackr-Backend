@@ -33,7 +33,7 @@ def users_all():
 
     if not token:
         raise RequestError(description="Missing data in request body")
-
+    
     every_user = other.users_all(token)
     return json.dumps(every_user)
 
@@ -44,6 +44,7 @@ def search():
     '''
     token = request.args.get('token')
     query_str = request.args.get('query_str')
+
     if not token or not query_str:
         raise RequestError(description="Missing data in request body")
 

@@ -3,6 +3,7 @@ This module contains all the routes for channels functionalities
 '''
 
 from json import dumps
+from channels import channels_list, channels_listall, channels_create
 from flask import request, Blueprint
 
 from channels import channels_list, channels_listall, channels_create
@@ -16,6 +17,7 @@ def c_list():
     a route which calls channels_list
     '''
     token = request.args.get('token')
+
     if not token:
         raise RequestError(description="Missing data in request body")
 
@@ -28,6 +30,7 @@ def listall():
     a route which calls channels_listall
     '''
     token = request.args.get('token')
+
     if not token:
         raise RequestError(description="Missing data in request body")
 

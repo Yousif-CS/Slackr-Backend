@@ -6,6 +6,7 @@ import urllib.request
 import urllib.parse
 import pytest
 import urls
+import requests
 
 @pytest.fixture
 def reset():
