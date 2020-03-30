@@ -4,8 +4,8 @@ that do not belong to a specific category
 '''
 
 import pickle
-from server import get_store, get_tokens
 from standup import get_standup, get_lock
+from server import get_store, get_tokens
 from auth import verify_token
 from error import InputError, AccessError
 

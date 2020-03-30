@@ -1,16 +1,15 @@
 '''
 This file contains tests for standup functions
 '''
-import standup
-import pytest
 import time
-from auth import auth_login, auth_register
+from time import sleep
+import pytest
+import standup
+from auth import auth_register, auth_logout
 from channels import channels_create
 from error import InputError, AccessError
-from datetime import datetime
 from other import workspace_reset
-from time import sleep
-from channel import channel_join
+from channel import channel_join, channel_messages
 
 '''Fixtures to be used in testing'''
 
@@ -59,20 +58,38 @@ def create_private_channel():
 
 
 '''Testing standup_start'''
+
+def test_standup_send_invalid_length(create_public_channel):
+    '''
+    Tests an invalid input
+    '''
+    new_ch, owner = create_public_channel
+    with pytest.raises(InputError):
+        standup.standup_start(owner['token'], new_ch['channel_id'], length='a')
+
 # AccessError: invalid token
 def test_standup_start_invalid_token(create_public_channel):
+    '''
+    Invalid token check
+    '''
     new_ch, owner = create_public_channel
     with pytest.raises(AccessError):
         standup.standup_start(owner["token"] + "invalid", new_ch["channel_id"], 2)
 
 # InputError: channel ID not a valid channel
 def test_standup_start_invalid_channel(create_public_channel):
+    '''
+    Invalid channel check
+    '''
     new_ch, owner = create_public_channel
     with pytest.raises(InputError):
         standup.standup_start(owner["token"], new_ch["channel_id"] + 1, 2)
 
 # InputError: active standup is currently running in this channel
 def test_standup_start_overlap(create_public_channel):
+    '''
+    Double standup start in the same channel
+    '''
     new_ch, owner = create_public_channel
     standup.standup_start(owner["token"], new_ch["channel_id"], 2)
     with pytest.raises(InputError):
@@ -84,8 +101,11 @@ def test_standup_start_overlap(create_public_channel):
 # #it is buffered during the X second window then at the end of the X second window a message will be added to 
 # the message queue in the channel from the user who started the standup.
 def test_standup_in_action(create_public_channel):
+    '''
+    Test the ability to send messages in the standup
+    '''
     new_ch, owner = create_public_channel
-    
+
     user1 = auth_register("joshwang@gmail.com", "asdfjkasdfjlaskdf", "Josh", "Wang")
     user2 = auth_register("kenli@hotmail.com", "kajfsd;jkas;31", "Ken", "Li")
     user3 = auth_register("maximation@yahoo.com.au", "3456789osd", "Max", "Smith")
@@ -104,12 +124,22 @@ def test_standup_in_action(create_public_channel):
     standup.standup_send(owner["token"], new_ch["channel_id"], "No escape from reality.")
 
     sleep(2.1)
+    #getting the messages
+    messages = channel_messages(owner['token'], new_ch['channel_id'], start=0)['messages']
+    #prepping the sent message for assert
+    sent_msgs = ["On sundae I ate a Sunday", "Is this the real life?", \
+                 "Or is this just fantasy?", "Caught in a landslide,", \
+                 "No escape from reality."]
+    buffered_msg = '\n'.join(sent_msgs)
 
-    #TODO: Somehow check that the above messages have been sent
+    assert messages[0]['message'] == buffered_msg
 
-def test_standup_star_by_normal_member(create_public_channel):
+def test_standup_start_by_normal_member(create_public_channel):
+    '''
+    Testing starting a standup by a normal member
+    '''
     new_ch, owner = create_public_channel
-    
+
     user1 = auth_register("joshwang@gmail.com", "asdfjkasdfjlaskdf", "Josh", "Wang")
     channel_join(user1["token"], new_ch["channel_id"])
 
@@ -149,7 +179,7 @@ def test_standup_active_active(create_public_channel):
     #starting a standup
     time_finish = standup.standup_start(owner_info['token'], channel_id['channel_id'], 2)["time_finish"]
     #getting the standup active status
-    standup_details = standup.standup_active(owner_info['token'], channel_id['token'])
+    standup_details = standup.standup_active(owner_info['token'], channel_id['channel_id'])
     #asserting
     assert standup_details['is_active'] is True
     assert standup_details['time_finish'] == time_finish
@@ -164,7 +194,7 @@ def test_standup_active_finished(create_public_channel):
     time_finish = standup.standup_start(owner_info['token'], channel_id['channel_id'], 2)
     time.sleep(2.1)   #sleep for 4 seconds
     #getting the standup active status
-    standup_details = standup.standup_active(owner_info['token'], channel_id['token'])
+    standup_details = standup.standup_active(owner_info['token'], channel_id['channel_id'])
     #asserting
     assert standup_details['is_active'] is False
     assert standup_details['time_finish'] is None
@@ -177,7 +207,7 @@ def test_standup_active_invalid_token(create_public_channel):
     channel_id, owner_info = create_public_channel
     #starting a standup
     with pytest.raises(AccessError):
-        standup_details = standup.standup_active(owner_info['token'] + str(1), channel_id['token'])
+        standup_details = standup.standup_active(owner_info['token'] + str(1), channel_id['channel_id'])
 
 
 '''Testing standup_send'''
@@ -265,6 +295,24 @@ def test_standup_send_invalid_token(create_public_channel):
     channel_id, owner_info = create_public_channel
     #starting a standup
     with pytest.raises(AccessError):
-        standup.standup_send(owner_info['token'] + str(1), channel_id['token'], "Aaaahhh!")
+        standup.standup_send(owner_info['token'] + str(1), channel_id['channel_id'], "Aaaahhh!")
 
-
+def test_standup_send_starter_is_logged_out(create_public_channel, create_user1):
+    '''
+    Testing to see if a standup is resolved even if the invoker is logged out
+    '''
+    #creating a public channel
+    channel_id, owner_info = create_public_channel
+    user_info = create_user1
+    #user joins channel
+    channel_join(user_info['token'], channel_id['channel_id'])
+    #owner starts standup
+    standup.standup_start(owner_info['token'], channel_id['channel_id'], length=2)
+    #owner logs out
+    auth_logout(owner_info['token'])
+    #user sends message
+    standup.standup_send(user_info['token'], channel_id['channel_id'], 'hola!')
+    sleep(2.5)
+    messages = channel_messages(user_info['token'], channel_id['channel_id'], start=0)['messages']
+    assert messages[0]['message'] == 'hola!'
+    assert messages[0]['u_id'] == owner_info['u_id']

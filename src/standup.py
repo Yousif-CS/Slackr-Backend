@@ -2,6 +2,19 @@
 This module contains implementations of standup functions
 along with all its related schedulers and data structures
 '''
+def get_lock():
+    '''
+    Give access to STANDUP_LOCK
+    '''
+    global STANDUP_LOCK #pylint: disable=global-statement
+    return STANDUP_LOCK
+def get_standup():
+    '''
+    Provide access to the standup list
+    '''
+    global STANDUP_MESSAGES #pylint: disable=global-statement
+    return STANDUP_MESSAGES
+
 import time
 import sched
 from threading import Lock, Thread
@@ -24,18 +37,6 @@ STANDUP_LOCK = Lock()
 #this is a scheduler that handles scheduling events for standup_start
 MY_SCHEDULER = sched.scheduler(time.time, time.sleep)
 
-def get_lock():
-    '''
-    Give access to STANDUP_LOCK
-    '''
-    global STANDUP_LOCK #pylint: disable=global-statement
-    return STANDUP_LOCK
-def get_standup():
-    '''
-    Provide access to the standup list
-    '''
-    global STANDUP_MESSAGES #pylint: disable=global-statement
-    return STANDUP_MESSAGES
 
 def flush_standup(channel_id):
     '''
@@ -56,7 +57,10 @@ def flush_standup(channel_id):
                 user_token = get_token(standup['u_id'])
                 #the user has logged out: generate a temporary token
                 if user_token is None:
+                    #generate token
                     user_token = generate_token(standup['u_id'])
+                    #authorise user by adding the token
+                    get_tokens()[user_token] = standup['u_id']
                     message_send(user_token, channel_id, to_send)
                     auth_logout(user_token)
                 else:

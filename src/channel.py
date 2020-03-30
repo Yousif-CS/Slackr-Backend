@@ -2,7 +2,6 @@
 This file contains all the implementations and data relevant to channel functions
 '''
 
-#pylint: disable=missing-module-docstring
 from server import get_store, get_tokens
 from auth import verify_token
 from error import InputError, AccessError

@@ -1,7 +1,9 @@
 #please edit this file for channels functions
-from auth import auth_login, auth_register
-from channel import channel_leave, channel_join, channel_addowner, channel_removeowner, channel_invite, channel_messages, channel_details
+from channel import (channel_leave, channel_join, channel_addowner, \
+                     channel_removeowner, channel_invite, channel_messages, \
+                     channel_details)
 from channels import channels_create, channels_list
+from auth import auth_login, auth_register
 from message import message_send, message_remove
 from error import AccessError, InputError
 from other import workspace_reset
