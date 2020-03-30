@@ -76,7 +76,7 @@ def test_message_sendlater_threading(reset):
     msg_id = message_sendlater(k_token, channel_id, 'sending later', time.time() + 1)
     message_send(k_token, channel_id, 'test message0')
     message_send(k_token, channel_id, 'test message1')
-    time.sleep(1)
+    time.sleep(2)
     msg_list = channel_messages(k_token, channel_id, 0)[0]
     assert len(msg_list) == 3
     assert msg_list[0]['message'] == 'sending later'
@@ -197,6 +197,19 @@ def test_message_pin_owner(reset):
     assert msg_list[0]['is_pinned']
     logout(a_token)
 
+def test_message_pin_owner_pins_user():
+    a_token = login('admin@gmail.com', 'pass123456')[1]
+    k_token = register('ken@gmail.com', 'kenis123', 'Ken', 'Li')[1]
+    channel_join(k_token, 1)
+    msg1_id = message_send(k_token, 1, 'User message')
+    # user a pins user k's message
+    message_pin(a_token, msg1_id)
+
+    msg_list = channel_messages(a_token, 1, 0)[0]
+    assert msg_list[0]['is_pinned'] and msg_list[1]['is_pinned']
+    logout(a_token)
+    logout(k_token)
+
 def test_message_pin_invalid_message_id():
     a_token = login('admin@gmail.com', 'pass123456')[1]
     with pytest.raises(HTTPError):
@@ -223,5 +236,66 @@ def test_message_pin_not_member():
         message_pin(c_token, 1)
 
 # testing message_unpin
+def test_message_unpin_owner(reset):
+    a_token = register('admin@gmail.com', 'pass123456', 'Admin', 'Heeblo')[1]
+    channel_id = channels_create(a_token, 'test_public', True)
+    msg0_id = message_send(a_token, channel_id, 'Pin this message')
+    # pins the message
+    message_pin(a_token, msg0_id)
+    message_unpin(a_token, msg0_id)
+    msg_list = channel_messages(a_token, channel_id, 0)[0]
+
+    assert not msg_list[0]['is_pinned']
+    logout(a_token)
+
+
+def test_message_unpin_invalid_message(reset):
+    a_token = register('admin@gmail.com', 'pass123456', 'Admin', 'Heeblo')[1]
+    channel_id = channels_create(a_token, 'test_public', True)
+    msg0_id = message_send(a_token, channel_id, 'Pin this message')
+    # pins the message
+    message_pin(a_token, msg0_id)
+
+    with pytest.raises(HTTPError):
+        message_unpin(a_token, msg0_id + 1)
+
+def test_message_unpin_not_channel_owner(reset):
+    a_token = register('admin@gmail.com', 'pass123456', 'Admin', 'Heeblo')[1]
+    channel_id = channels_create(a_token, 'test_public', True)
+    msg0_id = message_send(a_token, channel_id, 'Pin this message')
+    # pins the message
+    message_pin(a_token, msg0_id)
+
+    # make another user who is part of channel but not owner nor slackr owner
+    u_token = register('user@gmail.com', 'usersweakpw', 'Bob', 'Builder')[1]
+    channel_join(u_token, channel_id)
+
+    with pytest.raises(HTTPError):
+        message_unpin(u_token, msg0_id)
+
+def test_message_unpin_not_pinned(reset):
+    a_token = register('admin@gmail.com', 'pass123456', 'Admin', 'Heeblo')[1]
+    channel_id = channels_create(a_token, 'test_public', True)
+    msg0_id = message_send(a_token, channel_id, 'Not pinned message')
+
+    with pytest.raises(HTTPError):
+        message_unpin(a_token, msg0_id)
+
+def test_message_unpin_slackr_owner_not_in_channel(reset):
+    a_token = register('admin@gmail.com', 'pass123456', 'Admin', 'Heeblo')[1]
+    k_token = register('ken@gmail.com', 'kenis123', 'Ken', 'Li')[1]
+    # ken creates a channel
+    k_channel_id = channels_create(k_token, 'test_public', True)
+    msg0_id = message_send(k_token, k_channel_id, 'Kens message in his channel')
+    message_pin(k_token, msg0_id)
+
+    with pytest.raises(HTTPError):
+        message_unpin(a_token, msg0_id)
+
+def test_message_unpin_user_not_in_channel():
+    c_token = register('cen@gmail.com', 'ssap12652', 'Chen', 'Bee')[1]
+
+    with pytest.raises(HTTPError):
+        message_unpin(c_token, 0)
 
 # testing message_remove
