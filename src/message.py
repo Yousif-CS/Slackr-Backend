@@ -3,15 +3,15 @@ Implementations of message functionalities
 '''
 
 import sched
+from threading import Thread
 from time import time, sleep
 from state import get_store, get_tokens
 from auth import verify_token
 from error import InputError, AccessError
 
-# TODO: check structure for TOKENS dictionary
-# TODO: import sched? need pip install
-
 MAX_MSG_LEN = 1000
+
+MY_SCHEDULER = sched.scheduler(time, sleep)
 
 
 def message_send(token, channel_id, message):
@@ -64,6 +64,13 @@ def message_send(token, channel_id, message):
 
     return {'message_id': new_msg_id}
 
+# set up scheduler wrapper function
+def run_scheduler(target, time_sent, args):
+    '''
+    Wrapper for scheduler
+    '''
+    MY_SCHEDULER.enterabs(time_sent, 1, action=target, argument=args)
+    MY_SCHEDULER.run()
 
 def message_sendlater(token, channel_id, message, time_sent):
     '''
@@ -90,7 +97,7 @@ def message_sendlater(token, channel_id, message, time_sent):
             description='You do not have access to send message in this channel')
 
     # checking time_sent is valid (it is a time in the future)
-    if time_sent <= time():
+    if time_sent < time():
         raise InputError(description='Scheduled send time is invalid')
 
     # assigning new message_id MUST BE GLOBALLY UNIQUE!
@@ -100,28 +107,13 @@ def message_sendlater(token, channel_id, message, time_sent):
     else:
         id_list = [msg['message_id'] for msg in data['Messages']]
         new_msg_id = max(id_list) + 1
-    # the action to be completed at time time_sent
 
-    def auto_send_message():
-        data['Channels'][channel_id]['message'].append(new_msg_id)
-        data['Messages'].append({
-            'message_id': new_msg_id,
-            'channel_id': channel_id,
-            'message': message,
-            'u_id': u_id,
-            'time_created': time_sent,
-            'is_pinned': False,
-            'reacts': [{
-                'react_id': 1,
-                'u_ids': [],
-                'is_this_user_reacted': False,
-            }]
-        })
-    # setting up scheduler object
-    msg_sched = sched.scheduler(time, sleep)
-    # setting auto_send_message to be called at 'time_sent'
-    msg_sched.enterabs(time_sent, 0, auto_send_message)
-    msg_sched.run()
+
+    # the action to be completed at time time_sent
+    sched_thread = Thread(target=run_scheduler, args=(
+        message_send, time_sent, (token, channel_id, message, )))
+    # run the schedular (target=message_send, time_sent=time_sent, )
+    sched_thread.start()
 
     return {'message_id': new_msg_id}
 
