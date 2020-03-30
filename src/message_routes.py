@@ -18,8 +18,10 @@ def send():
     if not data['token'] or not data['channel_id'] or not data['message']:
         raise RequestError(description="Missing data in request body")
 
-    response = message.message_send(data['token'], data['channel_id'], data['message'])
+    response = message.message_send(
+        data['token'], data['channel_id'], data['message'])
     return dumps(response)
+
 
 @MESSAGE.route("/sendlater", methods=['POST'])
 def sendlater():
@@ -31,9 +33,10 @@ def sendlater():
     if not data['token'] or not data['channel_id'] or not data['message'] or not data['time_sent']:
         raise RequestError(description="Missing data in request body")
 
-    response = message.message_sendlater(data['token'], data['channel_id'],\
-        data['message'], data['time_sent'])
+    response = message.message_sendlater(data['token'], data['channel_id'],
+                                         data['message'], data['time_sent'])
     return dumps(response)
+
 
 @MESSAGE.route("/react", methods=['POST'])
 def react():
@@ -48,6 +51,7 @@ def react():
     message.message_react(data['token'], data['message_id'], data['react_id'])
     return dumps({})
 
+
 @MESSAGE.route("/unreact", methods=['POST'])
 def unreact():
     '''
@@ -58,8 +62,10 @@ def unreact():
     if not data['token'] or not data['message_id'] or not data['react_id']:
         raise RequestError(description="Missing data in request body")
 
-    message.message_unreact(data['token'], data['message_id'], data['react_id'])
+    message.message_unreact(
+        data['token'], data['message_id'], data['react_id'])
     return dumps({})
+
 
 @MESSAGE.route("/pin", methods=['POST'])
 def pin():
@@ -74,6 +80,7 @@ def pin():
     message.message_pin(data['token'], data['message_id'])
     return dumps({})
 
+
 @MESSAGE.route("/unpin", methods=['POST'])
 def unpin():
     '''
@@ -87,6 +94,7 @@ def unpin():
     message.message_unpin(data['token'], data['message_id'])
     return dumps({})
 
+
 @MESSAGE.route("/remove", methods=['DELETE'])
 def delete():
     '''
@@ -99,6 +107,7 @@ def delete():
 
     message.message_remove(data['token'], data['message_id'])
     return dumps({})
+
 
 @MESSAGE.route("/message/edit", methods=['PUT'])
 def edit():

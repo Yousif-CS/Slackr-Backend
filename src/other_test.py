@@ -1,6 +1,6 @@
 # please write tests for users_all and search here
 
-import pytest 
+import pytest
 from other import users_all, search, userpermission_change, workspace_reset
 from user import user_profile
 from auth import auth_register, auth_login, auth_logout
@@ -14,6 +14,7 @@ SLACKR_OWNER = 1
 SLACKR_MEMBER = 2
 INVALID_PERMISSION = 3
 
+
 @pytest.fixture
 def reset_workspace():
     workspace_reset()
@@ -21,42 +22,53 @@ def reset_workspace():
 
 @pytest.fixture
 def make_user_ab():
-    user_ab = auth_register("alice@gmail.com", "stronkpassword123", "Alice", "Bee")
+    user_ab = auth_register(
+        "alice@gmail.com", "stronkpassword123", "Alice", "Bee")
     return user_ab
+
 
 @pytest.fixture
 def make_user_cd():
-    user_cd = auth_register("charlie@gmail.com", "comp1531pass", "Charlie", "Dee")
+    user_cd = auth_register("charlie@gmail.com",
+                            "comp1531pass", "Charlie", "Dee")
     return user_cd
 
 
 # These users are designed for the users_all function for Josh
 @pytest.fixture
 def make_user_ef():
-    user_ef = auth_register("edward@gmail.com", "12345687", "Edward", "Frankenstein")
+    user_ef = auth_register(
+        "edward@gmail.com", "12345687", "Edward", "Frankenstein")
     return (user_ef["token"], user_ef["u_id"])
+
 
 @pytest.fixture
 def make_user_gh():
-    user_gh = auth_register("gregory@gmail.com", "ihaveadream", "Gregory", "Heidelberg")
+    user_gh = auth_register("gregory@gmail.com",
+                            "ihaveadream", "Gregory", "Heidelberg")
     return (user_gh["token"], user_gh["u_id"])
+
 
 @pytest.fixture
 def make_user_ij():
-    user_ij = auth_register("ian@hotmail.com", "stretchy0urh4mstrinG5thr1c3", "Ian", "Jacobs")
+    user_ij = auth_register(
+        "ian@hotmail.com", "stretchy0urh4mstrinG5thr1c3", "Ian", "Jacobs")
     return (user_ij["token"], user_ij["u_id"])
 ###
+
 
 @pytest.fixture
 def create_public_channel(make_user_ab):
     user_ab = make_user_ab
-    channel_id = channels_create(user_ab['token'], 'test_channel_public', True)    
+    channel_id = channels_create(user_ab['token'], 'test_channel_public', True)
     return (channel_id, user_ab)
+
 
 @pytest.fixture
 def create_private_channel(make_user_ab):
     user_ab = make_user_ab
-    channel_id = channels_create(user_ab['token'], 'test_channel_private', False) 
+    channel_id = channels_create(
+        user_ab['token'], 'test_channel_private', False)
     return (channel_id, user_ab)
 
 
@@ -65,9 +77,11 @@ def create_private_channel(make_user_ab):
 
 # start with only one user accessing all users
 
+
 def test_users_all_one_user():
     workspace_reset()
-    user_ef = auth_register("edward@gmail.com", "12345687", "Edward", "Frankenstein")
+    user_ef = auth_register(
+        "edward@gmail.com", "12345687", "Edward", "Frankenstein")
 
     assert users_all(user_ef["token"])["users"] == [
         {
@@ -79,11 +93,15 @@ def test_users_all_one_user():
         }
     ]
 
+
 def test_users_all_access_three_users_at_once_in_order():
     workspace_reset()
-    user_gh = auth_register("gregory@gmail.com", "ihaveadream", "Gregory", "Heidelberg")
-    user_ef = auth_register("edward@gmail.com", "12345687", "Edward", "Frankenstein")
-    user_ij = auth_register("ian@hotmail.com", "stretchy0urh4mstrinG5thr1c3", "Ian", "Jacobs")
+    user_gh = auth_register("gregory@gmail.com",
+                            "ihaveadream", "Gregory", "Heidelberg")
+    user_ef = auth_register(
+        "edward@gmail.com", "12345687", "Edward", "Frankenstein")
+    user_ij = auth_register(
+        "ian@hotmail.com", "stretchy0urh4mstrinG5thr1c3", "Ian", "Jacobs")
 
     assert users_all(user_ij["token"])["users"] == [
         {
@@ -92,7 +110,7 @@ def test_users_all_access_three_users_at_once_in_order():
             'name_first': 'Gregory',
             'name_last': 'Heidelberg',
             'handle_str': 'gregoryheidelberg'
-        }, 
+        },
         {
             'u_id': user_ef["u_id"],
             'email': 'edward@gmail.com',
@@ -110,10 +128,14 @@ def test_users_all_access_three_users_at_once_in_order():
     ]
 
 # register the users one at a time and access all the users
+
+
 def test_users_all_register_and_call_function_one_at_a_time():
     workspace_reset()
-    user_gh = auth_register("gregory@gmail.com", "ihaveadream", "Gregory", "Heidelberg")
-    user_ef = auth_register("edward@gmail.com", "12345687", "Edward", "Frankenstein")
+    user_gh = auth_register("gregory@gmail.com",
+                            "ihaveadream", "Gregory", "Heidelberg")
+    user_ef = auth_register(
+        "edward@gmail.com", "12345687", "Edward", "Frankenstein")
 
     assert users_all(user_ef["token"])["users"] == [
         {
@@ -122,7 +144,7 @@ def test_users_all_register_and_call_function_one_at_a_time():
             'name_first': 'Gregory',
             'name_last': 'Heidelberg',
             'handle_str': 'gregoryheidelberg'
-        }, 
+        },
         {
             'u_id': user_ef["u_id"],
             'email': 'edward@gmail.com',
@@ -132,7 +154,8 @@ def test_users_all_register_and_call_function_one_at_a_time():
         }
     ]
 
-    user_ij = auth_register("ian@hotmail.com", "stretchy0urh4mstrinG5thr1c3", "Ian", "Jacobs")
+    user_ij = auth_register(
+        "ian@hotmail.com", "stretchy0urh4mstrinG5thr1c3", "Ian", "Jacobs")
     assert users_all(user_ij["token"])["users"] == [
         {
             'u_id': user_gh["u_id"],
@@ -140,7 +163,7 @@ def test_users_all_register_and_call_function_one_at_a_time():
             'name_first': 'Gregory',
             'name_last': 'Heidelberg',
             'handle_str': 'gregoryheidelberg'
-        }, 
+        },
         {
             'u_id': user_ef["u_id"],
             'email': 'edward@gmail.com',
@@ -156,12 +179,16 @@ def test_users_all_register_and_call_function_one_at_a_time():
             'handle_str': 'ianjacobs'
         }
     ]
-    
+
+
 def test_users_all_users_remain_when_logout():
     workspace_reset()
-    user_gh = auth_register("gregory@gmail.com", "ihaveadream", "Gregory", "Heidelberg")
-    user_ef = auth_register("edward@gmail.com", "12345687", "Edward", "Frankenstein")
-    user_ij = auth_register("ian@hotmail.com", "stretchy0urh4mstrinG5thr1c3", "Ian", "Jacobs")
+    user_gh = auth_register("gregory@gmail.com",
+                            "ihaveadream", "Gregory", "Heidelberg")
+    user_ef = auth_register(
+        "edward@gmail.com", "12345687", "Edward", "Frankenstein")
+    user_ij = auth_register(
+        "ian@hotmail.com", "stretchy0urh4mstrinG5thr1c3", "Ian", "Jacobs")
     auth_logout(user_ef["token"])
 
     assert users_all(user_ij["token"])["users"] == [
@@ -171,7 +198,7 @@ def test_users_all_users_remain_when_logout():
             'name_first': 'Gregory',
             'name_last': 'Heidelberg',
             'handle_str': 'gregoryheidelberg'
-        }, 
+        },
         {
             'u_id': user_ef["u_id"],
             'email': 'edward@gmail.com',
@@ -188,23 +215,29 @@ def test_users_all_users_remain_when_logout():
         }
     ]
 
+
 def test_users_all_invalid_token_error():
     workspace_reset()
-    user_ef = auth_register("edward@gmail.com", "12345687", "Edward", "Frankenstein")
+    user_ef = auth_register(
+        "edward@gmail.com", "12345687", "Edward", "Frankenstein")
 
     with pytest.raises(AccessError):
         users_all(user_ef["token"] + "invalid")
 
+
 '''------------------testing search--------------------'''
 # reminder
 # input: (token, query_str); output: {messages}
-# returns messages in ALL channels that user is in 
+# returns messages in ALL channels that user is in
 
-# Search string tests: 
+# Search string tests:
 # testing that empty search string should return empty dictionary
+
+
 def test_search_empty_string(reset_workspace, create_public_channel):
     new_public_channel, user_ab = create_public_channel
-    msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Hello world!")
+    msg1 = message_send(
+        user_ab['token'], new_public_channel['channel_id'], "Hello world!")
 
     assert search(user_ab['token'], "")['messages'] == []
 
@@ -212,15 +245,16 @@ def test_search_empty_string(reset_workspace, create_public_channel):
 # spaces in search string
 def test_search_space_string(reset_workspace, create_public_channel):
     new_public_channel, user_ab = create_public_channel
-    msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "A message with spaces!")
-    # result_list is of type list (list of dictionaries) 
+    msg1 = message_send(
+        user_ab['token'], new_public_channel['channel_id'], "A message with spaces!")
+    # result_list is of type list (list of dictionaries)
     result_list = search(user_ab['token'], " ")['messages']
-    
+
     # getting the message string
     messages = [message['message'] for message in result_list]
     # getting the message id and user ids that sent them
     messages_ids = [message['message_id'] for message in result_list]
-    #getting the user ids of the senders
+    # getting the user ids of the senders
     u_ids = [message['u_id'] for message in result_list]
 
     assert msg1['message_id'] in messages_ids
@@ -228,15 +262,18 @@ def test_search_space_string(reset_workspace, create_public_channel):
     assert "A message with spaces!" in messages
 
 
-# letters and symbols in search string (combination of above) 
-def test_search_normal_string(reset_workspace, create_public_channel): 
-    
+# letters and symbols in search string (combination of above)
+def test_search_normal_string(reset_workspace, create_public_channel):
+
     new_public_channel, user_ab = create_public_channel
-    msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Symbols & words")
-    msg2 = message_send(user_ab['token'], new_public_channel['channel_id'], "& with more stuff")
-    msg3 = message_send(user_ab['token'], new_public_channel['channel_id'], "hola amigos!")
-    
-    # result_list is of type list (list of dictionaries) 
+    msg1 = message_send(
+        user_ab['token'], new_public_channel['channel_id'], "Symbols & words")
+    msg2 = message_send(
+        user_ab['token'], new_public_channel['channel_id'], "& with more stuff")
+    msg3 = message_send(
+        user_ab['token'], new_public_channel['channel_id'], "hola amigos!")
+
+    # result_list is of type list (list of dictionaries)
     result_list = search(user_ab['token'], "& w")['messages']
 
     # getting the message id and user ids that sent them
@@ -248,7 +285,7 @@ def test_search_normal_string(reset_workspace, create_public_channel):
     assert msg1['message_id'] in messages_ids
     assert msg2['message_id'] in messages_ids
 
-    #asserting the messages haven't been truncated or tampered with
+    # asserting the messages haven't been truncated or tampered with
     assert 'Symbols & words' in messages
     assert '& with more stuff' in messages
 
@@ -256,22 +293,26 @@ def test_search_normal_string(reset_workspace, create_public_channel):
 # search string is exactly message
 def test_search_exact_string(reset_workspace, create_public_channel):
     new_public_channel, user_ab = create_public_channel
-    msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "This is a very generic message")
-    msg2 = message_send(user_ab['token'], new_public_channel['channel_id'], "generic message")
+    msg1 = message_send(
+        user_ab['token'], new_public_channel['channel_id'], "This is a very generic message")
+    msg2 = message_send(
+        user_ab['token'], new_public_channel['channel_id'], "generic message")
     # search string matches a message exactly
-    result_list = search(user_ab['token'], "This is a very generic message")['messages']
-    
+    result_list = search(user_ab['token'], "This is a very generic message")[
+        'messages']
+
     # getting the message string and user ids that sent them
     messages = [message['message'] for message in result_list]
-    
+
     assert len(result_list) == 1
     assert "This is a very generic message" in messages
 
 
-# search string longer than message (should be no match) 
-def test_search_string_too_long(reset_workspace, create_public_channel): 
+# search string longer than message (should be no match)
+def test_search_string_too_long(reset_workspace, create_public_channel):
     new_public_channel, user_ab = create_public_channel
-    msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "Short string")
+    msg1 = message_send(
+        user_ab['token'], new_public_channel['channel_id'], "Short string")
     # search string contains string but is longer than string
     result_list = search(user_ab['token'], "& w")['messages']
 
@@ -281,27 +322,31 @@ def test_search_string_too_long(reset_workspace, create_public_channel):
 
 # Cross-channel tests
 # multiple matching messages in different channels a user is in
-def test_search_string_in_multiple_channels(reset_workspace, create_public_channel, make_user_cd): 
+def test_search_string_in_multiple_channels(reset_workspace, create_public_channel, make_user_cd):
     # user_ab creates public channel and sends a message to it
     new_public_channel, user_ab = create_public_channel
-    msg1_pub = message_send(user_ab['token'], new_public_channel['channel_id'], "ab's public channel message")
+    msg1_pub = message_send(
+        user_ab['token'], new_public_channel['channel_id'], "ab's public channel message")
     # user_cd creates private channel and sends a message to it
     user_cd = make_user_cd
-    new_private_channel = channels_create(user_cd['token'], "cd_private", False)
-    msg1_priv = message_send(user_cd['token'], new_private_channel['channel_id'], "cd's private channel message") 
-    # user_cd invites user_ab to private channel 
-    channel_invite(user_cd['token'], new_private_channel['channel_id'], user_ab['u_id'])
+    new_private_channel = channels_create(
+        user_cd['token'], "cd_private", False)
+    msg1_priv = message_send(
+        user_cd['token'], new_private_channel['channel_id'], "cd's private channel message")
+    # user_cd invites user_ab to private channel
+    channel_invite(user_cd['token'],
+                   new_private_channel['channel_id'], user_ab['u_id'])
     result_list = search(user_ab['token'], "channel message")['messages']
 
     # getting the message string and user ids that sent them
     messages = [message['message'] for message in result_list]
     u_ids = [message['u_id'] for message in result_list]
-    
-    #asserting the u_ids relate to the messages
+
+    # asserting the u_ids relate to the messages
     assert user_cd['u_id'] in u_ids
     assert user_ab['u_id'] in u_ids
-    
-    #asserting the messages are in the results
+
+    # asserting the messages are in the results
     assert "ab's public channel message" in messages
     assert "cd's private channel message" in messages
 
@@ -310,7 +355,8 @@ def test_search_string_in_multiple_channels(reset_workspace, create_public_chann
 def test_search_string_in_unjoined_channel(reset_workspace, create_public_channel, make_user_cd):
     new_public_channel, user_ab = create_public_channel
     user_cd = make_user_cd
-    msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "ab's new public channel")
+    msg1 = message_send(
+        user_ab['token'], new_public_channel['channel_id'], "ab's new public channel")
     # user_cd searches without joining the channel
     result_list = search(user_cd['token'], "public channel")['messages']
 
@@ -321,102 +367,127 @@ def test_search_string_in_unjoined_channel(reset_workspace, create_public_channe
 # 1000 + long search string gives error
 def test_search_invalid_search_string(reset_workspace, create_public_channel):
     new_public_channel, user_ab = create_public_channel
-    msg1 = message_send(user_ab['token'], new_public_channel['channel_id'], "My first message")
-    
-    with pytest.raises(InputError): 
-        result = search(user_ab['token'], "My first message" + "a" * 999)
-    
+    msg1 = message_send(
+        user_ab['token'], new_public_channel['channel_id'], "My first message")
 
-# invalid token 
+    with pytest.raises(InputError):
+        result = search(user_ab['token'], "My first message" + "a" * 999)
+
+# invalid token
 # assuming the token with string "invalid" is an invalid token
+
+
 def test_search_invalid_token(reset_workspace, create_public_channel):
     new_public_channel, user_ab = create_public_channel
 
-    with pytest.raises(Exception):
-        result = search("invalid", "Search string")
+    with pytest.raises(AccessError):
+        result = search(user_ab['token'] + 'a', "Search string")
+
 
 '''Testing userpermission_change'''
+
+
+def test_userpermission_change_invalid_token(reset_workspace, create_public_channel, make_user_ab):
+    '''
+    Testing using an invalid token
+    '''
+
+    # creating a public channel
+    channel_id, owner_info = create_public_channel
+    user1 = make_user_ab
+    with pytest.raises(AccessError):
+        userpermission_change(
+            owner_info['token'] + 'a', user1['u_id'], SLACKR_OWNER)
+
 
 def test_userpermission_change_invalid_u_id(reset_workspace, create_public_channel, make_user_ab):
     '''
     Changing permissions of a non-existent user
     '''
-    
-    #creating a public channel
+
+    # creating a public channel
     channel_id, owner_info = create_public_channel
-    #since owner is the first user who signs up in this
-    #test, he should be a slackr owner
-  
-    #giving admin permissions to a non-existent user
+    # since owner is the first user who signs up in this
+    # test, he should be a slackr owner
+
+    # giving admin permissions to a non-existent user
     with pytest.raises(InputError):
-        userpermission_change(owner_info['token'], owner_info['u_id'] + 1, SLACKR_OWNER)
+        userpermission_change(
+            owner_info['token'], owner_info['u_id'] + 1, SLACKR_OWNER)
+
 
 def test_userpermission_change_permission_denied(reset_workspace, create_public_channel, make_user_ab, make_user_cd):
     '''
     Trying to change another user's permissions as a non-slackr-owner
     '''
-    #creating a public channel
+    # creating a public channel
     channel_id, owner_info = create_public_channel
-    #since owner is the first user who signs up in this
-    #test, he should be a slackr owner
+    # since owner is the first user who signs up in this
+    # test, he should be a slackr owner
 
-    #create 2 general users
+    # create 2 general users
     user_ab_info = make_user_ab
     user_cd_info = make_user_cd
-    #changing permissions
+    # changing permissions
     with pytest.raises(AccessError):
-        userpermission_change(user_cd_info['token'], user_ab_info['u_id'], SLACKR_OWNER)
+        userpermission_change(
+            user_cd_info['token'], user_ab_info['u_id'], SLACKR_OWNER)
+
 
 def test_userpermission_change_invalid_permission(reset_workspace, create_public_channel, make_user_ab):
     '''
     Testing changing a user's permissions to an invalid one
     '''
-    #creating a public channel
+    # creating a public channel
     channel_id, owner_info = create_public_channel
-    #since owner is the first user who signs up in this
-    #test, he should be a slackr owner
+    # since owner is the first user who signs up in this
+    # test, he should be a slackr owner
 
-    #create a general user
+    # create a general user
     user_info = make_user_ab
 
     with pytest.raises(InputError):
-        userpermission_change(owner_info['token'], user_info['u_id'], INVALID_PERMISSION)
-    
+        userpermission_change(
+            owner_info['token'], user_info['u_id'], INVALID_PERMISSION)
+
+
 def test_userpermission_change_invalid_permission_type(reset_workspace, create_public_channel, make_user_ab):
     '''
     Testing changing a user's permissions to an invalid one
     '''
-    #creating a public channel
+    # creating a public channel
     channel_id, owner_info = create_public_channel
-    #since owner is the first user who signs up in this
-    #test, he should be a slackr owner
+    # since owner is the first user who signs up in this
+    # test, he should be a slackr owner
 
-    #create a general user
+    # create a general user
     user_info = make_user_ab
 
     with pytest.raises(InputError):
-        userpermission_change(owner_info['token'], user_info['u_id'], "You should complain")
+        userpermission_change(
+            owner_info['token'], user_info['u_id'], "You should complain")
 
 
 def test_userpermission_change_promote(reset_workspace, create_private_channel, make_user_ab, make_user_cd):
     '''
     Testing promoting a user allows him to join private channels
     '''
-    #creating a public channel
+    # creating a public channel
     channel_id, owner_info = create_private_channel
-    #since owner is the first user who signs up in this
-    #test, he should be a slackr owner
+    # since owner is the first user who signs up in this
+    # test, he should be a slackr owner
 
-    #create a general user
+    # create a general user
     user_info = make_user_ab
     general_user = make_user_cd
 
-    #testing joining a private channel
+    # testing joining a private channel
     try:
         channel_join(general_user['token'], channel_id['channel_id'])
         assert False
     except AccessError:
-        userpermission_change(owner_info['token'], general_user['u_id'], SLACKR_OWNER)
+        userpermission_change(
+            owner_info['token'], general_user['u_id'], SLACKR_OWNER)
         try:
             channel_join(general_user['token'], channel_id['channel_id'])
         except AccessError:
@@ -427,31 +498,29 @@ def test_userpermission_change_demote(reset_workspace, create_private_channel, m
     '''
     Testing demoting a user restricts him to join private channels
     '''
-    #creating a private channel
+    # creating a private channel
     channel_id, owner_info = create_private_channel
-    #since owner is the first user who signs up in this
-    #test, he should be a slackr owner
+    # since owner is the first user who signs up in this
+    # test, he should be a slackr owner
 
-    #create two users
+    # create two users
     user_info = make_user_ab
     general_user = make_user_cd
-    
-    #promoting user
+
+    # promoting user
     userpermission_change(owner_info['token'], user_info['u_id'], SLACKR_OWNER)
 
-    #Invititng a new user 
-    channel_invite(owner_info['token'], channel_id['channel_id'], general_user['u_id'])
-   
-    #demoting user
-    userpermission_change(owner_info['token'], user_info['u_id'], SLACKR_MEMBER)
+    # Invititng a new user
+    channel_invite(owner_info['token'],
+                   channel_id['channel_id'], general_user['u_id'])
 
-    #User leaves the channel
+    # demoting user
+    userpermission_change(owner_info['token'],
+                          user_info['u_id'], SLACKR_MEMBER)
+
+    # User leaves the channel
     channel_leave(user_info['token'], user_info['u_id'])
-    
-    
-    #testing joining a private channel
+
+    # testing joining a private channel
     with pytest.raises(AccessError):
         channel_join(user_info['token'], channel_id['channel_id'])
-
-    
-    
