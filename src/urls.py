@@ -3,7 +3,7 @@ Module contains urls used for testing
 '''
 
 HOSTNAME = '127.0.0.1'
-PORT = 8080
+PORT = 5000
 
 RESET_URL = f"http://{HOSTNAME}:{PORT}/workspace/reset"
 
@@ -30,6 +30,10 @@ MESSAGE_REMOVE_URL = f"http://{HOSTNAME}:{PORT}/message/remove"
 SEND_URL = f"http://{HOSTNAME}:{PORT}/message/send"
 EDIT_URL = f"http://{HOSTNAME}:{PORT}/message/edit"
 SENDLATER_URL = f"http://{HOSTNAME}:{PORT}/message/sendlater"
+REACT_URL = f"http://{HOSTNAME}:{PORT}/message/react"
+UNREACT_URL = f"http://{HOSTNAME}:{PORT}/message/unreact"
+PIN_URL = f"http://{HOSTNAME}:{PORT}/message/pin"
+UNPIN_URL = f"http://{HOSTNAME}:{PORT}/message/unpin"
 
 # standup urls
 STANDUP_START_URL = f"http://{HOSTNAME}:{PORT}/standup/start"

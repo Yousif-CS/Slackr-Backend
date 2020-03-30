@@ -98,7 +98,7 @@ def message_sendlater(token, channel_id, message, time_sent):
         method='POST', headers={'Content-Type':'application/json'})
     msg_details = json.load(urllib.request.urlopen(request))
     return msg_details['message_id']
-    
+
 
 def message_remove(token, message_id):
     '''
@@ -128,6 +128,55 @@ def message_edit(token, message_id, message):
 
     urllib.request.urlopen(request)
 
+def message_react(token, message_id, react_id):
+    '''
+    HTTP request to react to a given message
+    '''
+    data = json.dumps({
+        'token': token,
+        'message_id': message_id,
+        'react_id': react_id,
+    }).encode()
+    request = urllib.request.Request(urls.REACT_URL, data=data,
+                                     method='POST', headers={'Content-Type': 'application/json'})
+    urllib.request.urlopen(request)
+
+def message_unreact(token, message_id, react_id):
+    '''
+    HTTP request to unreact to a given message
+    '''
+    data = json.dumps({
+        'token': token,
+        'message_id': message_id,
+        'react_id': react_id,
+    }).encode()
+    request = urllib.request.Request(urls.UNREACT_URL, data=data,
+                                     method='POST', headers={'Content-Type': 'application/json'})
+    urllib.request.urlopen(request)
+
+def message_pin(token, message_id):
+    '''
+    HTTP request to pin a message
+    '''
+    data = json.dumps({
+        'token': token,
+        'message_id': message_id,
+    }).encode()
+    request = urllib.request.Request(urls.PIN_URL, data=data,
+                                     method='POST', headers={'Content-Type': 'application/json'})
+    urllib.request.urlopen(request)
+
+def message_unpin(token, message_id):
+    '''
+    HTTP request to unpin a message
+    '''
+    data = json.dumps({
+        'token': token,
+        'message_id': message_id,
+    }).encode()
+    request = urllib.request.Request(urls.UNPIN_URL, data=data,
+                                     method='POST', headers={'Content-Type': 'application/json'})
+    urllib.request.urlopen(request)
 
 # --------------------------channels--------------------------
 
