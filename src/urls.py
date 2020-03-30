@@ -30,6 +30,11 @@ CHANNELS_LISTALL_URL = f"http://{HOSTNAME}:{PORT}/channels/listall"
 MESSAGE_REMOVE_URL = f"http://{HOSTNAME}:{PORT}/message/remove"
 SEND_URL = f"http://{HOSTNAME}:{PORT}/message/send"
 EDIT_URL = f"http://{HOSTNAME}:{PORT}/message/edit"
+SENDLATER_URL = f"http://{HOSTNAME}:{PORT}/message/sendlater"
+REACT_URL = f"http://{HOSTNAME}:{PORT}/message/react"
+UNREACT_URL = f"http://{HOSTNAME}:{PORT}/message/unreact"
+PIN_URL = f"http://{HOSTNAME}:{PORT}/message/pin"
+UNPIN_URL = f"http://{HOSTNAME}:{PORT}/message/unpin"
 
 # standup urls
 STANDUP_START_URL = f"http://{HOSTNAME}:{PORT}/standup/start"
