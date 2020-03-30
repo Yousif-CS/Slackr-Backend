@@ -109,14 +109,14 @@ def delete():
     return dumps({})
 
 
-@MESSAGE.route("/message/edit", methods=['PUT'])
+@MESSAGE.route("/edit", methods=['PUT'])
 def edit():
     '''
     a route which calls message_edit from message
     '''
     data = request.get_json()
 
-    if not data["token"] or not data["message_id"] or not data["message"]:
+    if not data["token"] or not data["message_id"] or (not data["message"] and not data["message"] == ""):
         raise RequestError(description="Missing data in request body")
 
     message.message_edit(data["token"], data["message_id"], data["message"])
