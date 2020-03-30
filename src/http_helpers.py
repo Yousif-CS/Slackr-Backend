@@ -246,7 +246,7 @@ def user_profile(token, u_id):
         'token': token,
         'u_id': u_id
     })
-    profile = json.load(urllib.request.urlopen(f"{urls.PROFILE_URL}?{query}"))
+    payload = json.load(urllib.request.urlopen(f"{urls.PROFILE_URL}?{query}"))
 
     return payload['user']
 
