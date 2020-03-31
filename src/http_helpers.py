@@ -1,6 +1,8 @@
 '''
 Module contains fixtures used in http tests
 '''
+#pylint: disable=trailing-whitespace
+
 import json
 import urllib.request
 import urllib.parse
@@ -247,7 +249,7 @@ def channel_details(token, channel_id):
     })
     details = json.load(urllib.request.urlopen(
         f"{urls.CHANNEL_DETAILS_URL}?{query}"))
-    return details['name'], details['owner_membs'], details['all_members']
+    return details['name'], details['owner_members'], details['all_members']
  
 
 

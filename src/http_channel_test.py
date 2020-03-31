@@ -4,6 +4,9 @@ Using urllib module to test channel functions (check http_helpers.py)
 # pylint: disable=unused-import
 # pylint: disable=redefined-outer-name
 # pylint: disable=unused-argument
+# pylint: disable=trailing-whitespace
+# pylint: disable=missing-function-docstring
+# pylint: disable=mixed-indentation
 import time
 from urllib.error import HTTPError
 import pytest
@@ -92,7 +95,8 @@ def test_channel_invite_no_channel_id(reset):
 
 def test_channel_details_correct_info(reset):
 	''' 
-	Test channel_details provides correct information regarding a channel's name, its owner members, and all of its members
+	Test channel_details provides correct information regarding 
+    a channel's name, its owner members, and all of its members
 	'''
 
 	owner_id, owner_token = register('max.d@gmail.com', 'wubbalubba', 'Max', 'Smith')
@@ -129,7 +133,8 @@ def test_channel_details_no_channel_id(reset):
 
 def	test_channel_details_not_a_member(reset):
 	'''
-	Testing channel_details raises an exception when a non-member of a channel tries to retrieve its details
+	Testing channel_details raises an exception 
+    when a non-member of a channel tries to retrieve its details
 	'''
 	
 	owner_token = register('max.d@gmail.com', 'wubbalubba', 'Max', 'Smith')[1]

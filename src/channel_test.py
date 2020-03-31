@@ -1,15 +1,21 @@
-# please edit this file for channels functions
+'''
+Integration tests for channel functions
+'''
+#pylint: disable=redefined-outer-name
+#pylint: disable=unused-argument
+#pylint: disable=trailing-whitespace
+#pylint: disable=pointless-string-statement
+import pytest
 from channel import (channel_leave, channel_join, channel_addowner,
                      channel_removeowner, channel_invite, channel_messages,
                      channel_details)
 from channels import channels_create, channels_list
-from auth import auth_login, auth_register
+from auth import auth_register
 from message import message_send, message_remove
 from error import AccessError, InputError
 from other import workspace_reset
-import pytest
 
-from state import get_store
+
 '''
     Under the assumption that auth_register, auth_login
     channels_create, channel_invite, message_send, message_remove work properly
@@ -141,13 +147,15 @@ def test_channel_invite_non_user(reset, create_public_channel):
                        channel_id['channel_id'], rand_user_id)
 
 
-def test_channel_invite_user_as_non_member(reset, create_user1, create_user2,  create_public_channel):
+def test_channel_invite_user_as_non_member(reset, create_user1, create_user2, 
+                                           create_public_channel):
     '''
-    Produces an input error when a user invites another registered user to a channel they don't belong to
-        '''
+    Produces an input error when a user invites another 
+    registered user to a channel they don't belong to
+    '''
     user_info = create_user1
     invited_user = create_user2
-    channel_id, owner_info = create_public_channel
+    channel_id = create_public_channel[0]
 
     with pytest.raises(AccessError):
         channel_invite(user_info['token'],
@@ -265,9 +273,10 @@ def test_channel_details_no_id(reset, create_private_channel):
 
 def test_channel_details_non_member(reset, create_user1, create_public_channel):
     ''' 
-    Access Error occurs when a user that does not belong to a channel attempts to retrieve its details 
+    Access Error occurs when a user that does not 
+    belong to a channel attempts to retrieve its details 
     '''
-    channel_id, owner_info = create_public_channel
+    channel_id = create_public_channel[0]
     user_info = create_user1
 
     with pytest.raises(AccessError):
@@ -278,7 +287,7 @@ def test_channel_details_invalid_token(reset, create_public_channel, create_user
     '''
     Access Error occurs when an unauthorized  user invokes the function
     '''
-    channel_id, owner_info = create_public_channel
+    channel_id = create_public_channel[0]
     with pytest.raises(AccessError):
         channel_details("I am an invalid token", channel_id['channel_id'])
 
@@ -323,7 +332,8 @@ def test_channel_messages_good(reset, create_public_channel):
 
 def test_channel_messages_more_than_fifty(reset, create_public_channel):
     '''
-    Testing sending more than 50 messages and checking the function returns only the first 50 (pagination)
+    Testing sending more than 50 messages 
+    and checking the function returns only the first 50 (pagination)
     Unfortunately, we have to use a for loop
     '''
 
@@ -369,8 +379,7 @@ def test_channel_messages_empty_public_bad(reset, create_public_channel):
     # create a public channel using fixture and return its details and the owner's
     channel_id, owner_info = create_public_channel
     with pytest.raises(InputError):
-        msgs = channel_messages(
-            owner_info['token'], channel_id['channel_id'], 10)
+        channel_messages(owner_info['token'], channel_id['channel_id'], 10)
 
 
 def test_channel_messages_private_non_member(reset, create_private_channel, create_user1):
@@ -387,8 +396,7 @@ def test_channel_messages_private_non_member(reset, create_private_channel, crea
     message_send(owner_info['token'],
                  channel_id['channel_id'], "First Message!")
     with pytest.raises(AccessError):
-        msgs = channel_messages(
-            user_info['token'], channel_id['channel_id'], 0)
+        channel_messages(user_info['token'], channel_id['channel_id'], 0)
 
 
 def test_channel_messages_invalid_channel(reset, create_owner):
@@ -399,7 +407,7 @@ def test_channel_messages_invalid_channel(reset, create_owner):
     #creating and logging in owner
     owner_info = create_owner
     with pytest.raises(InputError):
-        msgs = channel_messages(owner_info['token'], 131123, 0)
+        channel_messages(owner_info['token'], 131123, 0)
 
 
 def test_channel_messages_invalid_index(reset, create_public_channel):
@@ -416,8 +424,7 @@ def test_channel_messages_invalid_index(reset, create_public_channel):
     message_send(owner_info['token'],
                  channel_id['channel_id'], "Third Message!")
     with pytest.raises(InputError):
-        msgs = channel_messages(
-            owner_info['token'], channel_id['channel_id'], 4)
+        channel_messages(owner_info['token'], channel_id['channel_id'], 4)
 
 
 def test_channel_messages_public_non_member(reset, create_public_channel, create_user1):
@@ -430,12 +437,11 @@ def test_channel_messages_public_non_member(reset, create_public_channel, create
     # creating general user
     user_info = create_user1
     # message_sending channel_messages
-    msg_id = message_send(
+    message_send(
         owner_info['token'], channel_id['channel_id'], "First Message!")
     # access channel_messages as a non-member to a public channel
     with pytest.raises(AccessError):
-        msgs = channel_messages(
-            user_info['token'], channel_id['channel_id'], 0)
+        channel_messages(user_info['token'], channel_id['channel_id'], 0)
 
 
 def test_channel_messages_public_member(reset, create_public_channel, create_user1):
@@ -443,13 +449,15 @@ def test_channel_messages_public_member(reset, create_public_channel, create_use
     Testing member access to channel_messages
     '''
 
-    channel_id, owner_info = create_public_channel
+    channel_id = create_public_channel[0]
     user_info = create_user1
     channel_join(user_info["token"], channel_id["channel_id"])
-    msg_id = message_send(user_info['token'],
-                          channel_id['channel_id'], "First Message!")
+    message_send(user_info['token'],
+                 channel_id['channel_id'], "First Message!")
 
-    assert channel_messages(user_info["token"], channel_id["channel_id"], 0)["messages"][0]["message"] == \
+    assert channel_messages(user_info["token"], 
+                            channel_id["channel_id"], 
+                            0)["messages"][0]["message"] == \
         "First Message!"
 
 
@@ -459,11 +467,11 @@ def test_channel_messages_unauthorized_user(reset, create_public_channel):
     '''
 
     # creating channel and retrieving its details and the owner's
-    channel_id, owner_info = create_public_channel
+    channel_id = create_public_channel[0]
     # using an invalid token
     with pytest.raises(AccessError):
-        msgs = channel_messages('I am an invalid token',
-                                channel_id['channel_id'], 0)
+        channel_messages('I am an invalid token',
+                         channel_id['channel_id'], 0)
 
 
 '''------------------testing channel_leave--------------------'''
@@ -536,7 +544,7 @@ def test_channel_leave_non_member(reset, create_public_channel, create_user1):
     '''
 
     # creating channel and retrieving its details and the owner's
-    channel_id, owner_info = create_public_channel
+    channel_id = create_public_channel[0]
     # creating another user
     user_info = create_user1
     # leaving as a non-member
@@ -578,7 +586,7 @@ def test_channel_leave_unauthorized_user(reset, create_public_channel):
     Testing leaving a channel as a user with an invalid token
     '''
 
-    channel_id, owner_info = create_public_channel
+    channel_id = create_public_channel[0]
     # assuming an invalid token results in an exception
     with pytest.raises(Exception):
         channel_leave('I am an invalid token', channel_id['channel_id'])
@@ -593,7 +601,7 @@ def test_channel_join_public_valid(reset, create_public_channel, create_user1):
     '''
 
     # creating a public channel
-    channel_id, owner_info = create_public_channel
+    channel_id = create_public_channel[0]
     # creating a normal user
     user_info = create_user1
     # joining as general user
@@ -625,7 +633,7 @@ def test_channel_join_private_member(reset, create_private_channel, create_user1
     '''
 
     # creating a private channel
-    channel_id, owner_info = create_private_channel
+    channel_id = create_private_channel[0]
     # creating a normal user
     user_info = create_user1
 
@@ -643,7 +651,7 @@ def test_channel_join_already_joined(reset, create_public_channel, create_user1)
     '''
 
     # creating a public channel
-    channel_id, owner_info = create_public_channel
+    channel_id = create_public_channel[0]
     # creating a normal user and joining
     user_info = create_user1
     channel_join(user_info['token'], channel_id['channel_id'])
@@ -658,7 +666,7 @@ def test_channel_join_invalid_token(reset, create_public_channel):
     '''
 
     # creating a public channel
-    channel_id, owner_info = create_public_channel
+    channel_id = create_public_channel[0]
     # testing using an invalid token raises an exception
     with pytest.raises(Exception):
         channel_join('I am not a valid token', channel_id['channel_id'])
@@ -726,7 +734,7 @@ def test_channel_addowner_as_non_owner(reset, create_public_channel, create_user
     '''
 
     # creating a public channel
-    channel_id, owner_info = create_public_channel
+    channel_id = create_public_channel[0]
     # creating a normal user
     user_info = create_user1
     another_user = create_user2
@@ -742,7 +750,7 @@ def test_channel_addowner_as_non_member(reset, create_public_channel, create_use
     Testing adding a user as an owner as a non-member
     '''
     # creating a public channel
-    channel_id, owner_info = create_public_channel
+    channel_id = create_public_channel[0]
     # creating normal users
     user_info = create_user1
     channel_join(user_info['token'], channel_id['channel_id'])
@@ -759,7 +767,7 @@ def test_channel_addowner_invalid_token(reset, create_public_channel, create_use
     '''
 
     # creating a public channel
-    channel_id, owner_info = create_public_channel
+    channel_id = create_public_channel[0]
     # creating normal users
     user_info = create_user1
     channel_join(user_info['token'], channel_id['channel_id'])

@@ -633,7 +633,7 @@ def test_message_pin_no_msgs(make_users):
     with pytest.raises(InputError):
         message_pin(user_ab["token"], 0)
 
-# InputError: auth user is not an owner (of channel or of slackr)
+# AccessError: auth user is not an owner (of channel or of slackr)
 
 
 def test_message_pin_auth_user_not_owner(make_users):
@@ -646,7 +646,7 @@ def test_message_pin_auth_user_not_owner(make_users):
     msg_id0 = message_send(user_ab["token"], new_ch["channel_id"], "Random msg")[
         "message_id"]
 
-    with pytest.raises(InputError):
+    with pytest.raises(AccessError):
         message_pin(user_cd["token"], msg_id0)
 
 # InputError: message is already pinned
