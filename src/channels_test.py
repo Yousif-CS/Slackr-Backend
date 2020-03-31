@@ -7,19 +7,13 @@ from auth import auth_register
 from channels import channels_list, channels_listall, channels_create
 from error import InputError, AccessError
 from other import workspace_reset
-import pytest
+import pytest #pylint: disable=import-error
 
 
-'''------------------testing channels_list--------------------'''
-
-# reminders
-# input: (token); output: {channels}
-# is_public status should not affect channnel
+#------------------testing channels_list--------------------
 
 # testing whether channels_list returns empty list if no channels exist yet
-
-
-def test_channels_list_no_channels():
+def test_channels_list_no_channels(): #pylint: disable=missing-function-docstring
     workspace_reset()
     # creating and registering user (user_ab is type dictionary with u_id and token keys)
     user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
@@ -30,7 +24,7 @@ def test_channels_list_no_channels():
 # testing that channels_list returns a channel that the user created
 
 
-def test_channels_list_creator_public_channel():
+def test_channels_list_creator_public_channel(): #pylint: disable=missing-function-docstring
     workspace_reset()
     # creating and registering users
     user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
@@ -55,7 +49,7 @@ def test_channels_list_creator_public_channel():
 # testing that private channels also shows up when channel_id is called by a user in channel
 
 
-def test_channels_list_creator_private_channel():
+def test_channels_list_creator_private_channel(): #pylint: disable=missing-function-docstring
     workspace_reset()
     # creating and registering user
     user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
@@ -69,12 +63,12 @@ def test_channels_list_creator_private_channel():
                 'channel_id': new_private_channel['channel_id'],
                 'name': 'private_test'
             }
-    ]
+        ]
 
 # testing that channels_list also returns a channel if a user was added by the creator
 
 
-def test_channels_list_added_by_creator():
+def test_channels_list_added_by_creator(): #pylint: disable=missing-function-docstring
     workspace_reset()
     # creating and registering users
     user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
@@ -93,29 +87,22 @@ def test_channels_list_added_by_creator():
                 'channel_id': new_channel['channel_id'],
                 'name': 'test_add'
             }
-    ]
+        ]
+
 
 # testing that invalid token throws exception
 # assuming token with string 'invalid' is an invalid token
-
-
-def test_channels_list_invalid_token():
+def test_channels_list_invalid_token(): #pylint: disable=missing-function-docstring
     workspace_reset()
     user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
 
     with pytest.raises(AccessError):
-        ab_list = channels_list(user_ab["token"] + "invalid")
+        channels_list(user_ab["token"] + "invalid")
 
 
-'''------------------testing channels_listall--------------------'''
-# reminders
-# input: (token); output: {channels}
-# list every channel that exists (public and private)
-
+#------------------testing channels_listall--------------------
 # testing that channels_listall returns an empty dictionary when no channels exist
-
-
-def test_channels_listall_empty():
+def test_channels_listall_empty(): #pylint: disable=missing-function-docstring
     workspace_reset()
     # creating and registering user_ab
     user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
@@ -123,29 +110,26 @@ def test_channels_listall_empty():
     # and that no channels have been created
     assert channels_listall(user_ab['token'])['channels'] == []
 
+
 # testing for a given public channel, channels_listall returns it for every user
-
-
-def test_channels_listall_public():
+def test_channels_listall_public(): #pylint: disable=missing-function-docstring
     workspace_reset()
     # creating and registering users
     user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
     user_cd = auth_register("charlie@gmail.com",
                             "pw321ABC", "Charlie", "Dragon")
     # user_ab creates a public channel
-    new_public_channel = channels_create(user_ab['token'], 'public_test', True)
-    new_public_channel2 = channels_create(
-        user_cd['token'], 'public_test2', True)
+    channels_create(user_ab['token'], 'public_test', True)
+    channels_create(user_cd['token'], 'public_test2', True)
     # user_ab and user_cd call channels_listall
     ab_list = channels_listall(user_ab['token'])['channels']
     cd_list = channels_listall(user_cd['token'])['channels']
 
     assert ab_list == cd_list
 
+
 # testing for a given public channel, channels_listall returns all the available channels
-
-
-def test_channels_listall_public_correct_channels():
+def test_channels_listall_public_correct_channels(): #pylint: disable=missing-function-docstring
     workspace_reset()
     # creating and registering users
     user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
@@ -164,46 +148,35 @@ def test_channels_listall_public_correct_channels():
 
 
 # testing for a private channel, channels_listall also returns it for every user
-def test_channels_listall_private():
+def test_channels_listall_private(): #pylint: disable=missing-function-docstring
     workspace_reset()
     # creating and registering users
     user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
     user_cd = auth_register("charlie@gmail.com",
                             "pw321ABC", "Charlie", "Dragon")
     # user_cd creates a private channel
-    new_private_channel = channels_create(
-        user_ab['token'], 'private_test', False)
-    new_private_channel2 = channels_create(
-        user_cd['token'], 'private_test2', False)
+    channels_create(user_ab['token'], 'private_test', False)
+    channels_create(user_cd['token'], 'private_test2', False)
     # user_ab and user_cd call channels_listall
     ab_list = channels_listall(user_ab['token'])['channels']
     cd_list = channels_listall(user_cd['token'])['channels']
 
     assert ab_list == cd_list
 
+
 # testing that invalid token throws exception
 # assuming token with string 'invalid' is an invalid token
-
-
-def test_channels_listall_invalid_token():
+def test_channels_listall_invalid_token(): #pylint: disable=missing-function-docstring
     workspace_reset()
     user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
 
     with pytest.raises(Exception):
-        ab_listall = channels_listall(user_ab["token"] + "invalid")
+        channels_listall(user_ab["token"] + "invalid")
 
 
-'''------------------testing channels_create--------------------'''
-# input: (token, name, is_public); output: {channel_id}
-# throws InputError when name is more than 20 chars long
-# assume:
-# 1. duplicate names allowed since IDs are different
-# 2. NoName allowed ('name': '')
-
+#------------------testing channels_create--------------------
 # testing for correct output (channel_id as int)
-
-
-def test_channels_create_id_int():
+def test_channels_create_id_int(): #pylint: disable=missing-function-docstring
     workspace_reset()
     # creating and registering user
     user_kli = auth_register("ken@gmail.com", "new_pass", "Ken", "L")
@@ -211,10 +184,9 @@ def test_channels_create_id_int():
     new_channel_id = channels_create(user_kli['token'], "new_channel", True)
     assert isinstance(new_channel_id['channel_id'], int)
 
+
 # testing for correct details (using channel_details)
-
-
-def test_channels_create_correct_details():
+def test_channels_create_correct_details(): #pylint: disable=missing-function-docstring
     workspace_reset()
     # creating and registering user
     user_kli = auth_register("ken@gmail.com", "new_pass", "Ken", "L")
@@ -231,12 +203,11 @@ def test_channels_create_correct_details():
     assert print_details['all_members'] == \
         [
             {'u_id': user_kli['u_id'], 'name_first': 'Ken', 'name_last': 'L'},
-            {'u_id': user_bwang['u_id'],
-                'name_first': 'Bob', 'name_last': 'Wang'}
-    ]
+            {'u_id': user_bwang['u_id'], 'name_first': 'Bob', 'name_last': 'Wang'}
+        ]
 
 
-def test_channels_create_invalid_status():
+def test_channels_create_invalid_status(): #pylint: disable=missing-function-docstring
     '''
     Testing giving create an invalid is_public status
     '''
@@ -247,10 +218,9 @@ def test_channels_create_invalid_status():
         channels_create(user_kli['token'],
                         'some_channel_name', is_public='maybe?')
 
+
 # testing that 2 different channels (maybe with same name) does not have same ID
-
-
-def test_channels_create_unique_id():
+def test_channels_create_unique_id(): #pylint: disable=missing-function-docstring
     workspace_reset()
     # creating and registering user
     user_kli = auth_register("ken@gmail.com", "new_pass", "Ken", "L")
@@ -261,43 +231,37 @@ def test_channels_create_unique_id():
     assert new_channel_1['channel_id'] != new_channel_2['channel_id']
     assert len(channels_listall(user_kli['token'])['channels']) == 2
 
+
 # tests that channel whose name is exactly 20 characters long can be made
-
-
-def test_channels_create_name_20char():
+def test_channels_create_name_20char(): #pylint: disable=missing-function-docstring
     workspace_reset()
     user_kli = auth_register("ken@gmail.com", "new_pass", "Ken", "L")
     channels_create(user_kli['token'], "a" * 20, True)
     assert len(channels_listall(user_kli['token'])['channels']) == 1
 
+
 # tests that a channel named with an empty string can be made
-
-
-def test_channels_create_noname():
+def test_channels_create_noname(): #pylint: disable=missing-function-docstring
     workspace_reset()
     user_kli = auth_register("ken@gmail.com", "new_pass", "Ken", "L")
     channels_create(user_kli['token'], "", True)
     assert len(channels_listall(user_kli['token'])['channels']) == 1
 
+
 # testing for raised exception if len(name) > 20
-
-
-def test_channels_create_invalid_name():
+def test_channels_create_invalid_name(): #pylint: disable=missing-function-docstring
     workspace_reset()
     # creating and registering user
     user_kli = auth_register("ken@gmail.com", "new_pass", "Ken", "L")
     with pytest.raises(InputError):
-        bad_channel = channels_create(
-            user_kli['token'], "verylongchannelnameamiat20charsyet", True)
+        channels_create(user_kli['token'], "verylongchannelnameamiat20charsyet", True)
+
 
 # testing that invalid token throws exception
 # assuming token with string 'invalid' is an invalid token
-
-
-def test_channels_create_invalid_token():
+def test_channels_create_invalid_token(): #pylint: disable=missing-function-docstring
     workspace_reset()
     user_ab = auth_register("alice@gmail.com", "password11", "Alice", "Bee")
 
     with pytest.raises(Exception):
-        invalid_channel = channels_create(
-            user_ab['token'] + "invalid", "Invalid Token Channels suck", True)
+        channels_create(user_ab['token'] + "invalid", "Invalid Token Channels suck", True)
