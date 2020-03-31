@@ -10,7 +10,7 @@ def test_login_user(reset):
 
     assert reg_token == login_token 
     success = logout(login_token)
-    assert success['is_success'] == True 
+    assert success == True 
 
 
 def test_login_multiple_users(reset):
@@ -30,8 +30,7 @@ def test_register_without_logging_out(reset):
     reg_token = register('max.d@gmail.com', 'wubbalubba', 'Max', 'Smith')[1]
     log_token = login('max.d@gmail.com', 'wubbalubba')[1]   
     assert log_token == reg_token 
-    with pytest.raises(HTTPError): 
-        reg_token = register('max2.d@gmail.com', 'wubbalubba', 'Max', 'Smith')
+    reg_token = register('max2.d@gmail.com', 'wubbalubba', 'Max', 'Smith')
 
 
 def test_register_user_twice(reset):
@@ -75,7 +74,7 @@ def test_join_channel_logged_out(reset):
     owner_token = login('max.d@gmail.com', 'wubbalubba')[1]
     channel_id = channels_create(owner_token, 'Maxs Channel', is_public=True)
     success = logout(owner_token)
-    assert success['is_success'] == True 
+    assert success == True 
 
     register('mike@gmail.com', 'wubbalubba', 'Mike', 'Smith')[1]
     user_token = login('mike@gmail.com', 'wubbalubba')[1]
@@ -84,30 +83,3 @@ def test_join_channel_logged_out(reset):
     with pytest.raises(HTTPError):
         channel_join(user_token, channel_id)
     
-
-   
-
-
-
-
-        
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-
-    
-
-
-
-

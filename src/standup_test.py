@@ -1,6 +1,10 @@
 '''
 This file contains tests for standup functions
 '''
+#pylint: disable=redefined-outer-name
+#pylint: disable=unused-variable
+#pylint: disable=pointless-string-statement
+
 import time
 from time import sleep
 import pytest
@@ -114,8 +118,10 @@ def test_standup_start_overlap(create_public_channel):
     sleep(2.1)
     standup.standup_start(owner["token"], new_ch["channel_id"], 2)
 
-# Starts the standup period whereby for the next "length" seconds if someone calls "standup_send" with a message,
-# #it is buffered during the X second window then at the end of the X second window a message will be added to
+# Starts the standup period whereby for the next "length" seconds,
+# if someone calls "standup_send" with a message,
+# it is buffered during the X second window,
+# then at the end of the X second window a message will be added to
 # the message queue in the channel from the user who started the standup.
 
 

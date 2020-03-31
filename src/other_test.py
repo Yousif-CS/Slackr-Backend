@@ -1,9 +1,15 @@
-# please write tests for users_all and search here
+'''
+Integration tests for functions in other.py
+'''
+
+#pylint: disable=redefined-outer-name
+#pylint: disable=pointless-string-statement
+#pylint: disable=missing-function-docstring
+#pylint: disable=unused-argument
 
 import pytest
 from other import users_all, search, userpermission_change, workspace_reset
-from user import user_profile
-from auth import auth_register, auth_login, auth_logout
+from auth import auth_register, auth_logout
 from channels import channels_create
 from message import message_send
 from error import InputError, AccessError
@@ -16,7 +22,7 @@ INVALID_PERMISSION = 3
 
 
 @pytest.fixture
-def reset_workspace():
+def reset():
     workspace_reset()
 
 
@@ -234,16 +240,15 @@ def test_users_all_invalid_token_error():
 # testing that empty search string should return empty dictionary
 
 
-def test_search_empty_string(reset_workspace, create_public_channel):
+def test_search_empty_string(reset, create_public_channel):
     new_public_channel, user_ab = create_public_channel
-    msg1 = message_send(
-        user_ab['token'], new_public_channel['channel_id'], "Hello world!")
+    message_send(user_ab['token'], new_public_channel['channel_id'], "Hello world!")
 
     assert search(user_ab['token'], "")['messages'] == []
 
 
 # spaces in search string
-def test_search_space_string(reset_workspace, create_public_channel):
+def test_search_space_string(reset, create_public_channel):
     new_public_channel, user_ab = create_public_channel
     msg1 = message_send(
         user_ab['token'], new_public_channel['channel_id'], "A message with spaces!")
@@ -263,14 +268,14 @@ def test_search_space_string(reset_workspace, create_public_channel):
 
 
 # letters and symbols in search string (combination of above)
-def test_search_normal_string(reset_workspace, create_public_channel):
+def test_search_normal_string(reset, create_public_channel):
 
     new_public_channel, user_ab = create_public_channel
     msg1 = message_send(
         user_ab['token'], new_public_channel['channel_id'], "Symbols & words")
     msg2 = message_send(
         user_ab['token'], new_public_channel['channel_id'], "& with more stuff")
-    msg3 = message_send(
+    message_send(
         user_ab['token'], new_public_channel['channel_id'], "hola amigos!")
 
     # result_list is of type list (list of dictionaries)
@@ -291,12 +296,11 @@ def test_search_normal_string(reset_workspace, create_public_channel):
 
 
 # search string is exactly message
-def test_search_exact_string(reset_workspace, create_public_channel):
+def test_search_exact_string(reset, create_public_channel):
     new_public_channel, user_ab = create_public_channel
-    msg1 = message_send(
-        user_ab['token'], new_public_channel['channel_id'], "This is a very generic message")
-    msg2 = message_send(
-        user_ab['token'], new_public_channel['channel_id'], "generic message")
+    message_send(user_ab['token'], new_public_channel['channel_id'],
+                 "This is a very generic message")
+    message_send(user_ab['token'], new_public_channel['channel_id'], "generic message")
     # search string matches a message exactly
     result_list = search(user_ab['token'], "This is a very generic message")[
         'messages']
@@ -309,9 +313,9 @@ def test_search_exact_string(reset_workspace, create_public_channel):
 
 
 # search string longer than message (should be no match)
-def test_search_string_too_long(reset_workspace, create_public_channel):
+def test_search_string_too_long(reset, create_public_channel):
     new_public_channel, user_ab = create_public_channel
-    msg1 = message_send(
+    message_send(
         user_ab['token'], new_public_channel['channel_id'], "Short string")
     # search string contains string but is longer than string
     result_list = search(user_ab['token'], "& w")['messages']
@@ -322,16 +326,16 @@ def test_search_string_too_long(reset_workspace, create_public_channel):
 
 # Cross-channel tests
 # multiple matching messages in different channels a user is in
-def test_search_string_in_multiple_channels(reset_workspace, create_public_channel, make_user_cd):
+def test_search_string_in_multiple_channels(reset, create_public_channel, make_user_cd):
     # user_ab creates public channel and sends a message to it
     new_public_channel, user_ab = create_public_channel
-    msg1_pub = message_send(
+    message_send(
         user_ab['token'], new_public_channel['channel_id'], "ab's public channel message")
     # user_cd creates private channel and sends a message to it
     user_cd = make_user_cd
     new_private_channel = channels_create(
         user_cd['token'], "cd_private", False)
-    msg1_priv = message_send(
+    message_send(
         user_cd['token'], new_private_channel['channel_id'], "cd's private channel message")
     # user_cd invites user_ab to private channel
     channel_invite(user_cd['token'],
@@ -352,10 +356,10 @@ def test_search_string_in_multiple_channels(reset_workspace, create_public_chann
 
 
 # matching messages in unjoined channel shold not show up
-def test_search_string_in_unjoined_channel(reset_workspace, create_public_channel, make_user_cd):
+def test_search_string_in_unjoined_channel(reset, create_public_channel, make_user_cd):
     new_public_channel, user_ab = create_public_channel
     user_cd = make_user_cd
-    msg1 = message_send(
+    message_send(
         user_ab['token'], new_public_channel['channel_id'], "ab's new public channel")
     # user_cd searches without joining the channel
     result_list = search(user_cd['token'], "public channel")['messages']
@@ -365,48 +369,48 @@ def test_search_string_in_unjoined_channel(reset_workspace, create_public_channe
 
 # Exceptions
 # 1000 + long search string gives error
-def test_search_invalid_search_string(reset_workspace, create_public_channel):
+def test_search_invalid_search_string(reset, create_public_channel):
     new_public_channel, user_ab = create_public_channel
-    msg1 = message_send(
+    message_send(
         user_ab['token'], new_public_channel['channel_id'], "My first message")
 
     with pytest.raises(InputError):
-        result = search(user_ab['token'], "My first message" + "a" * 999)
+        search(user_ab['token'], "My first message" + "a" * 999)
 
 # invalid token
 # assuming the token with string "invalid" is an invalid token
 
 
-def test_search_invalid_token(reset_workspace, create_public_channel):
-    new_public_channel, user_ab = create_public_channel
+def test_search_invalid_token(reset, create_public_channel):
+    user_ab = create_public_channel[1]
 
     with pytest.raises(AccessError):
-        result = search(user_ab['token'] + 'a', "Search string")
+        search(user_ab['token'] + 'a', "Search string")
 
 
 '''Testing userpermission_change'''
 
 
-def test_userpermission_change_invalid_token(reset_workspace, create_public_channel, make_user_ab):
+def test_userpermission_change_invalid_token(reset, create_public_channel, make_user_ab):
     '''
     Testing using an invalid token
     '''
 
     # creating a public channel
-    channel_id, owner_info = create_public_channel
+    owner_info = create_public_channel[1]
     user1 = make_user_ab
     with pytest.raises(AccessError):
         userpermission_change(
             owner_info['token'] + 'a', user1['u_id'], SLACKR_OWNER)
 
 
-def test_userpermission_change_invalid_u_id(reset_workspace, create_public_channel, make_user_ab):
+def test_userpermission_change_invalid_u_id(reset, create_public_channel, make_user_ab):
     '''
     Changing permissions of a non-existent user
     '''
 
     # creating a public channel
-    channel_id, owner_info = create_public_channel
+    owner_info = create_public_channel[1]
     # since owner is the first user who signs up in this
     # test, he should be a slackr owner
 
@@ -415,13 +419,13 @@ def test_userpermission_change_invalid_u_id(reset_workspace, create_public_chann
         userpermission_change(
             owner_info['token'], owner_info['u_id'] + 1, SLACKR_OWNER)
 
-
-def test_userpermission_change_permission_denied(reset_workspace, create_public_channel, make_user_ab, make_user_cd):
+def test_userpermission_change_permission_denied(reset, create_public_channel,
+                                                 make_user_ab, make_user_cd):
     '''
     Trying to change another user's permissions as a non-slackr-owner
     '''
     # creating a public channel
-    channel_id, owner_info = create_public_channel
+    create_public_channel #pylint: disable=pointless-statement
     # since owner is the first user who signs up in this
     # test, he should be a slackr owner
 
@@ -434,12 +438,12 @@ def test_userpermission_change_permission_denied(reset_workspace, create_public_
             user_cd_info['token'], user_ab_info['u_id'], SLACKR_OWNER)
 
 
-def test_userpermission_change_invalid_permission(reset_workspace, create_public_channel, make_user_ab):
+def test_userpermission_change_invalid_permission(reset, create_public_channel, make_user_ab):
     '''
     Testing changing a user's permissions to an invalid one
     '''
     # creating a public channel
-    channel_id, owner_info = create_public_channel
+    owner_info = create_public_channel[1]
     # since owner is the first user who signs up in this
     # test, he should be a slackr owner
 
@@ -451,12 +455,12 @@ def test_userpermission_change_invalid_permission(reset_workspace, create_public
             owner_info['token'], user_info['u_id'], INVALID_PERMISSION)
 
 
-def test_userpermission_change_invalid_permission_type(reset_workspace, create_public_channel, make_user_ab):
+def test_userpermission_change_invalid_permission_type(reset, create_public_channel, make_user_ab):
     '''
     Testing changing a user's permissions to an invalid one
     '''
     # creating a public channel
-    channel_id, owner_info = create_public_channel
+    owner_info = create_public_channel[1]
     # since owner is the first user who signs up in this
     # test, he should be a slackr owner
 
@@ -468,7 +472,7 @@ def test_userpermission_change_invalid_permission_type(reset_workspace, create_p
             owner_info['token'], user_info['u_id'], "You should complain")
 
 
-def test_userpermission_change_promote(reset_workspace, create_private_channel, make_user_ab, make_user_cd):
+def test_userpermission_change_promote(reset, create_private_channel, make_user_ab, make_user_cd):
     '''
     Testing promoting a user allows him to join private channels
     '''
@@ -478,7 +482,7 @@ def test_userpermission_change_promote(reset_workspace, create_private_channel, 
     # test, he should be a slackr owner
 
     # create a general user
-    user_info = make_user_ab
+    make_user_ab #pylint: disable=pointless-statement
     general_user = make_user_cd
 
     # testing joining a private channel
@@ -494,7 +498,7 @@ def test_userpermission_change_promote(reset_workspace, create_private_channel, 
             assert False
 
 
-def test_userpermission_change_demote(reset_workspace, create_private_channel, make_user_ab, make_user_cd):
+def test_userpermission_change_demote(reset, create_private_channel, make_user_ab, make_user_cd):
     '''
     Testing demoting a user restricts him to join private channels
     '''
