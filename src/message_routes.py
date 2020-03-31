@@ -116,7 +116,8 @@ def edit():
     '''
     data = request.get_json()
 
-    if not data["token"] or not data["message_id"] or (not data["message"] and not data["message"] == ""):
+    if not data["token"] or not data["message_id"] \
+        or (not data["message"] and not data["message"] == ""):
         raise RequestError(description="Missing data in request body")
 
     message.message_edit(data["token"], data["message_id"], data["message"])
