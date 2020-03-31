@@ -4,13 +4,14 @@ HTTP tests for functions in message.py
 # pylint: disable=redefined-outer-name
 # pylint: disable=unused-argument
 # pylint: disable=unused-import
+# pylint: disable=missing-function-docstring
 
-import pytest
 import time
-import urls
 import json
 import urllib.request
 from urllib.error import HTTPError
+import pytest #pylint: disable=import-error
+import urls
 
 from http_helpers import (reset, register, login, logout,
                           message_send, message_sendlater, channel_messages,
@@ -81,7 +82,7 @@ def test_message_sendlater_threading(reset):
     '''
     k_token = register('ken@gmail.com', 'kenis123', 'Ken', 'Li')[1]
     channel_id = channels_create(k_token, 'test_public', True)
-    msg_id = message_sendlater(k_token, channel_id, 'sending later', time.time() + 1)
+    message_sendlater(k_token, channel_id, 'sending later', time.time() + 1)
     message_send(k_token, channel_id, 'test message0')
     message_send(k_token, channel_id, 'test message1')
     time.sleep(2)
@@ -115,7 +116,7 @@ def test_message_react_ok(reset):
     msg0_id = message_send(a_token, channel_id, 'test message please react')
     message_react(a_token, msg0_id, 1)
     msg_list = channel_messages(a_token, channel_id, 0)[0]
- 
+
     assert a_id in msg_list[0]['reacts'][0]['u_ids']
     assert msg_list[0]['reacts'][0]['react_id'] == 1
     logout(a_token)
@@ -337,7 +338,7 @@ def test_message_remove_twice(reset):
 
     with pytest.raises(HTTPError):
         message_remove(a_token, 0)
-    
+
 def test_message_remove_slackr_owner(reset):
     # slackr owner
     a_token = register('admin@gmail.com', 'pass123456', 'Alan', 'Brown')[1]
@@ -345,7 +346,7 @@ def test_message_remove_slackr_owner(reset):
     # ken creates a channel
     channel_id = channels_create(k_token, 'test_public', True)
     msg0_id = message_send(k_token, channel_id, 'test message in ken channel')
-    msg1_id = message_send(k_token, channel_id, 'test message2 in ken channel')
+    message_send(k_token, channel_id, 'test message2 in ken channel')
 
     message_remove(a_token, msg0_id)
     msg_list = channel_messages(k_token, channel_id, 0)[0]
@@ -369,7 +370,7 @@ def test_message_remove_invalid_token():
 
 # can edit a message
 def test_message_edit(reset):
-    j_id, j_token = register("joshwang@gmail.com", "1234566", "Josh", "Wang")
+    j_token = register("joshwang@gmail.com", "1234566", "Josh", "Wang")[1]
     ch_id = channels_create(j_token, "new_channel", True)
 
     msg_id1 = message_send(j_token, ch_id, "This is the first message before any editing.")
@@ -384,10 +385,10 @@ def test_message_edit(reset):
 
 # deletes a message edited to empty
 def test_message_edit_delete_empty(reset):
-    j_id, j_token = register("joshwang@gmail.com", "1234566", "Josh", "Wang")
+    j_token = register("joshwang@gmail.com", "1234566", "Josh", "Wang")[1]
     ch_id = channels_create(j_token, "new_channel", True)
 
-    msg_id1 = message_send(j_token, ch_id, "This is the first message before any editing.")
+    message_send(j_token, ch_id, "This is the first message before any editing.")
     msg_id2 = message_send(j_token, ch_id, "This is another message")
 
     message_edit(j_token, msg_id2, "")
@@ -395,10 +396,10 @@ def test_message_edit_delete_empty(reset):
 
 # reject if message editor was not the message sender and is not an owner
 def test_message_edit_reject_permission(reset):
-    j_id, j_token = register("joshwang@gmail.com", "1234566", "Josh", "Wang")
-    k_id, k_token = register("ken@yahoo.com", "jludagsfhjkliopasdf", "Ken", "Li")
-    i_id, i_token = register("ian@jacobs.com", "aslkdfjwe", "Ian", "Jacobs")
-    l_id, l_token = register("lloyd@doublel.au", "ajsoqefdas", "Lloyd", "Freeman")
+    j_token = register("joshwang@gmail.com", "1234566", "Josh", "Wang")[1]
+    k_token = register("ken@yahoo.com", "jludagsfhjkliopasdf", "Ken", "Li")[1]
+    i_token = register("ian@jacobs.com", "aslkdfjwe", "Ian", "Jacobs")[1]
+    l_token = register("lloyd@doublel.au", "ajsoqefdas", "Lloyd", "Freeman")[1]
 
     ch_id = channels_create(k_token, "new_channel", True)
     channel_join(i_token, ch_id)
