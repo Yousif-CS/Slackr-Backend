@@ -1,3 +1,11 @@
+'''
+HTTP tests for auth routes
+'''
+#pylint: disable=trailing-whitespace
+#pylint: disable=redefined-outer-name
+#pylint: disable=unused-argument
+#pylint: disable=missing-function-docstring
+
 import time
 from urllib.error import HTTPError
 import pytest
@@ -67,7 +75,7 @@ def test_password_no_match(reset):
 def test_invalid_email(reset):
     
     with pytest.raises(HTTPError):
-        register('max.smith', 'wubbalubba', 'Max','Smith')
+        register('max.smith', 'wubbalubba', 'Max', 'Smith')
     
 def test_join_channel_logged_out(reset):
     register('max.d@gmail.com', 'wubbalubba', 'Max', 'Smith')
