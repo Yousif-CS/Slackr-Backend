@@ -6,7 +6,7 @@ Integration tests for functions in user.py
 #pylint: disable=redefined-outer-name
 #pylint: disable=trailing-whitespace
 
-import pytest
+import pytest #pylint: disable=import-error
 from error import InputError, AccessError
 from user import user_profile, user_profile_setname, user_profile_setemail, user_profile_sethandle
 from auth import auth_register, auth_logout
