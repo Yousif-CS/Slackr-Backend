@@ -1,5 +1,13 @@
+'''
+Integration tests for auth functions
+'''
+#pylint: disable=invalid-name
+#pylint: disable=missing-function-docstring
+#pylint: disable=pointless-string-statement
+#pylint: disable=redefined-outer-name
+#pylint: disable=singleton-comparison
+
 import pytest
-import user
 from auth import auth_register, auth_login, auth_logout
 from channel import channel_join
 from channels import channels_create
@@ -16,8 +24,8 @@ def test_auth_register_correct_details():
     workspace_reset()
     credentials = auth_register(
         'max.smith@gmail.com', 'great_password101', 'Max', 'Smith')
-    assert user_profile(credentials['token'], credentials['u_id']) == \
-        {"user": {
+    assert user_profile(credentials['token'], credentials['u_id']) == {
+        "user": {
             "u_id": credentials['u_id'],
             "email": "max.smith@gmail.com",
             "name_first": "Max",
@@ -32,8 +40,8 @@ def test_auth_register_long_name():
     workspace_reset()
     user_ms_long = auth_register(
         'max.smith@gmail.com', 'great_password101', 'Maximum', 'Smitherinoooooooooos')
-    assert user_profile(user_ms_long['token'], user_ms_long['u_id']) == \
-        {"user": {
+    assert user_profile(user_ms_long['token'], user_ms_long['u_id']) == {
+        "user": {
             "u_id": user_ms_long['u_id'],
             "email": "max.smith@gmail.com",
             "name_first": "Maximum",
@@ -50,26 +58,26 @@ def test_auth_register_long_name():
 # 4. bad domain
 def test_auth_register_invalid_email_only_prefix():
     workspace_reset()
-    with pytest.raises(InputError) as e:
+    with pytest.raises(InputError):
         auth_register('maxsmith', 'cryptic_password#1500', 'Max', 'Smith')
 
 
 def test_auth_register_invalid_email_bad_prefix():
     workspace_reset()
-    with pytest.raises(InputError) as e:
+    with pytest.raises(InputError):
         auth_register('maxsmith.com', 'cryptic_password#1500', 'Max', 'Smith')
 
 
 def test_auth_register_invalid_email_bad_prefix1():
     workspace_reset()
-    with pytest.raises(InputError) as e:
+    with pytest.raises(InputError):
         auth_register('max.-smith-@gmail.com',
                       'cryptic_password#1500', 'Max', 'Smith')
 
 
 def test_auth_register_invalid_email_bad_prefix2():
     workspace_reset()
-    with pytest.raises(InputError) as e:
+    with pytest.raises(InputError):
         auth_register('.max@gmail.com',
                       'cryptic_password#1500', 'Max', 'Smith')
 
@@ -77,7 +85,7 @@ def test_auth_register_invalid_email_bad_prefix2():
 def test_auth_register_only_domain():
     workspace_reset()
 
-    with pytest.raises(InputError) as e:
+    with pytest.raises(InputError):
         auth_register('@gmail.com', 'passwordian10', 'Max', 'Smith')
 
 
@@ -113,10 +121,9 @@ def test_auth_register_bad_domain3():
 def test_auth_register_existing_user():
     workspace_reset()
 
-    original_user = auth_register(
-        'max.smith@gmail.com', 'great_password101', 'Max', 'Smith')
+    auth_register('max.smith@gmail.com', 'great_password101', 'Max', 'Smith')
 
-    with pytest.raises(InputError) as e:
+    with pytest.raises(InputError):
         auth_register('max.smith@gmail.com',
                       'great_password101', 'Max', 'Smith')
 
@@ -124,45 +131,45 @@ def test_auth_register_existing_user():
 # Invalid Password
 def test_auth_register_invalid_password():
     workspace_reset()
-    with pytest.raises(InputError) as e:
+    with pytest.raises(InputError):
         auth_register('max.smith@gmail.com', 'abc', 'Max', 'Smith')
 
 
 def test_auth_register_invalid_password1():
     workspace_reset()
-    with pytest.raises(InputError) as e:
+    with pytest.raises(InputError):
         auth_register('max.smith@gmail.com', '', 'Max', 'Smith')
 
 
 def test_auth_register_invalid_password2():
     workspace_reset()
-    with pytest.raises(InputError) as e:
+    with pytest.raises(InputError):
         auth_register('max.smith@gmail.com', '     ', 'Max', 'Smith')
 
 
 def test_auth_register_invalid_password3():
     workspace_reset()
-    with pytest.raises(InputError) as e:
+    with pytest.raises(InputError):
         auth_register('max.smith@gmail.com', ' .$ 1', 'Max', 'Smith')
 
 
 # First name is too many characters, or empty string
 def test_register_invalid_first_name():
     workspace_reset()
-    with pytest.raises(InputError) as e:
+    with pytest.raises(InputError):
         auth_register('max.smith@gmail.com',
                       'great_password101', 'c' * 51, 'Smith')
 
 
 def test_register_invalid_first_name1():
     workspace_reset()
-    with pytest.raises(InputError) as e:
+    with pytest.raises(InputError):
         auth_register('max.smith@gmail.com', 'great_password101', '', 'Smoth')
 
 
 def test_register_invalid_first_name2():
     workspace_reset()
-    with pytest.raises(InputError) as e:
+    with pytest.raises(InputError):
         auth_register('max.smith@gmail.com', 'great_password101',
                       ' ' * 50 + 'z', 'Smith')
 
@@ -170,20 +177,20 @@ def test_register_invalid_first_name2():
 # Last name is too many characters
 def test_register_long_last_name():
     workspace_reset()
-    with pytest.raises(InputError) as e:
+    with pytest.raises(InputError):
         auth_register('max.smith@gmail.com',
                       'great_password101', 'Max', 'zz' * 26)
 
 
 def test_register_long_last_name1():
     workspace_reset()
-    with pytest.raises(InputError) as e:
+    with pytest.raises(InputError):
         auth_register('max.smith@gmail.com', 'great_password101', 'Max', '')
 
 
 def test_register_long_last_name2():
     workspace_reset()
-    with pytest.raises(InputError) as e:
+    with pytest.raises(InputError):
         auth_register('max.smith@gmail.com', 'great_password101',
                       'Max', '$L:$%#@O$' * 10)
 
@@ -217,11 +224,10 @@ def test_login_invalid_email():
 def test_login_password():
     workspace_reset()
 
-    user = auth_register('max.smith@gmail.com',
-                         'great_password101', 'Max', 'Smith')
+    auth_register('max.smith@gmail.com', 'great_password101', 'Max', 'Smith')
 
-    with pytest.raises(InputError) as e:
-        user_loggingin = auth_login('max.smith@gmail.com', 'poor_password')
+    with pytest.raises(InputError):
+        auth_login('max.smith@gmail.com', 'poor_password')
 
 # No users registered with email
 
@@ -229,13 +235,11 @@ def test_login_password():
 def test_login_no_user():
     workspace_reset()
 
-    first_user = auth_register(
-        'max.smith@gmail.com', 'great_password101', 'Max', 'Smith')
-    scnd_user = auth_register('bob99@unsw.edu.au', '45&*ght', 'Bob', 'Johnson')
-    third_user = auth_register(
-        'kate58@bigpond.com', 'secret101', 'Kate', 'Perkins')
+    auth_register('max.smith@gmail.com', 'great_password101', 'Max', 'Smith')
+    auth_register('bob99@unsw.edu.au', '45&*ght', 'Bob', 'Johnson')
+    auth_register('kate58@bigpond.com', 'secret101', 'Kate', 'Perkins')
 
-    with pytest.raises(InputError) as e:
+    with pytest.raises(InputError):
         auth_login('linda70@gmail.com', 'let_me_in')
 
 
@@ -294,5 +298,5 @@ def test_logout_join_fails():
 
     ch_id = channels_create(user["token"], "new-channel", True)["channel_id"]
 
-    with pytest.raises(AccessError) as e:
+    with pytest.raises(AccessError):
         channel_join(user2["token"], ch_id)
