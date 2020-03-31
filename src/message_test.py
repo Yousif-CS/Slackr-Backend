@@ -1,5 +1,16 @@
-import pytest
+'''
+Tests for message functions
+'''
+
+#pylint: disable=redefined-outer-name
+#pylint: disable=pointless-string-statement
+#pylint: disable=missing-function-docstring
+#pylint: disable=unused-import
+#pylint: disable=unused-variable
+
+
 from time import time
+import pytest #pylint: disable=import-error
 from message import message_send, message_remove, message_edit, message_pin, \
     message_unpin, message_react, message_unreact, message_sendlater
 from error import AccessError, InputError
@@ -16,9 +27,9 @@ from other import search, workspace_reset
 @pytest.fixture
 def make_users():
     workspace_reset()
-    ab = auth_register("alice@gmail.com", "stronkpassword123", "Alice", "Bee")
-    cd = auth_register("charlie@gmail.com", "comp1531pass", "Charlie", "Dee")
-    return (ab, cd)
+    user_ab = auth_register("alice@gmail.com", "stronkpassword123", "Alice", "Bee")
+    user_cd = auth_register("charlie@gmail.com", "comp1531pass", "Charlie", "Dee")
+    return (user_ab, user_cd)
 
 
 '''------------------testing message_send--------------------'''
@@ -52,7 +63,7 @@ def test_message_send_correct_output(make_users):
 # check type of message_id to be int and that user messages' message_id's are unique
 def test_message_send_type_id(make_users):
     '''
-    test for correct ID type 
+    test for correct ID type
     '''
     # setting up users and public channel
     user_ab = make_users[0]
@@ -274,7 +285,7 @@ def test_message_remove_user_remove_own(make_users):
     new_private_channel = channels_create(
         user_ab['token'], 'test_channel_public', False)
 
-    msg1 = message_send(
+    message_send(
         user_ab['token'], new_private_channel['channel_id'], "Please do not post")
     # user_ab invites user_cd to private channel
     channel_invite(user_ab['token'],
@@ -282,7 +293,7 @@ def test_message_remove_user_remove_own(make_users):
     msg2 = message_send(
         user_cd['token'], new_private_channel['channel_id'], "Bananas eat monkeys")
     message_remove(user_cd['token'], msg2['message_id'])
-    msg3 = message_send(
+    message_send(
         user_ab['token'], new_private_channel['channel_id'], "Thank you.")
     # there should now be 2 messages remaining
     msgs_view = channel_messages(
@@ -302,15 +313,12 @@ def test_message_remove_owner_remove_user_msg(make_users):
     # user_cd joins channel
     channel_join(user_cd['token'], new_public_channel['channel_id'])
     # messages sent
-    msg1 = message_send(user_ab['token'],
-                        new_public_channel['channel_id'], "Hello world!")
-    msg2 = message_send(user_ab['token'],
-                        new_public_channel['channel_id'], "Welcome to my channel.")
-    msg3 = message_send(user_ab['token'],
-                        new_public_channel['channel_id'],
-                        "Please do not leave inappropriate messages.")
-    msg4 = message_send(user_cd['token'],
-                        new_public_channel['channel_id'], "Inappropriate messages.")
+    message_send(user_ab['token'], new_public_channel['channel_id'], "Hello world!")
+    message_send(user_ab['token'], new_public_channel['channel_id'], "Welcome to my channel.")
+    message_send(user_ab['token'], new_public_channel['channel_id'], \
+        "Please do not leave inappropriate messages.")
+    msg4 = message_send(user_cd['token'], new_public_channel['channel_id'], \
+        "Inappropriate messages.")
     # user_ab (creator of channel) removes message made by user_cd
     message_remove(user_ab['token'], msg4['message_id'])
     msgs_view = channel_messages(
@@ -398,7 +406,8 @@ def test_message_remove_invalid_token(make_users):
 '''------------------testing message_edit--------------------'''
 # updates the text of a message with new text
 # if new message is empty string, then new message is deleted
-# access error if message-id not sent by correct user: authorised user or admin or owner of channel or slackr
+# access error if message-id not sent by correct user:
+# authorised user or admin or owner of channel or slackr
 
 
 def test_message_edit_one_member_channel(make_users):
@@ -511,7 +520,7 @@ def test_message_edit_invalid_token(make_users):
 # when an owner leaves a channel, they can no longer edit messages in that channel
 def test_message_edit_owner_left_channel_invalid():
     # setting up users and public channel
-    workspace_reset
+    workspace_reset #pylint: disable=pointless-statement
     user_zero = auth_register(
         "admin@gmail.com", "admin1", "Admin", "Slackr_Owner")
     user_ab = auth_register("aliceb@gmail.com", "pas123", "Alice", "Bee")
@@ -547,7 +556,7 @@ def test_message_pin_owner_pins_own_msg(make_users):
     message_pin(user_ab["token"], msg_id)
 
     assert channel_messages(user_ab["token"], new_ch["channel_id"], 0)[
-        "messages"][0]["is_pinned"] == True
+        "messages"][0]["is_pinned"]
 
 # Owner can pin the message of another
 
@@ -559,18 +568,18 @@ def test_message_pin_owner_pins_other(make_users):
 
     channel_invite(user_ab["token"], new_ch["channel_id"], user_cd["u_id"])
 
-    msg_id0 = message_send(user_ab["token"], new_ch["channel_id"],
-                           "This message by the owner will not be pinned.")["message_id"]
-    msg_id1 = message_send(user_cd["token"], new_ch["channel_id"],
-                           "This message from a normal member will be pinned by the owner")["message_id"]
+    msg_id0 = message_send(user_ab["token"], new_ch["channel_id"], \
+        "This message by the owner will not be pinned.")["message_id"]
+    msg_id1 = message_send(user_cd["token"], new_ch["channel_id"], \
+        "This message from a normal member will be pinned by the owner")["message_id"]
 
     message_pin(user_ab["token"], msg_id1)
 
     msg_dict = channel_messages(
         user_ab["token"], new_ch["channel_id"], 0)["messages"]
     # ordering of channel_messages list: most recent first in list
-    assert msg_dict[0]["is_pinned"] == True
-    assert msg_dict[1]["is_pinned"] == False
+    assert msg_dict[0]["is_pinned"]
+    assert not msg_dict[1]["is_pinned"]
 
 # More than one message may be pinned at once
 
@@ -582,12 +591,12 @@ def test_message_pin_more_than_one(make_users):
 
     channel_invite(user_ab["token"], new_ch["channel_id"], user_cd["u_id"])
 
-    msg_id0 = message_send(user_ab["token"], new_ch["channel_id"],
-                           "This message by the owner will not be pinned.")["message_id"]
-    msg_id1 = message_send(user_cd["token"], new_ch["channel_id"],
-                           "This message from a normal member will be pinned by the owner")["message_id"]
-    msg_id2 = message_send(user_ab["token"], new_ch["channel_id"],
-                           "This 2nd message from the owner will be pinned.")["message_id"]
+    msg_id0 = message_send(user_ab["token"], new_ch["channel_id"], \
+        "This message by the owner will not be pinned.")["message_id"]
+    msg_id1 = message_send(user_cd["token"], new_ch["channel_id"], \
+        "This message from a normal member will be pinned by the owner")["message_id"]
+    msg_id2 = message_send(user_ab["token"], new_ch["channel_id"], \
+        "This 2nd message from the owner will be pinned.")["message_id"]
 
     message_pin(user_ab["token"], msg_id1)
     message_pin(user_ab["token"], msg_id2)
@@ -595,9 +604,9 @@ def test_message_pin_more_than_one(make_users):
     msg_dict = channel_messages(
         user_ab["token"], new_ch["channel_id"], 0)["messages"]
     # most recent to least recent
-    assert msg_dict[0]["is_pinned"] == True
-    assert msg_dict[1]["is_pinned"] == True
-    assert msg_dict[2]["is_pinned"] == False
+    assert msg_dict[0]["is_pinned"]
+    assert msg_dict[1]["is_pinned"]
+    assert not msg_dict[2]["is_pinned"]
 
 # InputError: message_id is not a valid id
 
@@ -650,17 +659,17 @@ def test_message_pin_already_pinned_error(make_users):
 
     channel_invite(user_ab["token"], new_ch["channel_id"], user_cd["u_id"])
 
-    msg_id0 = message_send(user_ab["token"], new_ch["channel_id"],
-                           "This message by the owner will not be pinned.")["message_id"]
-    msg_id1 = message_send(user_cd["token"], new_ch["channel_id"],
-                           "This message from a normal member will be pinned by the owner")["message_id"]
+    msg_id0 = message_send(user_ab["token"], new_ch["channel_id"], \
+        "This message by the owner will not be pinned.")["message_id"]
+    msg_id1 = message_send(user_cd["token"], new_ch["channel_id"], \
+        "This message from a normal member will be pinned by the owner")["message_id"]
 
     message_pin(user_ab["token"], msg_id1)
 
     msg_dict = channel_messages(
         user_ab["token"], new_ch["channel_id"], 0)["messages"]
-    assert msg_dict[0]["is_pinned"] == True
-    assert msg_dict[1]["is_pinned"] == False
+    assert msg_dict[0]["is_pinned"]
+    assert not msg_dict[1]["is_pinned"]
 
     with pytest.raises(InputError):
         message_pin(user_ab["token"], msg_id1)
@@ -668,7 +677,7 @@ def test_message_pin_already_pinned_error(make_users):
 # AccessError: auth_user is not a member of the channel which contains the message
 
 
-def test_message_pin_auth_user_not_owner(make_users):
+def test_message_pin_auth_user_not_owner_of_channel(make_users):
     # setting up users and public channel
     user_ab, user_cd = make_users
     new_ch = channels_create(user_ab['token'], 'test_channel_public', True)
@@ -705,11 +714,11 @@ def test_message_unpin_owners_own_msg(make_users):
                           "This message is to be pinned")["message_id"]
     message_pin(user_ab["token"], msg_id)
     assert channel_messages(user_ab["token"], new_ch["channel_id"], 0)[
-        "messages"][0]["is_pinned"] == True
+        "messages"][0]["is_pinned"]
 
     message_unpin(user_ab["token"], msg_id)
-    assert channel_messages(user_ab["token"], new_ch["channel_id"], 0)[
-        "messages"][0]["is_pinned"] == False
+    assert not channel_messages(user_ab["token"], new_ch["channel_id"], 0)[
+        "messages"][0]["is_pinned"]
 
 # Owner can unpin other message
 
@@ -723,19 +732,19 @@ def test_message_unpin_others_msg(make_users):
 
     msg_id0 = message_send(user_ab["token"], new_ch["channel_id"],
                            "This message by the owner will not be pinned.")["message_id"]
-    msg_id1 = message_send(user_cd["token"], new_ch["channel_id"],
-                           "This message from a normal member will be pinned by the owner")["message_id"]
+    msg_id1 = message_send(user_cd["token"], new_ch["channel_id"], \
+        "This message from a normal member will be pinned by the owner")["message_id"]
 
     message_pin(user_ab["token"], msg_id1)
 
     msg_dict = channel_messages(
         user_ab["token"], new_ch["channel_id"], 0)["messages"]
-    assert msg_dict[0]["is_pinned"] == True
-    assert msg_dict[1]["is_pinned"] == False
+    assert msg_dict[0]["is_pinned"]
+    assert not msg_dict[1]["is_pinned"]
 
     message_unpin(user_ab["token"], msg_id1)
-    assert channel_messages(user_ab["token"], new_ch["channel_id"], 0)[
-        "messages"][0]["is_pinned"] == False
+    assert not channel_messages(user_ab["token"], new_ch["channel_id"], 0)[
+        "messages"][0]["is_pinned"]
 
 # Unpinning multiple messages from multiple pinned messages
 
@@ -749,8 +758,8 @@ def test_message_unpin_multiple(make_users):
 
     msg_id0 = message_send(owner_ab["token"], new_ch["channel_id"],
                            "This message by the owner will not be pinned.")["message_id"]
-    msg_id1 = message_send(user_cd["token"], new_ch["channel_id"],
-                           "This message from a normal member will be pinned by the owner")["message_id"]
+    msg_id1 = message_send(user_cd["token"], new_ch["channel_id"], \
+        "This message from a normal member will be pinned by the owner")["message_id"]
     msg_id2 = message_send(owner_ab["token"], new_ch["channel_id"],
                            "This 2nd message from the owner will be pinned.")["message_id"]
     msg_id3 = message_send(owner_ab["token"], new_ch["channel_id"],
@@ -762,20 +771,20 @@ def test_message_unpin_multiple(make_users):
 
     msg_dict = channel_messages(
         owner_ab["token"], new_ch["channel_id"], 0)["messages"]
-    assert msg_dict[0]["is_pinned"] == True
-    assert msg_dict[1]["is_pinned"] == True
-    assert msg_dict[2]["is_pinned"] == True
-    assert msg_dict[3]["is_pinned"] == False
+    assert msg_dict[0]["is_pinned"]
+    assert msg_dict[1]["is_pinned"]
+    assert msg_dict[2]["is_pinned"]
+    assert not msg_dict[3]["is_pinned"]
 
     message_unpin(owner_ab["token"], msg_id1)
     message_unpin(owner_ab["token"], msg_id3)
 
     msg_dict = channel_messages(
         owner_ab["token"], new_ch["channel_id"], 0)["messages"]
-    assert msg_dict[0]["is_pinned"] == False
-    assert msg_dict[1]["is_pinned"] == True
-    assert msg_dict[2]["is_pinned"] == False
-    assert msg_dict[3]["is_pinned"] == False
+    assert not msg_dict[0]["is_pinned"]
+    assert msg_dict[1]["is_pinned"]
+    assert not msg_dict[2]["is_pinned"]
+    assert not msg_dict[3]["is_pinned"]
 
 # InputError: message id is not a valid message
 
@@ -805,7 +814,7 @@ def test_message_unpin_not_owner(make_users):
         "message_id"]
     message_pin(owner_ab["token"], msg_id0)
     assert channel_messages(owner_ab["token"], new_ch["channel_id"], 0)[
-        "messages"][0]["is_pinned"] == True
+        "messages"][0]["is_pinned"]
 
     with pytest.raises(AccessError):
         message_unpin(user_cd["token"], msg_id0)
@@ -822,11 +831,11 @@ def test_message_unpin_already_unpinned_error(make_users):
         owner_ab["token"], new_ch["channel_id"], "This message is to be pinned")["message_id"]
     message_pin(owner_ab["token"], msg_id)
     assert channel_messages(owner_ab["token"], new_ch["channel_id"], 0)[
-        "messages"][0]["is_pinned"] == True
+        "messages"][0]["is_pinned"]
 
     message_unpin(owner_ab["token"], msg_id)
-    assert channel_messages(owner_ab["token"], new_ch["channel_id"], 0)[
-        "messages"][0]["is_pinned"] == False
+    assert not channel_messages(owner_ab["token"], new_ch["channel_id"], 0)[
+        "messages"][0]["is_pinned"]
 
     with pytest.raises(InputError):
         message_unpin(owner_ab["token"], msg_id)
@@ -845,7 +854,7 @@ def test_message_unpin_auth_user_not_owner(make_users):
         "message_id"]
     message_pin(owner_ab["token"], new_ch["channel_id"])
     assert channel_messages(user_cd["token"], new_ch["channel_id"], 0)[
-        "messages"][0]["is_pinned"] == True
+        "messages"][0]["is_pinned"]
 
     with pytest.raises(AccessError):
         message_unpin(user_cd["token"], msg_id0)
