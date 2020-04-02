@@ -20,7 +20,7 @@ def invite():
         raise RequestError(description="Missing data in request body")
 
     channel.channel_invite(
-        payload['token'], payload['channel_id'], payload['u_id'])
+        payload['token'], int(payload['channel_id']), int(payload['u_id']))
     return json.dumps({})
 
 
@@ -66,7 +66,7 @@ def leave():
     if not payload['token'] or not payload['channel_id']:
         raise RequestError(description="Missing data in request body")
 
-    channel.channel_leave(payload['token'], payload['channel_id'])
+    channel.channel_leave(payload['token'], int(payload['channel_id']))
     return json.dumps({})
 
 
@@ -80,7 +80,7 @@ def join():
     if not payload['token'] or not payload['channel_id']:
         raise RequestError(description="Missing data in request body")
 
-    channel.channel_join(payload['token'], payload['channel_id'])
+    channel.channel_join(payload['token'], int(payload['channel_id']))
     return json.dumps({})
 
 
@@ -95,7 +95,7 @@ def addowner():
         raise RequestError(description="Missing data in request body")
 
     channel.channel_addowner(payload['token'],
-                             payload['channel_id'], payload['u_id'])
+                             int(payload['channel_id']), int(payload['u_id']))
 
     return json.dumps({})
 
@@ -111,6 +111,6 @@ def removeowner():
         raise RequestError(description="Missing data in request body")
 
     channel.channel_removeowner(payload['token'],
-                                payload['channel_id'], payload['u_id'])
+                                int(payload['channel_id']), int(payload['u_id']))
 
     return json.dumps({})

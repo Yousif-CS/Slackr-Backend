@@ -147,17 +147,18 @@ def	test_channel_details_not_a_member(reset):
 
 # Testing channel_messages
 
-
-def test_channel_messages_empty(reset):
+def test_channel_messages_out_of_range(reset):
     '''
-    Tests sending a request to get an empty messages list
+    Testing providing start_index that is out of range
     '''
-    my_token = register('z5236259@unsw.edu.au',
-                        '1231FFF!', 'Yousif', 'Khalid')[1]
+    # register
+    my_token = register(
+        'z5236259@unsw.edu.au', '1231FFF!', 'Yousif', 'Khalid')[1]
+    # create a channel
     channel_id = channels_create(my_token, 'Yousifs Channel', is_public=True)
-    with pytest.raises(HTTPError):
-        channel_messages(my_token, channel_id, start=0)
 
+    with pytest.raises(HTTPError):
+        channel_messages(my_token, channel_id, start=1)
 
 def test_channel_messages_one_message(reset):
     '''
@@ -250,7 +251,7 @@ def test_channel_messages_invalid_token():
     channel_id = channels_list(my_token)[0]['channel_id']
     # assertion
     with pytest.raises(HTTPError):
-        channel_messages(my_token, channel_id, start=0)
+        channel_messages(my_token + 'a', channel_id, start=0)
 
 # Testing channel_join
 

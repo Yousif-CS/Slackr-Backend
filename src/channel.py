@@ -73,7 +73,7 @@ def channel_details(token, channel_id):
     auth_u_id = get_tokens()[token]
     if auth_u_id not in data["Channels"][channel_id]["all_members"]:
         raise AccessError(
-            description="User is not a member of channel with channel ID")
+            description="User is not a member of the channel")
 
     # return the dictionary containing details of the channel
     lst_owner_membs = []
@@ -129,7 +129,7 @@ def channel_messages(token, channel_id, start):
     messages = [message for message in data['Messages']
                 if message['message_id'] in message_ids]
     # verify the start index is less than the number of messages
-    if len(message_ids) <= start:
+    if len(message_ids) < start:
         raise InputError(description="Invalid starting index")
 
     # sorting the message list in terms of time created

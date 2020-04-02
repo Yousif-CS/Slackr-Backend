@@ -6,7 +6,6 @@ from json import dumps
 from flask import request, Blueprint
 from channels import channels_list, channels_listall, channels_create
 from error import RequestError
-
 CHANNELS = Blueprint('channels', __name__)
 
 

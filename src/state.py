@@ -2,8 +2,9 @@
 State variables and functions to deal
 with the server's data when its launched
 '''
-from threading import Timer
+from threading import Timer, Thread
 import pickle
+import time
 
 # This dictionary will contain all of the database
 # once the server starts and we unpickle the database file
@@ -96,7 +97,7 @@ def initialize_state():
 
 
 # A constant to update the database every hour
-SECONDS_TO_UPDATE = 3600
+SECONDS_TO_UPDATE = 1
 
 
 class StateTimer(Timer):
@@ -114,12 +115,20 @@ def update_database():
     '''
     pickle the state database into a file
     '''
+    global STORE
     with open('database.p', "wb") as database_file:
         pickle.dump(STORE, database_file)
 
+# a Timer to update the database every hour
+DATABASE_UPDATER = StateTimer(SECONDS_TO_UPDATE, update_database)
+
+def run_updater():
+    '''
+    a function that initializes the database updater in parallel
+    '''
+    DATABASE_UPDATER.run()
+# the thread that parallelizes the work
+UPDATE_THREAD = Thread(target=run_updater)
 
 # initialize state when imported
 initialize_state()
-
-# a Timer to update the database every hour
-DATABASE_UPDATER = StateTimer(SECONDS_TO_UPDATE, update_database)

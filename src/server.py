@@ -61,5 +61,6 @@ def echo():
 
 if __name__ == "__main__":
     state.initialize_state()
-    state.DATABASE_UPDATER.start()
+    state.UPDATE_THREAD.start()
+    print('Server Initiated!')
     APP.run(port=(int(sys.argv[1]) if len(sys.argv) == 2 else 8080))
