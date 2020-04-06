@@ -6,6 +6,7 @@ from threading import Timer, Thread
 import pickle
 import time
 
+from functools import reduce
 from error import InputError, AccessError
 
 # This dictionary will contain all of the database
@@ -47,44 +48,83 @@ from error import InputError, AccessError
 #                   }
 # STORE = dict()
 
+#a constant to show a user is an admin
+ADMIN = 1
+#a constant to show a user is a regular member
+MEMBER = 1
 
 class Users():
     def __init__(self):
         self._users = dict()
         self._permissions = [1, 2]
         self._num_users = 0
-    def add_user(self, email, password, f_name, l_name):
+        self._current_id = 0
+    def add_user(self, details):
         '''
         adds user with given details to the database
         Arguments: first and last names, email, password, handle and permissions
         Returns: None
         Raises: InputError, AccessError
         '''
+        email, password, f_name, l_name, handle = details
+
         if self.email_used(email):
             raise InputError("Email already used")
-
-        if self._num_users == 0:
+        
+        self._num_users += 1
+        self._current_id += 1
+        self._users[self._current_id] = {
+            'email': email,
+            'name_first': f_name,
+            'name_last': l_name,
+            'password': password,
+            'handle_str': handle,
+            'global_permission': ADMIN if self._num_users == 1 else MEMBER
+        }
             
-
+    def remove_user(self, u_id):
+        self._users.pop(u_id)
+        self._num_users -= 1
+    
     def user_details(self, u_id):
-        pass
+        if not self.user_exists(u_id):
+            raise InputError('User does not exist!')
 
-    def all_users(self):
-        pass
+        details = self._users[u_id]
+        return {
+            'u_id': u_id,
+            'email': details['email'],
+            'name_first': details['name_first'],
+            'name_last': details['name_last'],
+            'handle_str': details['handle_str'],
+        }
+
+    def all(self):
+        all_users = dict(self._users)
+        return list(map(self.user_details, all_users))
 
     def user_exists(self, u_id):
-        pass
+        if u_id in self._users:
+            return True
+        return False
+
     def email_used(self, email):
-        pass
+        return email in [user['email'] for user in self._users]
 
 class Admins(Users):
-    def __init__(self):
-        pass
-    def add_admin(self, u_id):
-        pass
+    '''
+    A special class for users who are admins
+    '''
+    def add_admin(self, details):
+        self.add_user(details)
 
+    def remove_admin(self, u_id):
+        self.remove_user(u_id)
+        
     def is_admin(self, u_id):
-        pass
+        if u_id in self._users:
+            return True
+        return False
 
 class Channels():
     def __init__(self):
@@ -185,6 +225,8 @@ class Database():
         self.User_Message = User_Message()
         self.User_Channel = User_Channel()
 
+    def add_user(self, u_id):
+        pass
     def add_admin(self, u_id):
         pass
     def remove_admin(self, u_id):
