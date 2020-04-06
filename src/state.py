@@ -109,7 +109,19 @@ class Users():
         return False
 
     def email_used(self, email):
-        return email in [user['email'] for user in self._users]
+        return email in [user['email'] for user in self._users.values()]
+
+    def set_first_name(self, u_id, name):
+        self._users[u_id]['name_first'] = name
+
+    def set_last_name(self, u_id, name):
+        self._users[u_id]['name_last'] = name
+
+    def validate_login(self, email, password):
+        [u_id] = [key for key, value in self._users.items() if value['email'] == email]
+        if password != self._users[u_id]['password']:
+            raise AccessError(description='Password incorrect')
+        return u_id
 
 class Admins(Users):
     '''
@@ -120,7 +132,7 @@ class Admins(Users):
 
     def remove_admin(self, u_id):
         self.remove_user(u_id)
-        
+
     def is_admin(self, u_id):
         if u_id in self._users:
             return True
