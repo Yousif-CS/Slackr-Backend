@@ -140,7 +140,7 @@ class Channels():
 
     def add(self, details):
         name, is_public = details
-        
+
         self._num_channels += 1
         self._current_id += 1
         self._channels[self._current_id] = {
@@ -148,7 +148,7 @@ class Channels():
             'is_public': is_public
         }
         return self._current_id
-    
+
     def channel_exists(self, channel_id):
         return channel_id in self._channels
 
@@ -187,13 +187,13 @@ class Messages():
     def pin(self, message_id):
         if not self.message_exists(message_id):
             raise InputError(description='Message does not exist')
-        
+
         self.message_details(message_id)['is_pinned'] = True
 
     def unpin(self, message_id):
         if not self.message_exists(message_id):
             raise InputError(description='Message does not exist')
-        
+
         self.message_details(message_id)['is_pinned'] = False
 
     def message_details(self, message_id):
@@ -356,6 +356,7 @@ class User_Channel():
         return  [u_id for u_id, ch_id, is_owner in self._user_channels if \
                 ch_id == channel_id and is_owner]
 
+
 class Database():
     def __init__(self):
         self.Users = Users()
@@ -431,6 +432,8 @@ class Database():
         self.Messages.remove(message_id)
         self.User_Message.remove_link_by_message(message_id)
 
+
+STORE = Database()
 # this dictionary contains the session tokens that
 # won't need to be stored in the Store data dictionary for pickling
 # {"token_str1": u_id1, "token_str2": u_id2, ..}
