@@ -343,13 +343,40 @@ class User_Channel():
 
     def remove_user(self, u_id, channel_id):
         try:
-            [to_remove] = list(filter(lambda x: x[0] == u_id and x[1] == channel_id), self._user_channels)
+            [to_remove] = list(filter(lambda x: x[0] == u_id and x[1] == channel_id, self._user_channels))
             self._user_channels.remove(to_remove)
         except ValueError:
             pass
+    def add_owner(self, u_id, channel_id):
+        if self.is_owner(u_id, channel_id):
+            raise InputError(description='User is already an owner')
+        #tuples cannot allow modification; therefore delete then add
+        self.remove_user(u_id, channel_id)
+        self.add_link(u_id, channel_id, is_owner=True)
+
+    def remove_owner(self, u_id, channel_id):
+        if not self.is_owner(u_id, channel_id):
+            raise InputError(description='User is not an owner')
+
+        #tuples are immutable; so we delete him then add him as a member
+        self.remove_user(u_id, channel_id)
+        self.add_link(u_id, channel_id, is_owner=False)
+
+    def join_channel(self, u_id, channel_id):
+        self.add_link(u_id, channel_id, is_owner=False)
+
+    def leave_channel(self, u_id, channel_id):
+        self.remove_user(u_id, channel_id)
 
     def link_exists(self, u_id, channel_id):
-        return u_id in [link['u_id'] for link in self._user_channels if link['channel_id'] == channel_id]
+        return u_id in \
+            [u_id for u_id, ch_id, _ in self._user_channels if ch_id == channel_id]
+
+    def is_member(self, u_id, channel_id):
+        return u_id in self.members(channel_id)
+
+    def is_owner(self, u_id, channel_id):
+        return u_id in self.owners(channel_id)
 
     def members(self, channel_id):
         return [u_id for u_id, ch_id, _ in self._user_channels if channel_id == ch_id]
@@ -378,12 +405,6 @@ class Database():
     def add_channel(self, u_id, details):
         channel_id = self.Channels.add(details)
         self.User_Channel.add_link(u_id, channel_id, is_owner=True)
-
-    def join_channel(self, u_id, channel_id):
-        self.User_Channel.add_link(u_id, channel_id, is_owner=False)
-
-    def leave_channel(self, u_id, channel_id):
-        self.User_Channel.remove_user(u_id, channel_id)
 
     def channel_members(self, channel_id):
         member_ids = self.User_Channel.members(channel_id)
