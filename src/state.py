@@ -283,6 +283,8 @@ class User_Message():
         reacts = link['reacts']
         try:
             [react] = list(filter(lambda x: x['react_id'] == react_id, reacts))
+            if u_id in react['u_ids']:
+                raise InputError(description='User already reacted')
             react['u_ids'].append(u_id)
         except ValueError:
             react = {
@@ -371,6 +373,7 @@ class Database():
         #first user is an admin
         if u_id == 1:
             self.Admins.add(details)
+        return u_id
 
     def add_channel(self, u_id, details):
         channel_id = self.Channels.add(details)
