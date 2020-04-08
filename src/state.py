@@ -281,16 +281,20 @@ class User_Message():
             filter(lambda x: x['message_id'] == m_id, self._user_messages))
 
         reacts = link['reacts']
+
         try:
-            [react] = list(filter(lambda x: x['react_id'] == react_id, reacts))
+            react = None
+            for tmp_react in reacts:
+                if tmp_react['react_id'] == react_id:
+                    react = tmp_react
             if u_id in react['u_ids']:
                 raise InputError(description='User already reacted')
             react['u_ids'].append(u_id)
-        except ValueError:
-            react = {
+        except (ValueError, TypeError):
+            reacts.append({
                 'react_id': react_id,
                 'u_ids': [u_id],
-            }
+            })
 
     def unreact(self, u_id, m_id, react_id):
         if not self.link_exists(m_id):
@@ -429,7 +433,7 @@ class Database():
         #msgs_info = self.Messages.fetch_messages(start)
         link_info = self.User_Message.fetch_channel_msgs(start, channel_id)
        
-        if start + MSG_BLOCK < 50:
+        if start + MSG_BLOCK < len(link_info):
             link_info = link_info[start: start + MSG_BLOCK]
         msgs_info = list(
             map(lambda x: self.Messages.message_details(x['message_id']), link_info))
