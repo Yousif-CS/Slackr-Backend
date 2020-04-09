@@ -4,49 +4,8 @@ with the server's data when its launched
 '''
 from threading import Timer, Thread
 import pickle
-import time
 
-from functools import reduce
 from error import InputError, AccessError
-
-# This dictionary will contain all of the database
-# once the server starts and we unpickle the database file
-# it is supposed to be {
-#                       "Users": {
-#                                   u_id: {
-#                                           "name_first": "Yousif",
-#                                           "name_last": "Khalid",
-#                                           "email": "whatever@gmail.com",
-#                                           "password": "hashed_pw_str",
-#                                           "handle": "ykhalid",
-#                                           "global_permission": 0,
-#                                           "channels": [channel_id1, channel_id2, ...]
-#                                           }
-#                                },
-#                      "Slack_owners": [u_id1, u_id2, ...],
-#                      "Channels": {
-#                                   channel_id: {
-#                                                   "name": "my_channel",
-#                                                   "all_members":[u_id1, u_id2, ..],
-#                                                   "owner_members" = [u_id1, u_id2],
-#                                                   "is_private": False,
-#                                                   "messages"= [message_id1, message_id2]
-#                                               }
-#                                  },
-#                      "Messages": [{
-#                                       "message_id": 123,
-#                                       "message": "hello",
-#                                       "u_id": 12321,
-#                                       "time_created": 2323123232,
-#                                       "is_pinned": True,
-#                                       "reacts": [{
-#                                                       "react_id": 1,
-#                                                       "u_ids": [u_id1, u_id2,...],
-#                                                       "is_this_user_reacted": True
-#                                                  }, ...]
-#                                   }]
-#                   }
-# STORE = dict()
 
 #a constant to show a user is an admin
 ADMIN = 1
@@ -71,7 +30,7 @@ class Users():
 
         if self.email_used(email):
             raise InputError("Email already used")
-        
+
         self._num_users += 1
         self._current_id += 1
         self._users[self._current_id] = {
@@ -83,7 +42,7 @@ class Users():
             'global_permission': ADMIN if self._num_users == 1 else MEMBER
         }
         return self._current_id
-            
+
     def remove(self, u_id):
         self._users.pop(u_id)
         self._num_users -= 1
@@ -149,6 +108,9 @@ class Channels():
         }
         return self._current_id
 
+    def is_private(self, channel_id):
+        return not self._channels[channel_id]['is_public']
+
     def channel_exists(self, channel_id):
         return channel_id in self._channels
 
@@ -161,7 +123,7 @@ class Channels():
             'channel_id': channel_id,
             'name': details['name']
         }
-    
+
     def all(self):
         channels_copy = dict(self._channels)
         return list(map(self.channel_details, channels_copy))
@@ -227,7 +189,7 @@ class Messages():
         return list(
             [msg for msg in self._messages if query_string in msg['message']])
 
-class User_Message():
+class UserMessage():
     '''
     Contains a structure that maintains the relationship
     between users, channels, reacts and messages they sent
@@ -288,7 +250,7 @@ class User_Message():
                 if tmp_react['react_id'] == react_id:
                     react = tmp_react
             if u_id in react['u_ids']:
-                raise InputError(description='User already reacted')
+                raise InputError(description='user already reacted')
             react['u_ids'].append(u_id)
         except (ValueError, TypeError):
             reacts.append({
@@ -312,20 +274,21 @@ class User_Message():
             react['u_ids'].remove(u_id)
         except ValueError:
             pass
+
     def fetch_link(self, m_id):
         try:
             [info] = list(filter(lambda x: x['message_id'] == m_id, self._user_messages))
             return info
         except ValueError:
             return None
-    
+
     def is_valid_react(self, react_id):
         return react_id in self._react_ids
 
     def is_sender(self, m_id, u_id):
         return u_id in [link['u_id'] for link in self._user_messages if link['message_id'] == m_id]
 
-class User_Channel():
+class UserChannel():
     '''
     Contains a structure that maintains the relationship
     between users and the channels they have joined
@@ -335,7 +298,7 @@ class User_Channel():
 
     def add_link(self, u_id, channel_id, is_owner):
         if self.link_exists(u_id, channel_id):
-            raise InputError(description='User already in channel')
+            raise InputError(description='user already in channel')
 
         self._user_channels.append((u_id, channel_id, is_owner))
 
@@ -347,20 +310,21 @@ class User_Channel():
 
     def remove_user(self, u_id, channel_id):
         try:
-            [to_remove] = list(filter(lambda x: x[0] == u_id and x[1] == channel_id, self._user_channels))
+            [to_remove] = list(
+                filter(lambda x: x[0] == u_id and x[1] == channel_id, self._user_channels))
             self._user_channels.remove(to_remove)
         except ValueError:
             pass
     def add_owner(self, u_id, channel_id):
         if self.is_owner(u_id, channel_id):
-            raise InputError(description='User is already an owner')
+            raise InputError(description='user is already an owner')
         #tuples cannot allow modification; therefore delete then add
         self.remove_user(u_id, channel_id)
         self.add_link(u_id, channel_id, is_owner=True)
 
     def remove_owner(self, u_id, channel_id):
         if not self.is_owner(u_id, channel_id):
-            raise InputError(description='User is not an owner')
+            raise InputError(description='user is not an owner')
 
         #tuples are immutable; so we delete him then add him as a member
         self.remove_user(u_id, channel_id)
@@ -392,27 +356,27 @@ class User_Channel():
 
 class Database():
     def __init__(self):
-        self.Users = Users()
-        self.Admins = Admins()
-        self.Channels = Channels()
-        self.Messages = Messages()
-        self.User_Message = User_Message()
-        self.User_Channel = User_Channel()
+        self.users = Users()
+        self.admins = Admins()
+        self.channels = Channels()
+        self.messages = Messages()
+        self.user_message = UserMessage()
+        self.user_channel = UserChannel()
 
     def add_user(self, details):
-        u_id = self.Users.add(details)
+        u_id = self.users.add(details)
         #first user is an admin
         if u_id == 1:
-            self.Admins.add(details)
+            self.admins.add(details)
         return u_id
 
     def add_channel(self, u_id, details):
-        channel_id = self.Channels.add(details)
-        self.User_Channel.add_link(u_id, channel_id, is_owner=True)
+        channel_id = self.channels.add(details)
+        self.user_channel.add_link(u_id, channel_id, is_owner=True)
 
     def channel_members(self, channel_id):
-        member_ids = self.User_Channel.members(channel_id)
-        members_info = list(map(self.Users.user_details, member_ids))
+        member_ids = self.user_channel.members(channel_id)
+        members_info = list(map(self.users.user_details, member_ids))
         return list([{
             'u_id': member['u_id'],
             'name_first':member['name_first'],
@@ -420,8 +384,8 @@ class Database():
         } for member in members_info])
 
     def channel_owners(self, channel_id):
-        member_ids = self.User_Channel.owners(channel_id)
-        members_info = list(map(self.Users.user_details, member_ids))
+        member_ids = self.user_channel.owners(channel_id)
+        members_info = list(map(self.users.user_details, member_ids))
         return list([{
             'u_id': member['u_id'],
             'name_first':member['name_first'],
@@ -430,13 +394,13 @@ class Database():
 
     def channel_messages(self, u_id, details):
         channel_id, start = details
-        #msgs_info = self.Messages.fetch_messages(start)
-        link_info = self.User_Message.fetch_channel_msgs(start, channel_id)
-       
+        #msgs_info = self.messages.fetch_messages(start)
+        link_info = self.user_message.fetch_channel_msgs(start, channel_id)
+
         if start + MSG_BLOCK < len(link_info):
             link_info = link_info[start: start + MSG_BLOCK]
         msgs_info = list(
-            map(lambda x: self.Messages.message_details(x['message_id']), link_info))
+            map(lambda x: self.messages.message_details(x['message_id']), link_info))
         reacts_lists = [msg['reacts'] for msg in link_info]
         for reacts_list in reacts_lists:
             for react in reacts_list:
@@ -453,12 +417,12 @@ class Database():
         return list(full_info)
 
     def add_message(self, u_id, channel_id, details):
-        message_id = self.Messages.add(details)
-        self.User_Message.add_link(u_id, channel_id, message_id)
+        message_id = self.messages.add(details)
+        self.user_message.add_link(u_id, channel_id, message_id)
 
     def remove_message(self, message_id):
-        self.Messages.remove(message_id)
-        self.User_Message.remove_link_by_message(message_id)
+        self.messages.remove(message_id)
+        self.user_message.remove_link_by_message(message_id)
 
 
 STORE = Database()
@@ -497,10 +461,10 @@ def initialize_store():
             STORE = pickle.load(file, encoding="utf-8")
         except EOFError:
             STORE = {
-                'Users': {},
+                'users': {},
                 'Slack_owners': [],
-                'Channels': {},
-                'Messages': [],
+                'channels': {},
+                'messages': [],
             }
 
 
@@ -532,7 +496,7 @@ def update_database():
     '''
     pickle the state database into a file
     '''
-    global STORE
+    global STORE # pylint: disable=global-statement
     with open('database.p', "wb") as database_file:
         pickle.dump(STORE, database_file)
 
