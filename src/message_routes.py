@@ -19,7 +19,7 @@ def send():
         raise RequestError(description="Missing data in request body")
 
     response = message.message_send(
-        data['token'], data['channel_id'], data['message'])
+        data['token'], int(data['channel_id']), data['message'])
     return dumps(response)
 
 
@@ -33,8 +33,8 @@ def sendlater():
     if not data['token'] or not data['channel_id'] or not data['message'] or not data['time_sent']:
         raise RequestError(description="Missing data in request body")
 
-    response = message.message_sendlater(data['token'], data['channel_id'],
-                                         data['message'], data['time_sent'])
+    response = message.message_sendlater(data['token'], int(data['channel_id']),
+                                         data['message'], int(data['time_sent']))
     return dumps(response)
 
 
@@ -48,7 +48,7 @@ def react():
     if not data['token'] or not data['message_id'] or not data['react_id']:
         raise RequestError(description="Missing data in request body")
 
-    message.message_react(data['token'], data['message_id'], data['react_id'])
+    message.message_react(data['token'], int(data['message_id']), int(data['react_id']))
     return dumps({})
 
 
@@ -63,7 +63,7 @@ def unreact():
         raise RequestError(description="Missing data in request body")
 
     message.message_unreact(
-        data['token'], data['message_id'], data['react_id'])
+        data['token'], int(data['message_id']), int(data['react_id']))
     return dumps({})
 
 
@@ -77,7 +77,7 @@ def pin():
     if not data['token'] or not data['message_id']:
         raise RequestError(description="Missing data in request body")
 
-    message.message_pin(data['token'], data['message_id'])
+    message.message_pin(data['token'], int(data['message_id']))
     return dumps({})
 
 
@@ -91,7 +91,7 @@ def unpin():
     if not data['token'] or not data['message_id']:
         raise RequestError(description="Missing data in request body")
 
-    message.message_unpin(data['token'], data['message_id'])
+    message.message_unpin(data['token'], int(data['message_id']))
     return dumps({})
 
 
@@ -105,7 +105,7 @@ def delete():
     if not data['token'] or not data['message_id']:
         raise RequestError(description="Missing data in request body")
 
-    message.message_remove(data['token'], data['message_id'])
+    message.message_remove(data['token'], int(data['message_id']))
     return dumps({})
 
 
@@ -120,5 +120,5 @@ def edit():
         or (not data["message"] and not data["message"] == ""):
         raise RequestError(description="Missing data in request body")
 
-    message.message_edit(data["token"], data["message_id"], data["message"])
+    message.message_edit(data["token"], int(data["message_id"]), data["message"])
     return dumps({})

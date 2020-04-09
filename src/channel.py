@@ -25,29 +25,29 @@ def channel_invite(token, channel_id, u_id):
 
     # check that channel_id corresponds to a valid channel
     data = get_store()
-    if channel_id not in data["Channels"].keys():
+    if channel_id not in data["channels"].keys():
         raise InputError(
             description="Channel with this channel ID does not exist")
 
     # check that the authorised user belongs to this valid channel
     auth_u_id = get_tokens()[token]
-    if auth_u_id not in data["Channels"][channel_id]["all_members"]:
+    if auth_u_id not in data["channels"][channel_id]["all_members"]:
         raise AccessError(
             description="The authorised user is not a member of channel with this channel ID")
 
     # check that u_id corresponds to a valid user
-    if u_id not in data["Users"].keys():
-        raise InputError(description="User ID is not valid")
+    if u_id not in data["users"].keys():
+        raise InputError(description="user ID is not valid")
 
     # check that u_id does not already belong to the channel, else raise InputError
-    if u_id in data["Channels"][channel_id]["all_members"]:
+    if u_id in data["channels"][channel_id]["all_members"]:
         raise InputError(
-            description="User with u_id is already a member of channel with channel_id")
+            description="user with u_id is already a member of channel with channel_id")
 
     # add the user with u_id into the channel
-    # update both the "Users" and "Channels" sub-dictionaries in database.p
-    data["Channels"][channel_id]["all_members"].append(u_id)
-    data["Users"][u_id]["channels"].append(channel_id)
+    # update both the "users" and "channels" sub-dictionaries in database.p
+    data["channels"][channel_id]["all_members"].append(u_id)
+    data["users"][u_id]["channels"].append(channel_id)
 
 
 def channel_details(token, channel_id):
@@ -65,39 +65,39 @@ def channel_details(token, channel_id):
 
     # check that channel with channel_id exists
     data = get_store()
-    if channel_id not in data["Channels"].keys():
+    if channel_id not in data["channels"].keys():
         raise InputError(
             description="Channel with this channel ID does not exist")
 
     # check that the authorised user is member of said channel
     auth_u_id = get_tokens()[token]
-    if auth_u_id not in data["Channels"][channel_id]["all_members"]:
+    if auth_u_id not in data["channels"][channel_id]["all_members"]:
         raise AccessError(
-            description="User is not a member of channel with channel ID")
+            description="user is not a member of the channel")
 
     # return the dictionary containing details of the channel
     lst_owner_membs = []
-    for user_id in data["Channels"][channel_id]["owner_members"]:
+    for user_id in data["channels"][channel_id]["owner_members"]:
         lst_owner_membs.append(
             {
                 "u_id": user_id,
-                "name_first": data["Users"][user_id]["name_first"],
-                "name_last": data["Users"][user_id]["name_last"]
+                "name_first": data["users"][user_id]["name_first"],
+                "name_last": data["users"][user_id]["name_last"]
             }
         )
 
     lst_all_membs = []
-    for user_id in data["Channels"][channel_id]["all_members"]:
+    for user_id in data["channels"][channel_id]["all_members"]:
         lst_all_membs.append(
             {
                 "u_id": user_id,
-                "name_first": data["Users"][user_id]["name_first"],
-                "name_last": data["Users"][user_id]["name_last"]
+                "name_first": data["users"][user_id]["name_first"],
+                "name_last": data["users"][user_id]["name_last"]
             }
         )
 
     return {
-        "name": data["Channels"][channel_id]["name"],
+        "name": data["channels"][channel_id]["name"],
         "owner_members": lst_owner_membs,
         "all_members": lst_all_membs
     }
@@ -118,30 +118,20 @@ def channel_messages(token, channel_id, start):
     # getting id of the user
     u_id = get_tokens()[token]
     # verify the channel exists
-    if channel_id not in data['Channels']:
-        raise InputError(description="Invalid channel id")
+    if not data.channels.channel_exists(channel_id):
+        raise InputError(description='Channel does not exist')
+
     # verify the user is a member of the channel
-    if channel_id not in data['Users'][u_id]['channels']:
+    if not data.user_channel.is_member(u_id, channel_id):
         raise AccessError(
             description="You do not have permission to view this channel's messages")
     # getting the messages of the channel
-    message_ids = data['Channels'][channel_id]['messages']
-    messages = [message for message in data['Messages']
-                if message['message_id'] in message_ids]
-    # verify the start index is less than the number of messages
-    if len(message_ids) <= start:
-        raise InputError(description="Invalid starting index")
+    messages = data.channel_messages(u_id, channel_id)
 
-    # sorting the message list in terms of time created
-    messages = sorted(
-        messages, key=lambda message: message['time_created'], reverse=True)
-    # reached the end
-    if start + MESSAGE_BLOCK >= len(messages):
-        return {"messages": messages[start:], "start": start, "end": -1}
-    # we return 50 messages with more to give
-    return {"messages": messages[start: start + MESSAGE_BLOCK],
+    return {"messages": sorted(messages, key=lambda x: x['time_created']),
             "start": start,
-            "end": start + MESSAGE_BLOCK}
+            "end": -1 if len(messages) < MESSAGE_BLOCK else start + MESSAGE_BLOCK
+           }
 
 
 def channel_leave(token, channel_id):
@@ -159,29 +149,22 @@ def channel_leave(token, channel_id):
     u_id = get_tokens()[token]
 
     # verify the channel exists
-    if channel_id not in data['Channels']:
+    if not data.channels.channel_exists(channel_id):
         raise InputError(description="Invalid channel id")
 
     # verify the user is a member of the channel
-    if channel_id not in data['Users'][u_id]['channels']:
+    if not data.user_channel.is_member(u_id, channel_id):
         raise AccessError(description="Cannot leave channel: not a member")
 
     # verify the leaving is not the only member of a private channel
-    if len(data['Channels'][channel_id]['all_members']) == 1 \
-            and data['Channels'][channel_id]['is_private'] is True:
+    if data.channels.is_private(channel_id) or \
+       data.user_channel.members(channel_id) == 1:
         raise InputError(
             description="Cannot leave a private channel as the only member")
 
     # deleting the user from the channel list
-    # and deleting the channel from the user's channel's list
-    data['Channels'][channel_id]['all_members'].remove(u_id)
-    # removing the user from the owner members if he is an owner, otherwise just pass
-    try:
-        data['Channels'][channel_id]['owner_members'].remove(u_id)
-    except ValueError:
-        pass
-    data['Users'][u_id]['channels'].remove(channel_id)
-
+    data.user_channel.leave_channel(u_id, channel_id)
+    return {}
 
 def channel_join(token, channel_id):
     '''
@@ -198,28 +181,22 @@ def channel_join(token, channel_id):
     u_id = get_tokens()[token]
 
     # verify the channel exists
-    if channel_id not in data['Channels']:
+    if not data.channels.channel_exists(channel_id):
         raise InputError(description="Invalid channel id")
 
     # verify user is not already a member
-    if channel_id in data['Users'][u_id]['channels']:
-        raise InputError(description="You are already a member")
+    if data.user_channel.is_member(u_id, channel_id):
+        raise InputError(description="Already a member")
 
     # verify the channel is public unless user is a slackr owner
-    if data['Channels'][channel_id]['is_private'] is True \
-            and data['Users'][u_id]['global_permission'] is not SLACKR_OWNER:
-        raise AccessError(
-            description="Cannot join channel: channel is private")
+    if not data.admins.is_admin(u_id) and data.channels.is_private(channel_id):
+        raise AccessError(description="Cannot join channel: channel is private")
 
-    # adding user to channel details
-    # and adding channel to user's channels list
-    data['Channels'][channel_id]['all_members'].append(u_id)
-    data['Users'][u_id]['channels'].append(channel_id)
-
-    # if user is an owner of slackr, then he is added as an owner
-    if data['Users'][u_id]['global_permission'] is SLACKR_OWNER:
-        data['Channels'][channel_id]['owner_members'].append(u_id)
-
+    #... joining channel: if admin
+    if data.admins.is_admin(u_id):
+        data.user_channel.add_owner(u_id, channel_id)
+    else:
+        data.user_channel.join_channel(u_id, channel_id)
 
 def channel_addowner(token, channel_id, u_id):
     '''
@@ -236,28 +213,16 @@ def channel_addowner(token, channel_id, u_id):
     u_id_invoker = get_tokens()[token]
 
     # verify the channel exists
-    if channel_id not in data['Channels']:
+    if not data.channels.channel_exists(channel_id):
         raise InputError(description="Invalid channel id")
 
-    # verify user to add is not an owner already
-    if u_id in data['Channels'][channel_id]['owner_members']:
-        raise InputError(description="User is already an owner")
-
-    # verify the invoker is either an owner of the channel or slackr
-    if u_id_invoker not in data['Channels'][channel_id]['owner_members'] \
-            and data['Users'][u_id_invoker]['global_permission'] != SLACKR_OWNER:
+    # verify the invoker is either an owner of the channel or an admin
+    if not data.admins.is_admin(u_id_invoker) and \
+       not data.user_channel.is_owner(u_id_invoker, channel_id):
         raise AccessError(
             description="You do not have privileges to add owners")
 
-    # add user as member if not already
-    if u_id not in data['Channels'][channel_id]['all_members']:
-        data['Channels'][channel_id]['all_members'].append(u_id)
-        data['Users'][u_id]['channels'].append(channel_id)
-
-    # add user as owner
-    data['Channels'][channel_id]['owner_members'].append(u_id)
-    print(data['Channels'][channel_id])
-
+    data.user_channel.add_owner(u_id, channel_id)
 
 def channel_removeowner(token, channel_id, u_id):
     '''
@@ -274,23 +239,19 @@ def channel_removeowner(token, channel_id, u_id):
     u_id_invoker = get_tokens()[token]
 
     # verify the channel exists
-    if channel_id not in data['Channels']:
+    if not data.channels.channel_exists(channel_id):
         raise InputError(description="Invalid channel id")
 
-    # verify user to remove is an owner
-    if u_id not in data['Channels'][channel_id]['owner_members']:
-        raise InputError(description="User is not an owner")
-
     # verify the user to remove is not a Slackr owner
-    if data['Users'][u_id]['global_permission'] == SLACKR_OWNER:
+    # and the remover has valid privileges
+    if not data.admins.is_admin(u_id_invoker) and data.admins.is_admin(u_id):
         raise AccessError(
             description="You do not have permission to remove the current user")
 
     # verify the invoker is either an owner of the channel or slackr
-    if u_id_invoker not in data['Channels'][channel_id]['owner_members'] \
-            and data['Users'][u_id_invoker]['global_permission'] != SLACKR_OWNER:
+    if not data.user_channel.is_owner(u_id_invoker, channel_id):
         raise AccessError(
-            description="You do not have premission to remove owners")
+            description="You do not have premission to remove the current user")
 
     # remove the ownership
-    data['Channels'][channel_id]['owner_members'].remove(u_id)
+    data.user_channel.remove_owner(u_id, channel_id)

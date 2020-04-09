@@ -35,7 +35,7 @@ def message_send(token, channel_id, message):
     # checking channel_id is valid (user is part of)
     if channel_id not in data['Users'][u_id]['channels']:
         raise AccessError(
-            description='You do not have access to send message in this channel')
+            description='You do not have access to send messages in this channel')
     # assigning new message_id MUST BE GLOBALLY UNIQUE!
     # starting from index 1
     if len(data['Messages']) == 0:

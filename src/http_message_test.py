@@ -65,7 +65,7 @@ def test_message_sendlater_ok(reset):
     a_token = register('admin@gmail.com', 'pass123456', 'Alan', 'Brown')[1]
     channel_id = channels_create(a_token, 'test_public', True)
 
-    msg_id = message_sendlater(a_token, channel_id, 'sending later', time.time() + 0.01)
+    msg_id = message_sendlater(a_token, channel_id, 'sending later', time.time() + 3)
     assert msg_id == 0
 
 def test_message_sendlater_badtime():

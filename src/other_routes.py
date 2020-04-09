@@ -21,7 +21,7 @@ def u_per_change():
         raise RequestError(description=f"Missing data in request body")
 
     other.userpermission_change(
-        payload['token'], payload['u_id'], payload['permission_id'])
+        payload['token'], int(payload['u_id']), int(payload['permission_id']))
     return json.dumps({})
 
 

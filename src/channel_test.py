@@ -359,18 +359,6 @@ def test_channel_messages_more_than_fifty(reset, create_public_channel):
     assert msgs['start'] == 1
     assert msgs['end'] == -1
 
-
-def test_channel_messages_empty_public(reset, create_public_channel):
-    '''
-    Testing requesting messages from an empty channel using a bad start index (0)
-    '''
-
-    # create a public channel using fixture and return its details and the owner's
-    channel_id, owner_info = create_public_channel
-    with pytest.raises(InputError):
-        channel_messages(owner_info['token'], channel_id['channel_id'], 0)
-
-
 def test_channel_messages_empty_public_bad(reset, create_public_channel):
     '''
     testing whether it raises an exception given a start index > number of channel_messages
