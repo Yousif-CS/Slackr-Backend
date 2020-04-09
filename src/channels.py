@@ -23,12 +23,8 @@ def channels_list(token):
     u_id = get_tokens()[token]
 
     # return details about all channels the user is part of
-    all_channels = data.channels.all()
-    user_channels = data.user_channel.user_channels(u_id)
-    # filtered list
-    in_channels = [d for d in all_channels if d['channel_id'] in user_channels]
     return {
-        'channels': in_channels
+        'channels': data.user_channels(u_id)
     }
 
 

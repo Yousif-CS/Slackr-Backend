@@ -428,6 +428,11 @@ class Database():
         self.messages.remove(message_id)
         self.user_message.remove_link_by_message(message_id)
 
+    def user_channels(self, u_id):
+        all_channels = self.channels.all()
+        filtered_channels = self.user_channel.user_channels(u_id)
+        return list([d for d in all_channels if d['channel_id'] in filtered_channels])
+
 
 STORE = Database()
 # this dictionary contains the session tokens that
