@@ -5,7 +5,7 @@ that do not belong to a specific category
 
 import pickle
 from standup import get_standup, get_lock
-from state import get_store, get_tokens
+from state import get_store, get_tokens, Database
 from auth import verify_token
 from error import InputError, AccessError
 
@@ -56,20 +56,9 @@ def users_all(token):
 
     # return a dictionary which contains one key, "users", which is itself a list of dictionaries
     # containing types u_id, email, name_first, name_last, handle_str
-    data = get_store()
-    every_user = {"users": []}
-    for identity, info in data["Users"].items():
-        every_user["users"].append(
-            {
-                "u_id": identity,
-                "email": info["email"],
-                "name_first": info["name_first"],
-                "name_last": info["name_last"],
-                "handle_str": info["handle"]
-            }
-        )
+    data = get_store() 
 
-    return every_user
+    return {"users": data.users.all()}
 
 
 def search(token, query_str):
@@ -117,10 +106,7 @@ def workspace_reset():
 
     # clear database.p
     data = get_store()
-    data["Users"].clear()
-    data["Slack_owners"].clear()
-    data["Channels"].clear()
-    data["Messages"].clear()
+    data = Database()
     # clear standups
     with get_lock():
         standups = get_standup()
