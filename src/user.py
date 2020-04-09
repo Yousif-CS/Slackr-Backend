@@ -22,21 +22,7 @@ def user_profile(token, u_id):
 
     # check that the u_id of the user whose information the authorised user wants to access is valid
     data = get_store()
-    if u_id not in data["Users"].keys():
-        raise InputError(description="user id not valid")
-
-    # if so, return the corresponding information by retrieving from the database
-    user_info = {
-        "user": {
-            "u_id": u_id,
-            "email": data["Users"][u_id]["email"],
-            "name_first": data["Users"][u_id]["name_first"],
-            "name_last": data["Users"][u_id]["name_last"],
-            "handle_str": data["Users"][u_id]["handle"]
-        }
-    }
-
-    return user_info
+    return data.users.user_details(u_id)
 
 
 def user_profile_setname(token, name_first, name_last):
@@ -61,8 +47,8 @@ def user_profile_setname(token, name_first, name_last):
     # modify name_first and name_last in the database as per the user's changes
     u_id = get_tokens()[token]
     data = get_store()
-    data["Users"][u_id]["name_first"] = name_first
-    data["Users"][u_id]["name_last"] = name_last
+    data.users.set_first_name(u_id, name_first)
+    data.users.set_last_name(u_id, name_last)
 
 
 def user_profile_sethandle(token, handle_str):
@@ -117,11 +103,8 @@ def user_profile_setemail(token, email):
     u_id = get_tokens()[token]
     data = get_store()
 
-    if email != data["Users"][u_id]["email"]:
-        for identity in data["Users"].values():
-            if identity["email"] == email:
-                raise InputError(
-                    description="this email is already being used by another user")
+    if data.users.email_used(email):
+        raise InputError(description="this email is already being used by another user")
 
     # Change the user's email in the STORE databas if the above hurdles are passed
     data["Users"][u_id]["email"] = email

@@ -78,6 +78,9 @@ class Users():
     def set_last_name(self, u_id, name):
         self._users[u_id]['name_last'] = name
 
+    def set_handle(self, u_id, handle):
+        self._users[u_id]['handle_str'] = handle
+
     def validate_login(self, email, password):
         [u_id] = [key for key, value in self._users.items() if value['email'] == email]
         if password != self._users[u_id]['password']:
@@ -460,12 +463,7 @@ def initialize_store():
         try:
             STORE = pickle.load(file, encoding="utf-8")
         except EOFError:
-            STORE = {
-                'users': {},
-                'Slack_owners': [],
-                'channels': {},
-                'messages': [],
-            }
+            STORE = Database()
 
 
 def initialize_state():
