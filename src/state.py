@@ -39,14 +39,13 @@ class Users():
             'name_last': l_name,
             'password': password,
             'handle_str': handle,
-            'global_permission': ADMIN if self._num_users == 1 else MEMBER
         }
         return self._current_id
 
     def remove(self, u_id):
         self._users.pop(u_id)
         self._num_users -= 1
-    
+
     def user_details(self, u_id):
         if not self.user_exists(u_id):
             raise InputError('User does not exist')
@@ -84,12 +83,27 @@ class Users():
             raise AccessError(description='Password incorrect')
         return u_id
 
-class Admins(Users):
+class Admins():
     '''
     A special class for users who are admins
     '''
+    def __init__(self):
+        self._admins = list()
+        self._valid_permissions = [ADMIN, MEMBER]
+
+    def add(self, u_id):
+        if not self.is_admin(u_id):
+            self._admins.append(u_id)
+
+    def remove(self, u_id):
+        if self.is_admin(u_id):
+            self._admins.remove(u_id)
+
+    def is_valid_permission(self, p_id):
+        return p_id in self._valid_permissions
+
     def is_admin(self, u_id):
-        return u_id in self._users
+        return u_id in self._admins
 
 class Channels():
     def __init__(self):
