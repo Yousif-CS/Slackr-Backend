@@ -370,6 +370,9 @@ class UserChannel():
         return  [u_id for u_id, ch_id, is_owner in self._user_channels if \
                 ch_id == channel_id and is_owner]
 
+    def user_channels(self, given_u_id):
+        return list([ch_id for u_id, ch_id, _ in self._user_channels if u_id == given_u_id])
+
 
 class Database():
     def __init__(self):
@@ -390,6 +393,7 @@ class Database():
     def add_channel(self, u_id, details):
         channel_id = self.channels.add(details)
         self.user_channel.add_link(u_id, channel_id, is_owner=True)
+        return channel_id
 
     def channel_members(self, channel_id):
         member_ids = self.user_channel.members(channel_id)
@@ -440,6 +444,11 @@ class Database():
     def remove_message(self, message_id):
         self.messages.remove(message_id)
         self.user_message.remove_link_by_message(message_id)
+
+    def user_channels(self, u_id):
+        all_channels = self.channels.all()
+        filtered_channels = self.user_channel.user_channels(u_id)
+        return list([d for d in all_channels if d['channel_id'] in filtered_channels])
 
 
 STORE = Database()

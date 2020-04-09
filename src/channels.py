@@ -8,18 +8,9 @@ from error import InputError, AccessError
 
 def channels_list(token):
     '''
-    Input: token
-    Output: list of channels (and associated details) that the authorised user is part of
-    {channels: [
-        {
-            'channel_id': '1',
-            'name': 'first_channel_name'
-        },
-        {
-            'channel_id': '2',
-            'name': 'another channel name'
-        },
-    ]}
+    Provides users with details of all channels the requesting user is part of
+    Parameter: authorised token
+    Returns: list of channels (and associated details) that the authorised user is part of
     '''
     # verify the user
     if verify_token(token) is False:
@@ -32,19 +23,16 @@ def channels_list(token):
     u_id = get_tokens()[token]
 
     # return details about all channels the user is part of
-    channels_dict = {'channels': []}
-    for ids in data['Users'][u_id]['channels']:
-        channels_dict['channels'].append({
-            'channel_id': ids,
-            'name': data['Channels'][ids]['name'],
-        })
-    return channels_dict
+    return {
+        'channels': data.user_channels(u_id)
+    }
 
 
 def channels_listall(token):
     '''
-    Input: token
-    Output: list of ALL channels in slackr
+    Provides users with details of all channels existing in Slackr
+    Parameter: token
+    Returns: list of ALL channels in Slackr
     '''
     # verify the user
     if verify_token(token) is False:
@@ -54,13 +42,10 @@ def channels_listall(token):
     data = get_store()
 
     # return all existing channels
-    all_channels_dict = {'channels': []}
-    for ids in data['Channels'].keys():
-        all_channels_dict['channels'].append({
-            'channel_id': ids,
-            'name': data['Channels'][ids]['name'],
-        })
-    return all_channels_dict
+    all_channels = data.channels.all()
+    return {
+        'channels': all_channels
+    }
 
 
 def channels_create(token, name, is_public):
@@ -85,23 +70,9 @@ def channels_create(token, name, is_public):
     if not isinstance(is_public, bool):
         raise InputError(description='Invalid channel status')
 
-    # assigning new id for channel
-    # if no channels exist, assign 1 as new id; otherwise assign max_id_size + 1
-    if len(channels_listall(token)['channels']) == 0:
-        new_id = 1
-    else:
-        new_id = max(data['Channels'].keys()) + 1
-
-    # updating database:
-    # 1. adding new key value pair into data.Channels
-    data['Channels'][new_id] = {
-        'name': name,
-        'all_members': [u_id],
-        'owner_members': [u_id],
-        'is_private': not is_public,
-        'messages': [],
+    # creating new channel
+    details = name, is_public
+    new_id = data.add_channel(u_id, details)
+    return {
+        'channel_id': new_id
     }
-    # 2. adding new channel id to user info
-    data['Users'][u_id]['channels'].append(new_id)
-
-    return {'channel_id': new_id}
