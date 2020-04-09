@@ -353,6 +353,9 @@ class UserChannel():
         return  [u_id for u_id, ch_id, is_owner in self._user_channels if \
                 ch_id == channel_id and is_owner]
 
+    def user_channels(self, given_u_id):
+        return list([ch_id for u_id, ch_id, _ in self._user_channels if u_id == given_u_id])
+
 
 class Database():
     def __init__(self):
