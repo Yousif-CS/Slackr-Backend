@@ -373,6 +373,7 @@ class Database():
     def add_channel(self, u_id, details):
         channel_id = self.channels.add(details)
         self.user_channel.add_link(u_id, channel_id, is_owner=True)
+        return channel_id
 
     def channel_members(self, channel_id):
         member_ids = self.user_channel.members(channel_id)
