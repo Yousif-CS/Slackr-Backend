@@ -94,7 +94,7 @@ def standup_start(token, channel_id, length):
     u_id = get_tokens()[token]
 
     # verify the channel exists
-    if channel_id not in data['Channels']:
+    if not data.channels.channel_exists(channel_id):
         raise InputError(description="Invalid channel id")
 
     # getting all the standups
@@ -139,7 +139,7 @@ def standup_active(token, channel_id):
     data = get_store()
 
     # verify the channel exists
-    if channel_id not in data['Channels']:
+    if not data.channels.channel_exists(channel_id):
         raise InputError(description="Invalid channel id")
 
     # getting all the standups
@@ -165,11 +165,11 @@ def standup_send(token, channel_id, message):
     u_id = get_tokens()[token]
 
     # verify the channel exists
-    if channel_id not in data['Channels']:
+    if data.channels.channel_exists(channel_id):
         raise InputError(description="Invalid channel id")
 
     # verify user is within channel
-    if u_id not in data['Channels'][channel_id]['all_members']:
+    if not data.user_channel.is_member(u_id, channel_id):
         raise AccessError(
             description="You do not have permission to send a standup message")
 
