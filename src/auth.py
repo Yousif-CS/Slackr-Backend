@@ -5,7 +5,8 @@ along with helper functions used in other files as well
 '''
 import hashlib
 import jwt
-from state import get_store, get_tokens, Database
+
+from state import get_store, get_tokens
 from is_valid_email import is_valid_email
 from error import InputError
 
@@ -109,40 +110,10 @@ def auth_register(email, password, name_first, name_last):
     # hash the password
     encrypted_pass = hashlib.sha256(password.encode()).hexdigest()
 
+    #Adds all user's details to the Database
     details = email, encrypted_pass, name_first, name_last, create_handle(name_first, name_last)
     u_id = data.users.add(details)
-    
-    # If this is the first user, then they become the slack owner,
-    # and have u_id of 1, and have global_permissions.
-    '''if len(data["Users"]) == 0:
-        u_id = 1
-        data['Slack_owners'].append(u_id)
-        data["Users"][u_id] = {
-            'name_first': name_first,
-            'name_last': name_last,
-            'email': email,
-            'password': encrypted_pass,
-            'handle': create_handle(name_first, name_last),
-            'global_permission': 1,
-            'channels': [],
-        }
-    else:
-        # InputError if email not unique
-        for identity in data["Users"].values():
-            if identity["email"] == email:
-                raise InputError(
-                    description="This email is already being used by another user")
-        # append the user
-        u_id = max(data["Users"].keys()) + 1
-        data["Users"][u_id] = {
-            'name_first': name_first,
-            'name_last': name_last,
-            'email': email,
-            'password': encrypted_pass,
-            'handle': create_handle(name_first, name_last),
-            'global_permission': 2,
-            'channels': [],
-        }'''
+        
     token = generate_token(u_id)
     # Store the token-u_id pair in the temporary TOKEN dictionary
     get_tokens()[token] = u_id
@@ -181,6 +152,7 @@ def auth_login(email, password):
         raise InputError(
             description='Email does not belong to a registered user')
 
+    # Ensure user's password matches otherwise raise an error
     encrypted_pass = hashlib.sha256(password.encode()).hexdigest()
     u_id = data.users.validate_login(email, encrypted_pass)
 
@@ -213,8 +185,3 @@ def auth_logout(token):
     if get_token(u_id) is None:
         return {'is_success': True}
     return {'is_success': False}
-
-if __name__ == '__main__':
-    auth_register('max@gmail.com', 'wubbalubba', 'Max', 'Smith')
-    auth_login('ma@gmail.com','wubba')
-   
