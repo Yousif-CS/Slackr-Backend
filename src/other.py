@@ -27,27 +27,23 @@ def userpermission_change(token, u_id, permission_id):
     u_id_invoker = get_tokens()[token]
 
     # verify that u_id is a valid user
-    if u_id not in data['Users']:
+    if data.users.user_exists(u_id):
         raise InputError(description="User does not exist")
 
     # verify permission_id is valid (1 or 2)
-    if not isinstance(permission_id, int) or permission_id not in [SLACKR_MEMBER, SLACKR_OWNER]:
+    if not data.admins.is_valid_permission(permission_id):
         raise InputError(description="Invalid permission id")
 
     # verify the invoker is an admin
-    if data['Users'][u_id_invoker]['global_permission'] != SLACKR_OWNER:
+    if data.admins.is_admin(u_id_invoker):
         raise AccessError(
             description="You do not have permission to change permissions")
 
     # set new permissions
-    data['Users'][u_id]['global_permission'] = permission_id
-    # update the Slack_owners dictionary in the database
-    if permission_id is SLACKR_MEMBER:
-        if u_id not in data['Slack_owners']:
-            data['Slack_owners'].append(u_id)
-    elif u_id in data['Slack_owners']:
-        data['Slack_owners'].remove(u_id)
-
+    if permission_id == SLACKR_OWNER:
+        data.admins.add(u_id)
+    else:
+        data.admins.remove(u_id)
 
 def users_all(token):
     '''

@@ -50,26 +50,24 @@ def flush_standup(channel_id):
     '''
     with STANDUP_LOCK:
         standups = get_standup()
-        for standup in standups:
-            # get specific standup with channel id
-            if standup['channel_id'] == channel_id:
-                # remove it
-                standups.remove(standup)
-                # if empty do not bother sending
-                if not standup['messages']:
-                    continue
-                to_send = '\n'.join(standup['messages'])
-                user_token = get_token(standup['u_id'])
-                # the user has logged out: generate a temporary token
-                if user_token is None:
-                    # generate token
-                    user_token = generate_token(standup['u_id'])
-                    # authorise user by adding the token
-                    get_tokens()[user_token] = standup['u_id']
-                    message_send(user_token, channel_id, to_send)
-                    auth_logout(user_token)
-                else:
-                    message_send(user_token, channel_id, to_send)
+        try:
+            [to_flush] = list(filter(lambda x: x['channel_id'] == channel_id, standups))
+            to_send = '\n'.join(to_flush['messages'])
+            #get the token given u_id
+            user_token = get_token(to_flush['u_id'])
+            if user_token is None:
+                #generate a temporary token
+                user_token = generate_token(to_flush['u_id'])
+                get_tokens()[user_token] = to_flush['u_id']
+                message_send(user_token, channel_id, to_send)
+                auth_logout(user_token)
+            else:
+                message_send(user_token, channel_id, to_send)
+        except ValueError:
+            pass
+        standups.remove(to_flush)
+
+
 
 
 def run_scheduler(target, running_time, args):
@@ -94,7 +92,7 @@ def standup_start(token, channel_id, length):
     u_id = get_tokens()[token]
 
     # verify the channel exists
-    if channel_id not in data['Channels']:
+    if not data.channels.channel_exists(channel_id):
         raise InputError(description="Invalid channel id")
 
     # getting all the standups
@@ -139,7 +137,7 @@ def standup_active(token, channel_id):
     data = get_store()
 
     # verify the channel exists
-    if channel_id not in data['Channels']:
+    if not data.channels.channel_exists(channel_id):
         raise InputError(description="Invalid channel id")
 
     # getting all the standups
@@ -165,11 +163,11 @@ def standup_send(token, channel_id, message):
     u_id = get_tokens()[token]
 
     # verify the channel exists
-    if channel_id not in data['Channels']:
+    if data.channels.channel_exists(channel_id):
         raise InputError(description="Invalid channel id")
 
     # verify user is within channel
-    if u_id not in data['Channels'][channel_id]['all_members']:
+    if not data.user_channel.is_member(u_id, channel_id):
         raise AccessError(
             description="You do not have permission to send a standup message")
 
@@ -179,10 +177,10 @@ def standup_send(token, channel_id, message):
 
     # verify there is an active standup
     # getting all the standups
-    standups_info = get_standup()
+    standups = get_standup()
     with STANDUP_LOCK:
-        for standup in standups_info:
-            if standup['channel_id'] == channel_id:
-                standup['messages'].append(message)
-                return {}
-    raise InputError(description="No active standup in this channel")
+        try:
+            [standup] = list(filter(lambda x: x[channel_id] == channel_id, standups))
+            standup['messages'].append(message)
+        except ValueError:
+            raise InputError(description="No active standup in this channel")
