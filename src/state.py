@@ -78,8 +78,11 @@ class Users():
     def set_last_name(self, u_id, name):
         self._users[u_id]['name_last'] = name
 
-    def set_handle(self, u_id, handle):
-        self._users[u_id]['handle_str'] = handle
+    def set_handle(self, u_id, handle_str):
+        self._users[u_id]['handle_str'] = handle_str
+
+    def set_email(self, u_id, email):
+        self._users[u_id]['email'] = email
 
     def validate_login(self, email, password):
         [u_id] = [key for key, value in self._users.items() if value['email'] == email]
@@ -136,6 +139,9 @@ class Messages():
         self._messages = list()
         self._num_messages = 0
         self._current_id = 0
+
+    def all(self):
+        return list(self._messages)
 
     def add(self, details):
         message, time_created = details
@@ -355,6 +361,9 @@ class UserChannel():
     def owners(self, channel_id):
         return  [u_id for u_id, ch_id, is_owner in self._user_channels if \
                 ch_id == channel_id and is_owner]
+
+    def channels_user_is_part_of(self, u_id):
+        return [link[1] for link in self._user_channels if u_id == link[0]]
 
 
 class Database():

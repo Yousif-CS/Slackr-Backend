@@ -82,8 +82,7 @@ def search(token, query_str):
     auth_u_id = get_tokens()[token]
 
     if len(query_str) > 1000:
-        raise InputError(
-            description="query_str over 1000 characaters; too long")
+        raise InputError(description="query_str over 1000 characaters; too long")
 
     matching_msgs = {"messages": []}
     # empty query_str returns an empty list
@@ -91,8 +90,8 @@ def search(token, query_str):
         return matching_msgs
 
     # find all the channels the user is a part of and search for query_str in the messages
-    for ch_id in data["Users"][auth_u_id]["channels"]:
-        for msg_dict in data["Messages"]:
+    for ch_id in data.user_channel.channels_user_is_part_of(auth_u_id):
+        for msg_dict in data.messages.all():
             if msg_dict["message_id"] in data["Channels"][ch_id]["messages"] and \
                     query_str in msg_dict["message"]:
                 matching_msgs["messages"].append(msg_dict)
