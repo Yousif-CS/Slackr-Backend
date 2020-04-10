@@ -144,27 +144,25 @@ def auth_login(email, password):
     '''
     data = get_store()
 
-    if is_valid_email(email) is False:
-        raise InputError(description='Email is not a valid email')
-
-    u_id = find_u_id(email)
-    if u_id is None:
-        raise InputError(
-            description='Email does not belong to a registered user')
-
     # Ensure user's password matches otherwise raise an error
     encrypted_pass = hashlib.sha256(password.encode()).hexdigest()
     u_id = data.users.validate_login(email, encrypted_pass)
 
+    #check if the user is not already logged in
+    token = get_token(u_id)
+    if token is not None:
+        raise InputError(description='User is already logged on')
+
     token = generate_token(u_id)
-
-    # Store the token-u_id pair in the temporary TOKEN dictionary
     get_tokens()[token] = u_id
-
     return {
         "u_id": u_id,
         "token": token
     }
+
+
+    # Store the token-u_id pair in the temporary TOKEN dictionary
+
 
 
 def auth_logout(token):
