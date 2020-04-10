@@ -24,16 +24,16 @@ def channel_invite(token, channel_id, u_id):
 
     # check that channel_id corresponds to a valid channel
     data = get_store()
-    if data.channels.channel_exists:
+    if not data.channels.channel_exists(channel_id):
         raise InputError(description="Channel with this channel ID does not exist")
 
     # check that the authorised user belongs to this valid channel
     auth_u_id = get_tokens()[token]
-    if data.user_channel.is_member(auth_u_id):
+    if not data.user_channel.is_member(auth_u_id):
         raise AccessError(description="The authorised user is not a member of channel with this channel ID")
 
     # check that u_id corresponds to a valid user
-    if data.users.user_exists(u_id):
+    if not data.users.user_exists(u_id):
         raise InputError(description="User ID is not valid")
 
     # add the user with u_id into the channel
@@ -60,7 +60,7 @@ def channel_details(token, channel_id):
 
     # check that the authorised user is member of said channel
     auth_u_id = get_tokens()[token]
-    if data.user_channel.is_member(auth_u_id):
+    if not data.user_channel.is_member(auth_u_id):
         raise AccessError(description="The authorised user is not a member of channel with this channel ID")
 
     owner_ids = data.channels.owners(channel_id)
@@ -188,7 +188,7 @@ def channel_join(token, channel_id):
     #verify the channel exists
     if channel_id not in data['Channels']:
         raise InputError(description="Invalid channel id")
-            
+
     #verify user is not already a member
     if channel_id in data['Users'][u_id]['channels']:
         raise InputError(description="You are already a member")
