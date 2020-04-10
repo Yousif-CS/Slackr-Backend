@@ -39,13 +39,14 @@ class Users():
             'name_last': l_name,
             'password': password,
             'handle_str': handle,
+            'global_permission': ADMIN if self._num_users == 1 else MEMBER
         }
         return self._current_id
 
     def remove(self, u_id):
         self._users.pop(u_id)
         self._num_users -= 1
-
+    
     def user_details(self, u_id):
         if not self.user_exists(u_id):
             raise InputError('User does not exist')
@@ -69,7 +70,15 @@ class Users():
         return False
 
     def email_used(self, email):
-        return email in [user['email'] for user in self._users.values()]
+        if email in [user['email'] for user in self._users.values()]:
+            return True
+        return False
+    
+    def handle_unique(self, handle):
+        if handle in [user['handle_str'] for user in self._users.values()]:
+            return False 
+        
+        return True 
 
     def set_first_name(self, u_id, name):
         self._users[u_id]['name_first'] = name
@@ -77,36 +86,18 @@ class Users():
     def set_last_name(self, u_id, name):
         self._users[u_id]['name_last'] = name
 
-    def set_handle(self, u_id, handle):
-        self._users[u_id]['handle_str'] = handle
-
     def validate_login(self, email, password):
         [u_id] = [key for key, value in self._users.items() if value['email'] == email]
         if password != self._users[u_id]['password']:
             raise AccessError(description='Password incorrect')
         return u_id
 
-class Admins():
+class Admins(Users):
     '''
     A special class for users who are admins
     '''
-    def __init__(self):
-        self._admins = list()
-        self._valid_permissions = [ADMIN, MEMBER]
-
-    def add(self, u_id):
-        if not self.is_admin(u_id):
-            self._admins.append(u_id)
-
-    def remove(self, u_id):
-        if self.is_admin(u_id):
-            self._admins.remove(u_id)
-
-    def is_valid_permission(self, p_id):
-        return p_id in self._valid_permissions
-
     def is_admin(self, u_id):
-        return u_id in self._admins
+        return u_id in self._users
 
 class Channels():
     def __init__(self):
@@ -486,7 +477,12 @@ def initialize_store():
         try:
             STORE = pickle.load(file, encoding="utf-8")
         except EOFError:
-            STORE = Database()
+            STORE = {
+                'users': {},
+                'Slack_owners': [],
+                'channels': {},
+                'messages': [],
+            }
 
 
 def initialize_state():
