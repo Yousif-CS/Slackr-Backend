@@ -310,7 +310,7 @@ class UserMessage():
         return react_id in self._react_ids
 
     def is_sender(self, m_id, u_id):
-        return u_id in [link['u_id'] for link in self._user_messages if link['message_id'] == m_id
+        return u_id in [link['u_id'] for link in self._user_messages if link['message_id']] == m_id
 
     def channel_all_messages(self, ch_id):
         msg_dicts = list(filter(lambda msg: msg['channel_id'] == ch_id, self._user_messages))
