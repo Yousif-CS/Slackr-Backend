@@ -449,6 +449,19 @@ def userpermission_change(token, u_id, permission_id):
 
     urllib.request.urlopen(request)
 
+def user_remove(token, u_id):
+    '''
+    HTTP request to change user permissions
+    '''
+    data = json.dumps({
+        'token': token,
+        'u_id': u_id
+    }).encode()
+
+    request = urllib.request.Request(urls.USER_REMOVE_URL, data=data,
+                                     method='DELETE', headers={'Content-Type': 'application/json'})
+
+    urllib.request.urlopen(request)
 
 def users_all(token):
     '''
