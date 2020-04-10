@@ -39,14 +39,13 @@ class Users():
             'name_last': l_name,
             'password': password,
             'handle_str': handle,
-            'global_permission': ADMIN if self._num_users == 1 else MEMBER
         }
         return self._current_id
 
     def remove(self, u_id):
         self._users.pop(u_id)
         self._num_users -= 1
-    
+
     def user_details(self, u_id):
         if not self.user_exists(u_id):
             raise InputError('User does not exist')
@@ -90,12 +89,27 @@ class Users():
             raise AccessError(description='Password incorrect')
         return u_id
 
-class Admins(Users):
+class Admins():
     '''
     A special class for users who are admins
     '''
+    def __init__(self):
+        self._admins = list()
+        self._valid_permissions = [ADMIN, MEMBER]
+
+    def add(self, u_id):
+        if not self.is_admin(u_id):
+            self._admins.append(u_id)
+
+    def remove(self, u_id):
+        if self.is_admin(u_id):
+            self._admins.remove(u_id)
+
+    def is_valid_permission(self, p_id):
+        return p_id in self._valid_permissions
+
     def is_admin(self, u_id):
-        return u_id in self._users
+        return u_id in self._admins
 
 class Channels():
     def __init__(self):
@@ -362,8 +376,13 @@ class UserChannel():
         return  [u_id for u_id, ch_id, is_owner in self._user_channels if \
                 ch_id == channel_id and is_owner]
 
+<<<<<<< HEAD
     def channels_user_is_part_of(self, u_id):
         return [link[1] for link in self._user_channels if u_id == link[0]]
+=======
+    def user_channels(self, given_u_id):
+        return list([ch_id for u_id, ch_id, _ in self._user_channels if u_id == given_u_id])
+>>>>>>> master
 
 
 class Database():
@@ -385,6 +404,7 @@ class Database():
     def add_channel(self, u_id, details):
         channel_id = self.channels.add(details)
         self.user_channel.add_link(u_id, channel_id, is_owner=True)
+        return channel_id
 
     def channel_members(self, channel_id):
         member_ids = self.user_channel.members(channel_id)
@@ -435,6 +455,11 @@ class Database():
     def remove_message(self, message_id):
         self.messages.remove(message_id)
         self.user_message.remove_link_by_message(message_id)
+
+    def user_channels(self, u_id):
+        all_channels = self.channels.all()
+        filtered_channels = self.user_channel.user_channels(u_id)
+        return list([d for d in all_channels if d['channel_id'] in filtered_channels])
 
 
 STORE = Database()
