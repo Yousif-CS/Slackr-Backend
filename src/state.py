@@ -309,7 +309,7 @@ class UserMessage():
         return react_id in self._react_ids
 
     def is_sender(self, m_id, u_id):
-        return u_id in [link['u_id'] for link in self._user_messages if link['message_id'] == m_id]
+        return u_id in [link['u_id'] for link in self._user_messages if link['message_id'] == m_id
 
 class UserChannel():
     '''
@@ -376,13 +376,8 @@ class UserChannel():
         return  [u_id for u_id, ch_id, is_owner in self._user_channels if \
                 ch_id == channel_id and is_owner]
 
-<<<<<<< HEAD
-    def channels_user_is_part_of(self, u_id):
-        return [link[1] for link in self._user_channels if u_id == link[0]]
-=======
     def user_channels(self, given_u_id):
         return list([ch_id for u_id, ch_id, _ in self._user_channels if u_id == given_u_id])
->>>>>>> master
 
 
 class Database():
