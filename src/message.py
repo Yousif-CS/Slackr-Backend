@@ -23,46 +23,27 @@ def message_send(token, channel_id, message):
     if verify_token(token) is False:
         raise AccessError(description='Invalid token')
 
+    # checking message string is valid
+    if not isinstance(message, str) or len(message) > MAX_MSG_LEN or len(message) == 0:
+        raise InputError(description='Invalid message')
+
     # get database
     data = get_store()
     # getting id of the user
     u_id = get_tokens()[token]
 
-    # checking message string is valid
-    if not isinstance(message, str) or len(message) > MAX_MSG_LEN or len(message) == 0:
-        raise InputError(description='Invalid message')
-
     # checking channel_id is valid (user is part of)
-    if channel_id not in data['Users'][u_id]['channels']:
+    if not data.user_channel.link_exists(u_id, channel_id):
         raise AccessError(
             description='You do not have access to send messages in this channel')
-    # assigning new message_id MUST BE GLOBALLY UNIQUE!
-    # starting from index 1
-    if len(data['Messages']) == 0:
-        new_msg_id = 1
-    else:
-        id_list = [msg['message_id'] for msg in data['Messages']]
-        new_msg_id = max(id_list) + 1
 
-    # sending the actual message:
-    # 1. append to list of message id's
-    data['Channels'][channel_id]['messages'].append(new_msg_id)
-    # 2. new dictionary in data['Messages']
-    data['Messages'].append({
-        'message_id': new_msg_id,
-        'channel_id': channel_id,
-        'message': message,
-        'u_id': u_id,
-        'time_created': time(),
-        'is_pinned': False,
-        'reacts': [{
-            'react_id': 1,
-            'u_ids': [],
-            'is_this_user_reacted': False,
-        }]
-    })
+    # send the message
+    details = message, time()
+    new_id = data.add_message(u_id, channel_id, details)
+    return {
+        'message_id': new_id
+    }
 
-    return {'message_id': new_msg_id}
 
 # set up scheduler wrapper function
 def run_scheduler(target, time_sent, args):
@@ -81,33 +62,25 @@ def message_sendlater(token, channel_id, message, time_sent):
     # verify the user
     if verify_token(token) is False:
         raise AccessError(description='Invalid token')
+    # checking message string is valid
+    if not isinstance(message, str) or len(message) > MAX_MSG_LEN or len(message) == 0:
+        raise InputError(description='Invalid message')
 
     # get database
     data = get_store()
     # getting id of the user
     u_id = get_tokens()[token]
 
-    # checking message string is valid
-    if not isinstance(message, str) or len(message) > MAX_MSG_LEN or len(message) == 0:
-        raise InputError(description='Invalid message')
-
     # checking channel_id is valid (user is part of)
-    if channel_id not in data['Users'][u_id]['channels']:
+    if not data.user_channel.link_exists(u_id, channel_id):
         raise AccessError(
             description='You do not have access to send message in this channel')
-
     # checking time_sent is valid (it is a time in the future)
     if time_sent < time():
         raise InputError(description='Scheduled send time is invalid')
 
-    # assigning new message_id MUST BE GLOBALLY UNIQUE!
-    # starting from index 0
-    if len(data['Messages']) == 0:
-        new_msg_id = 0
-    else:
-        id_list = [msg['message_id'] for msg in data['Messages']]
-        new_msg_id = max(id_list) + 1
-
+    # assigning new ID for the message
+    new_id = data.messages.next_id()
 
     # the action to be completed at time time_sent
     sched_thread = Thread(target=run_scheduler, args=(
@@ -115,7 +88,9 @@ def message_sendlater(token, channel_id, message, time_sent):
     # run the schedular (target=message_send, time_sent=time_sent, )
     sched_thread.start()
 
-    return {'message_id': new_msg_id}
+    return {
+        'message_id': new_id
+    }
 
 
 def message_pin(token, message_id):
@@ -133,28 +108,7 @@ def message_pin(token, message_id):
     # getting id of the user
     u_id = get_tokens()[token]
 
-    # checking for InputError and AccessError
-    msg_ids = [msg['message_id'] for msg in data['Messages']]
-    if message_id not in msg_ids:
-        raise InputError(description='Invalid message ID')
-    for msg in data['Messages']:
-        # locate the message dictionary in data['Messages']
-        if msg['message_id'] == message_id:
-            # not part of channel where message_id is in
-            if msg['channel_id'] not in data['Users'][u_id]['channels']:
-                raise AccessError(
-                    description='You are not part of the channel the message is in')
-            # neither admin of channel nor slackr owner
-            elif u_id not in data['Channels'][msg['channel_id']]['owner_members']:
-                if u_id not in data['Slack_owners']:
-                    raise AccessError(
-                        description='You are not admin of channel')
-            # message already pinned
-            elif msg['is_pinned'] is True:
-                raise InputError(description='Message already pinned')
-            # pinning the message
-            else:
-                msg['is_pinned'] = True
+    data.pin(u_id, message_id)
     return {}
 
 
@@ -162,7 +116,7 @@ def message_unpin(token, message_id):
     '''
     input: token, message_id
     output: {}
-    Given message within a channel, remove its pinned status and unpin it
+    Given message within a channel, remove its pinned status
     '''
     # verify the user
     if verify_token(token) is False:
@@ -173,28 +127,7 @@ def message_unpin(token, message_id):
     # getting id of the user
     u_id = get_tokens()[token]
 
-    # checking for InputError and AccessError
-    msg_ids = [msg['message_id'] for msg in data['Messages']]
-    if message_id not in msg_ids:
-        raise InputError(description='Invalid message ID')
-    for msg in data['Messages']:
-        # locate the message dictionary in data['Messages']
-        if msg['message_id'] == message_id:
-            # not part of channel where message_id is in
-            if msg['channel_id'] not in data['Users'][u_id]['channels']:
-                raise AccessError(
-                    description='You are not part of the channel the message is in')
-            # neither admin of channel nor slackr owner
-            elif u_id not in data['Channels'][msg['channel_id']]['owner_members']:
-                if u_id not in data['Slack_owners']:
-                    raise AccessError(
-                        description='You are not admin of channel')
-            # message already pinned
-            elif msg['is_pinned'] is False:
-                raise InputError(description='Message already unpinned')
-            # unpinning the message
-            else:
-                msg['is_pinned'] = False
+    data.unpin(u_id, message_id)
     return {}
 
 
@@ -216,28 +149,13 @@ def message_remove(token, message_id):
     # getting id of the user
     u_id = get_tokens()[token]
 
-    # checking if the message with message_id exists
-    id_list = [msg['message_id'] for msg in data['Messages']]
-    if message_id not in id_list:
-        raise InputError(description='Invalid message ID')
-
-    # given message_id does exist, check for AccessError:
-    msg_pos = id_list.index(message_id)
-    is_user_delete_own = data['Messages'][msg_pos]['u_id'] == u_id
-    matching_channel_id = data['Messages'][msg_pos]['channel_id']
-    is_user_owner = u_id in data['Channels'][matching_channel_id]['owner_members']
-    is_user_slackr_owner = u_id in data['Slack_owners']
-
-    if not (is_user_delete_own or is_user_owner or is_user_slackr_owner):
+    channel_id = data.user_message.message_channel(message_id)
+    if not data.user_channel.is_owner(u_id, channel_id) and not data.admins.is_admin(u_id) \
+        and not data.user_messages.is_sender(message_id, u_id):
         raise AccessError(
-            description='You do not have access to delete this message')
+        description='You do not have access to delete this message')
 
-    # passed above checks: delete actual message
-    # 1. delete from message_id list in Channels info
-    data['Channels'][matching_channel_id]['messages'].remove(message_id)
-    # 2. delete message dictionary from Messages list
-    data['Messages'].remove(data['Messages'][msg_pos])
-
+    data.remove_message(message_id)
     return {}
 
 
@@ -298,26 +216,6 @@ def message_edit(token, message_id, message):
                 break
 
 
-# helper function to check if user has active react on a given react id
-def has_user_reacted_react_id(token, message_id, react_id):
-    '''
-    Checks whether a user has an existing react with ID 'react_id' for a given message
-    Assumes token is valid, message_id is valid (user is part of channel this message is in),
-    and that a react with this ID already exists in the list
-    '''
-    message_list = get_store()['Messages']
-    u_id = get_tokens()[token]
-    # locate the message dictionary in question
-    for message in message_list:
-        if message_id == message['message_id']:
-            this_msg = message
-    for react in this_msg['reacts']:
-        if react['react_id'] == react_id:
-            if u_id in react['u_ids']:
-                return True
-    return False
-
-
 def message_react(token, message_id, react_id):
     '''
     input: valid token, message_id, react_id
@@ -335,45 +233,13 @@ def message_react(token, message_id, react_id):
     data = get_store()
     # getting id of the user
     u_id = get_tokens()[token]
-    # check if react id in the list of valid react id's
-    if react_id not in [1]:
-        raise InputError(description='Not a valid react ID')
 
-    msg_ids = [msg['message_id'] for msg in data['Messages']]
-    if message_id not in msg_ids:
-        raise InputError(description='Invalid message ID')
+    channel_id = data.user_message.message_channel(message_id)
+    if not data.user_channel.link_exists(u_id, channel_id):
+        raise InputError(
+            description='Not valid message ID within channel you have joined')
 
-    for msg in data['Messages']:
-        if msg['message_id'] == message_id:
-            # message not in a channel user has joined
-            if msg['channel_id'] not in data['Users'][u_id]['channels']:
-                raise InputError(
-                    description='Not valid message ID within channel you have joined')
-            # react list not empty
-            if msg['reacts'] != []:
-                # new react to be added from scratch; append dictionary of new react
-                if react_id not in [react['react_id'] for react in msg['reacts']]:
-                    msg['reacts'].append({
-                        'react_id': react_id,
-                        'u_id': [u_id],
-                        'is_this_user_reacted': msg['u_id'] == u_id
-                    })
-                # existing react: check if user already reacted to this react
-                elif has_user_reacted_react_id(token, message_id, react_id):
-                    raise InputError(
-                        description='Already reacted with this react')
-                # adding the react; find the correct react dictionary then appending user
-                for react in msg['reacts']:
-                    if react['react_id'] == react_id:
-                        react['u_ids'].append(u_id)
-                        react['is_this_user_reacted'] = msg['u_id'] == u_id
-            # react list is empty
-            else:
-                msg['reacts'].append({
-                    'react_id': react_id,
-                    'u_id': [u_id],
-                    'is_this_user_reacted': msg['u_id'] == u_id
-                })
+    data.user_message.react(u_id, message_id, react_id)
     return {}
 
 
@@ -394,31 +260,11 @@ def message_unreact(token, message_id, react_id):
     data = get_store()
     # getting id of the user
     u_id = get_tokens()[token]
-    # checkif react id in the list of valid react id's
-    if react_id not in [1]:
-        raise InputError(description='Not a valid react ID')
 
-    msg_ids = [msg['message_id'] for msg in data['Messages']]
-    if message_id not in msg_ids:
-        raise InputError(description='Invalid message ID')
+    channel_id = data.user_message.message_channel(message_id)
+    if not data.user_channel.link_exists(u_id, channel_id):
+        raise InputError(
+            description='Not valid message ID within channel you have joined')
 
-    for msg in data['Messages']:
-        if msg['message_id'] == message_id:
-            # message not in a channel user has joined
-            if msg['channel_id'] not in data['Users'][u_id]['channels']:
-                raise InputError(
-                    description='Not valid message ID within channel you have joined')
-
-            # message has no existing react by user
-            if msg['reacts'] == [] or \
-                    has_user_reacted_react_id(token, message_id, react_id) is False:
-                raise InputError(
-                    description='You do not have an existing react to this message')
-            # unreact to the message
-            for react in msg['reacts']:
-                if react['react_id'] == react_id:
-                    react['u_ids'].remove(u_id)
-                    if u_id == msg['u_id']:
-                        react['is_this_user_reacted'] = False
-
+    data.user_message.unreact(u_id, message_id, react_id)
     return {}
