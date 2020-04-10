@@ -22,7 +22,7 @@ def user_profile(token, u_id):
 
     # check that the u_id of the user whose information the authorised user wants to access is valid
     data = get_store()
-    return data.users.user_details(u_id)
+    return {'user': data.users.user_details(u_id)}
 
 
 def user_profile_setname(token, name_first, name_last):
@@ -75,11 +75,8 @@ def user_profile_sethandle(token, handle_str):
     u_id = get_tokens()[token]
     data = get_store()
 
-    if data.users.user_details["handle_str"] != handle_str:
-        for user in data.users.all:
-            if user["handle_str"] == handle_str:
-                raise InputError(
-                    description="new handle_str not unique to this user")
+    if data.users.get_handle(u_id) != handle_str and not data.users.handle_unique(handle_str):
+        raise InputError(description="new handle_str not unique to this user")
 
     # change the handle_str in the database
     data.users.set_handle(u_id, handle_str)

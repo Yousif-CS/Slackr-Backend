@@ -85,6 +85,9 @@ class Users():
 
     def set_last_name(self, u_id, name):
         self._users[u_id]['name_last'] = name
+    
+    def get_handle(self, u_id):
+        return self._users[u_id]['handle_str']
 
     def set_handle(self, u_id, handle_str):
         self._users[u_id]['handle_str'] = handle_str
