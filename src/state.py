@@ -155,15 +155,13 @@ class Messages():
         return self._current_id
 
     def pin(self, message_id):
-        if not self.message_exists(message_id):
-            raise InputError(description='Message does not exist')
-
+        if self.message_details(message_id)['is_pinned']:
+            raise InputError(description='Message already pinned')
         self.message_details(message_id)['is_pinned'] = True
 
     def unpin(self, message_id):
-        if not self.message_exists(message_id):
-            raise InputError(description='Message does not exist')
-
+        if not self.message_details(message_id)['is_pinned']:
+            raise InputError(description='Message already unpinned')
         self.message_details(message_id)['is_pinned'] = False
 
     def message_details(self, message_id):
@@ -196,6 +194,10 @@ class Messages():
     def search(self, query_string):
         return list(
             [msg for msg in self._messages if query_string in msg['message']])
+    
+    def next_id(self):
+        return int(self._current_id + 1)
+
 
 class UserMessage():
     '''
@@ -281,7 +283,7 @@ class UserMessage():
             [react] = list(filter(lambda x: x['react_id'] == react_id, reacts))
             react['u_ids'].remove(u_id)
         except ValueError:
-            pass
+            raise InputError(description='user does not have an active react')
 
     def fetch_link(self, m_id):
         try:
@@ -295,6 +297,13 @@ class UserMessage():
 
     def is_sender(self, m_id, u_id):
         return u_id in [link['u_id'] for link in self._user_messages if link['message_id'] == m_id]
+
+    def message_channel(self, message_id):
+        for link in self._user_messages:
+            # matching message_id -> return corresponding channel_id
+            if message_id == link[0]:
+                return int(link[2])
+
 
 class UserChannel():
     '''
@@ -431,6 +440,7 @@ class Database():
     def add_message(self, u_id, channel_id, details):
         message_id = self.messages.add(details)
         self.user_message.add_link(u_id, channel_id, message_id)
+        return message_id
 
     def remove_message(self, message_id):
         self.messages.remove(message_id)
@@ -441,6 +451,21 @@ class Database():
         filtered_channels = self.user_channel.user_channels(u_id)
         return list([d for d in all_channels if d['channel_id'] in filtered_channels])
 
+    def pin(self, u_id, message_id):
+        if not self.messages.message_exists(message_id):
+            raise InputError(description='Message does not exist')
+        channel_id = self.user_message.message_channel(message_id)
+        if not self.user_channel.is_owner(u_id, channel_id) and not self.admins.is_admin(u_id):
+            raise AccessError(description='You do not have access to pin message')
+        self.messages.pin(message_id)
+
+    def unpin(self, u_id, message_id):
+        if not self.messages.message_exists(message_id):
+            raise InputError(description='Message does not exist')
+        channel_id = self.user_message.message_channel(message_id)
+        if not self.user_channel.is_owner(u_id, channel_id) and not self.admins.is_admin(u_id):
+            raise AccessError(description='You do not have access to pin message')
+        self.messages.unpin(message_id)
 
 STORE = Database()
 # this dictionary contains the session tokens that
