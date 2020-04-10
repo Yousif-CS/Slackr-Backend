@@ -164,15 +164,13 @@ class Messages():
         return self._current_id
 
     def pin(self, message_id):
-        if not self.message_exists(message_id):
-            raise InputError(description='Message does not exist')
-
+        if self.message_details(message_id)['is_pinned']:
+            raise InputError(description='Message already pinned')
         self.message_details(message_id)['is_pinned'] = True
 
     def unpin(self, message_id):
-        if not self.message_exists(message_id):
-            raise InputError(description='Message does not exist')
-
+        if not self.message_details(message_id)['is_pinned']:
+            raise InputError(description='Message already unpinned')
         self.message_details(message_id)['is_pinned'] = False
 
     def message_details(self, message_id):
@@ -208,6 +206,7 @@ class Messages():
     
     def next_id(self):
         return int(self._current_id + 1)
+
 
 class UserMessage():
     '''
@@ -307,6 +306,13 @@ class UserMessage():
 
     def is_sender(self, m_id, u_id):
         return u_id in [link['u_id'] for link in self._user_messages if link['message_id'] == m_id]
+
+    def message_channel(self, message_id):
+        for link in self._user_messages:
+            # matching message_id -> return corresponding channel_id
+            if message_id == link[0]:
+                return int(link[2])
+
 
 class UserChannel():
     '''
@@ -453,6 +459,13 @@ class Database():
         all_channels = self.channels.all()
         filtered_channels = self.user_channel.user_channels(u_id)
         return list([d for d in all_channels if d['channel_id'] in filtered_channels])
+
+    def pin(self, u_id, message_id):
+        if not self.messages.message_exists(message_id):
+            raise InputError(description='Message does not exist')
+        channel_id = self.user_message.message_channel(message_id)
+        if not self.user_channel.is_owner(u_id, channel_id) or not self.admins.is_admin(u_id):
+            raise AccessError(description='You do not have access to pin message')
 
 
 STORE = Database()

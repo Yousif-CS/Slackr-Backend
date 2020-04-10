@@ -109,29 +109,8 @@ def message_pin(token, message_id):
     data = get_store()
     # getting id of the user
     u_id = get_tokens()[token]
-
-    # checking for InputError and AccessError
-    msg_ids = [msg['message_id'] for msg in data['Messages']]
-    if message_id not in msg_ids:
-        raise InputError(description='Invalid message ID')
-    for msg in data['Messages']:
-        # locate the message dictionary in data['Messages']
-        if msg['message_id'] == message_id:
-            # not part of channel where message_id is in
-            if msg['channel_id'] not in data['Users'][u_id]['channels']:
-                raise AccessError(
-                    description='You are not part of the channel the message is in')
-            # neither admin of channel nor slackr owner
-            elif u_id not in data['Channels'][msg['channel_id']]['owner_members']:
-                if u_id not in data['Slack_owners']:
-                    raise AccessError(
-                        description='You are not admin of channel')
-            # message already pinned
-            elif msg['is_pinned'] is True:
-                raise InputError(description='Message already pinned')
-            # pinning the message
-            else:
-                msg['is_pinned'] = True
+    # check if message_id is valid
+    data.pin(u_id, message_id)
     return {}
 
 
