@@ -292,7 +292,7 @@ class UserMessage():
             [react] = list(filter(lambda x: x['react_id'] == react_id, reacts))
             react['u_ids'].remove(u_id)
         except ValueError:
-            pass
+            raise InputError(description='user does not have an active react')
 
     def fetch_link(self, m_id):
         try:
@@ -464,9 +464,17 @@ class Database():
         if not self.messages.message_exists(message_id):
             raise InputError(description='Message does not exist')
         channel_id = self.user_message.message_channel(message_id)
-        if not self.user_channel.is_owner(u_id, channel_id) or not self.admins.is_admin(u_id):
+        if not self.user_channel.is_owner(u_id, channel_id) and not self.admins.is_admin(u_id):
             raise AccessError(description='You do not have access to pin message')
+        self.messages.pin(message_id)
 
+    def unpin(self, u_id, message_id):
+        if not self.messages.message_exists(message_id):
+            raise InputError(description='Message does not exist')
+        channel_id = self.user_message.message_channel(message_id)
+        if not self.user_channel.is_owner(u_id, channel_id) and not self.admins.is_admin(u_id):
+            raise AccessError(description='You do not have access to pin message')
+        self.messages.unpin(message_id)
 
 STORE = Database()
 # this dictionary contains the session tokens that

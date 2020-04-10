@@ -216,26 +216,6 @@ def message_edit(token, message_id, message):
                 break
 
 
-# helper function to check if user has active react on a given react id
-def has_user_reacted_react_id(token, message_id, react_id):
-    '''
-    Checks whether a user has an existing react with ID 'react_id' for a given message
-    Assumes token is valid, message_id is valid (user is part of channel this message is in),
-    and that a react with this ID already exists in the list
-    '''
-    message_list = get_store()['Messages']
-    u_id = get_tokens()[token]
-    # locate the message dictionary in question
-    for message in message_list:
-        if message_id == message['message_id']:
-            this_msg = message
-    for react in this_msg['reacts']:
-        if react['react_id'] == react_id:
-            if u_id in react['u_ids']:
-                return True
-    return False
-
-
 def message_react(token, message_id, react_id):
     '''
     input: valid token, message_id, react_id
@@ -253,45 +233,13 @@ def message_react(token, message_id, react_id):
     data = get_store()
     # getting id of the user
     u_id = get_tokens()[token]
-    # check if react id in the list of valid react id's
-    if react_id not in [1]:
-        raise InputError(description='Not a valid react ID')
 
-    msg_ids = [msg['message_id'] for msg in data['Messages']]
-    if message_id not in msg_ids:
-        raise InputError(description='Invalid message ID')
+    channel_id = data.user_message.message_channel(message_id)
+    if not data.user_channel.link_exists(u_id, channel_id):
+        raise InputError(
+            description='Not valid message ID within channel you have joined')
 
-    for msg in data['Messages']:
-        if msg['message_id'] == message_id:
-            # message not in a channel user has joined
-            if msg['channel_id'] not in data['Users'][u_id]['channels']:
-                raise InputError(
-                    description='Not valid message ID within channel you have joined')
-            # react list not empty
-            if msg['reacts'] != []:
-                # new react to be added from scratch; append dictionary of new react
-                if react_id not in [react['react_id'] for react in msg['reacts']]:
-                    msg['reacts'].append({
-                        'react_id': react_id,
-                        'u_id': [u_id],
-                        'is_this_user_reacted': msg['u_id'] == u_id
-                    })
-                # existing react: check if user already reacted to this react
-                elif has_user_reacted_react_id(token, message_id, react_id):
-                    raise InputError(
-                        description='Already reacted with this react')
-                # adding the react; find the correct react dictionary then appending user
-                for react in msg['reacts']:
-                    if react['react_id'] == react_id:
-                        react['u_ids'].append(u_id)
-                        react['is_this_user_reacted'] = msg['u_id'] == u_id
-            # react list is empty
-            else:
-                msg['reacts'].append({
-                    'react_id': react_id,
-                    'u_id': [u_id],
-                    'is_this_user_reacted': msg['u_id'] == u_id
-                })
+    data.user_message.react(u_id, message_id, react_id)
     return {}
 
 
@@ -312,31 +260,11 @@ def message_unreact(token, message_id, react_id):
     data = get_store()
     # getting id of the user
     u_id = get_tokens()[token]
-    # checkif react id in the list of valid react id's
-    if react_id not in [1]:
-        raise InputError(description='Not a valid react ID')
 
-    msg_ids = [msg['message_id'] for msg in data['Messages']]
-    if message_id not in msg_ids:
-        raise InputError(description='Invalid message ID')
+    channel_id = data.user_message.message_channel(message_id)
+    if not data.user_channel.link_exists(u_id, channel_id):
+        raise InputError(
+            description='Not valid message ID within channel you have joined')
 
-    for msg in data['Messages']:
-        if msg['message_id'] == message_id:
-            # message not in a channel user has joined
-            if msg['channel_id'] not in data['Users'][u_id]['channels']:
-                raise InputError(
-                    description='Not valid message ID within channel you have joined')
-
-            # message has no existing react by user
-            if msg['reacts'] == [] or \
-                    has_user_reacted_react_id(token, message_id, react_id) is False:
-                raise InputError(
-                    description='You do not have an existing react to this message')
-            # unreact to the message
-            for react in msg['reacts']:
-                if react['react_id'] == react_id:
-                    react['u_ids'].remove(u_id)
-                    if u_id == msg['u_id']:
-                        react['is_this_user_reacted'] = False
-
+    data.user_message.unreact(u_id, message_id, react_id)
     return {}
