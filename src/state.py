@@ -539,12 +539,7 @@ def initialize_store():
         try:
             STORE = pickle.load(file, encoding="utf-8")
         except EOFError:
-            STORE = {
-                'users': {},
-                'Slack_owners': [],
-                'channels': {},
-                'messages': [],
-            }
+            STORE = Database()
 
 
 def initialize_state():
