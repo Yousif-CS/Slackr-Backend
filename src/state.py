@@ -86,6 +86,12 @@ class Users():
     def set_last_name(self, u_id, name):
         self._users[u_id]['name_last'] = name
 
+    def set_handle(self, u_id, handle_str):
+        self._users[u_id]['handle_str'] = handle_str
+
+    def set_email(self, u_id, email):
+        self._users[u_id]['email'] = email
+
     def validate_login(self, email, password):
         [u_id] = [key for key, value in self._users.items() if value['email'] == email]
         if password != self._users[u_id]['password']:
@@ -141,6 +147,9 @@ class Messages():
         self._messages = list()
         self._num_messages = 0
         self._current_id = 0
+
+    def all(self):
+        return list(self._messages)
 
     def add(self, details):
         message, time_created = details
@@ -296,7 +305,12 @@ class UserMessage():
         return react_id in self._react_ids
 
     def is_sender(self, m_id, u_id):
-        return u_id in [link['u_id'] for link in self._user_messages if link['message_id'] == m_id]
+        return u_id in [link['u_id'] for link in self._user_messages if link['message_id'] == m_id
+
+    def channel_all_messages(self, ch_id):
+        msg_dicts = list(filter(lambda msg: msg['channel_id'] == ch_id, self._user_messages))
+        msg_ids = list(map(lambda msg: msg['message_id'], msg_dicts))
+        return msg_ids
 
     def message_channel(self, message_id):
         for link in self._user_messages:

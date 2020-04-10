@@ -75,14 +75,14 @@ def user_profile_sethandle(token, handle_str):
     u_id = get_tokens()[token]
     data = get_store()
 
-    if data["Users"][u_id]["handle"] != handle_str:
-        for identity in data["Users"]:
-            if data["Users"][identity]["handle"] == handle_str:
+    if data.users.user_details["handle_str"] != handle_str:
+        for user in data.users.all:
+            if user["handle_str"] == handle_str:
                 raise InputError(
                     description="new handle_str not unique to this user")
 
     # change the handle_str in the database
-    data["Users"][u_id]["handle"] = handle_str
+    data.users.set_handle(u_id, handle_str)
 
 
 def user_profile_setemail(token, email):
@@ -107,4 +107,4 @@ def user_profile_setemail(token, email):
         raise InputError(description="this email is already being used by another user")
 
     # Change the user's email in the STORE databas if the above hurdles are passed
-    data["Users"][u_id]["email"] = email
+    data.users.set_email(u_id, email)
