@@ -62,7 +62,6 @@ def message_sendlater(token, channel_id, message, time_sent):
     # verify the user
     if verify_token(token) is False:
         raise AccessError(description='Invalid token')
-
     # checking message string is valid
     if not isinstance(message, str) or len(message) > MAX_MSG_LEN or len(message) == 0:
         raise InputError(description='Invalid message')
@@ -76,7 +75,6 @@ def message_sendlater(token, channel_id, message, time_sent):
     if not data.user_channel.link_exists(u_id, channel_id):
         raise AccessError(
             description='You do not have access to send message in this channel')
-
     # checking time_sent is valid (it is a time in the future)
     if time_sent < time():
         raise InputError(description='Scheduled send time is invalid')
@@ -109,7 +107,7 @@ def message_pin(token, message_id):
     data = get_store()
     # getting id of the user
     u_id = get_tokens()[token]
-    # check if message_id is valid
+
     data.pin(u_id, message_id)
     return {}
 
@@ -118,7 +116,7 @@ def message_unpin(token, message_id):
     '''
     input: token, message_id
     output: {}
-    Given message within a channel, remove its pinned status and unpin it
+    Given message within a channel, remove its pinned status
     '''
     # verify the user
     if verify_token(token) is False:
@@ -129,28 +127,7 @@ def message_unpin(token, message_id):
     # getting id of the user
     u_id = get_tokens()[token]
 
-    # checking for InputError and AccessError
-    msg_ids = [msg['message_id'] for msg in data['Messages']]
-    if message_id not in msg_ids:
-        raise InputError(description='Invalid message ID')
-    for msg in data['Messages']:
-        # locate the message dictionary in data['Messages']
-        if msg['message_id'] == message_id:
-            # not part of channel where message_id is in
-            if msg['channel_id'] not in data['Users'][u_id]['channels']:
-                raise AccessError(
-                    description='You are not part of the channel the message is in')
-            # neither admin of channel nor slackr owner
-            elif u_id not in data['Channels'][msg['channel_id']]['owner_members']:
-                if u_id not in data['Slack_owners']:
-                    raise AccessError(
-                        description='You are not admin of channel')
-            # message already pinned
-            elif msg['is_pinned'] is False:
-                raise InputError(description='Message already unpinned')
-            # unpinning the message
-            else:
-                msg['is_pinned'] = False
+    data.unpin(u_id, message_id)
     return {}
 
 
