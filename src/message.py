@@ -166,17 +166,17 @@ def has_message_edit_permission(auth_u_id, message_id):
     data = get_store()
 
     # check if auth user is a slackr owner
-    if data.admins.is_admin():
+    if data.admins.is_admin(auth_u_id):
         return True
 
     # check if auth user wrote the message
-    if auth_u_id == data.user_message.fetch_link(message_id)["u_id"]:
+    if data.user_message.is_sender(auth_u_id, message_id):
         return True
 
     # check if auth user is owner of channel which contains the message
     # find the message
     # find the channel it belongs to
-    ch_id = data.user_message.fetch_link(message_id)["channel_id"]
+    ch_id = data.user_message.message_channel(message_id)
     if data.user_channel.is_owner(auth_u_id, ch_id):
         return True
     else:
