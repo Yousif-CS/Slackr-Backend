@@ -239,15 +239,11 @@ class UserMessage():
             'reacts': []
         })
 
-    def fetch_channel_msgs(self, start, ch_id):
-        try:
-            channel_msgs = list(filter(lambda x: x['channel_id'] == ch_id, self._user_messages))
-        except:
+    def fetch_channel_msgs(self, ch_id):
+        channel_msgs = list(filter(lambda x: x['channel_id'] == ch_id, self._user_messages))
+        if not channel_msgs:
             raise InputError(description="Channel does not exist")
-        try:
-            return list(channel_msgs[start:])
-        except:
-            raise InputError(description='Invalid start index')
+        return channel_msgs
 
     def remove_link_by_user(self, u_id):
         self._user_messages = list(filter(lambda x: x['u_id'] != u_id, self._user_messages))
@@ -440,18 +436,21 @@ class Database():
 
     def channel_messages(self, u_id, details):
         channel_id, start = details
-        #msgs_info = self.messages.fetch_messages(start)
-        link_info = self.user_message.fetch_channel_msgs(start, channel_id)
-
-        if start + MSG_BLOCK < len(link_info):
-            link_info = link_info[start: start + MSG_BLOCK]
+        #getting the links between messages, users and channels
+        link_info = self.user_message.fetch_channel_msgs(channel_id)
+        if start > len(link_info):
+            raise InputError('Invalid start index')
+        #getting message details given the message id
         msgs_info = list(
             map(lambda x: self.messages.message_details(x['message_id']), link_info))
+        
+        #updating is_this_user_reacted based on the authorized user
         reacts_lists = [msg['reacts'] for msg in link_info]
+       
         for reacts_list in reacts_lists:
             for react in reacts_list:
                 react['is_this_user_reacted'] = True if u_id in react['u_ids'] else False
-
+        #constructing the full details
         full_info = list(map(lambda x, y: {
             'message_id': y['message_id'],
             'u_id': x['u_id'],
@@ -460,6 +459,15 @@ class Database():
             'reacts': x['reacts'],
             'is_pinned': y['is_pinned']
         }, link_info, msgs_info))
+
+        #sorting based on timestamp
+        full_info.sort(key=lambda x: x['time_created'], reverse=True)
+        #chopping messages
+        if start + MSG_BLOCK < len(full_info):
+            return full_info[start: start + MSG_BLOCK], True # means more to give
+        else:
+            return full_info[start:], False # means no more to give
+
         return list(full_info)
 
     def add_message(self, u_id, channel_id, details):
