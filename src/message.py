@@ -23,46 +23,27 @@ def message_send(token, channel_id, message):
     if verify_token(token) is False:
         raise AccessError(description='Invalid token')
 
+    # checking message string is valid
+    if not isinstance(message, str) or len(message) > MAX_MSG_LEN or len(message) == 0:
+        raise InputError(description='Invalid message')
+
     # get database
     data = get_store()
     # getting id of the user
     u_id = get_tokens()[token]
 
-    # checking message string is valid
-    if not isinstance(message, str) or len(message) > MAX_MSG_LEN or len(message) == 0:
-        raise InputError(description='Invalid message')
-
     # checking channel_id is valid (user is part of)
-    if channel_id not in data['Users'][u_id]['channels']:
+    if not data.user_channel.link_exists(u_id, channel_id):
         raise AccessError(
             description='You do not have access to send messages in this channel')
-    # assigning new message_id MUST BE GLOBALLY UNIQUE!
-    # starting from index 1
-    if len(data['Messages']) == 0:
-        new_msg_id = 1
-    else:
-        id_list = [msg['message_id'] for msg in data['Messages']]
-        new_msg_id = max(id_list) + 1
 
-    # sending the actual message:
-    # 1. append to list of message id's
-    data['Channels'][channel_id]['messages'].append(new_msg_id)
-    # 2. new dictionary in data['Messages']
-    data['Messages'].append({
-        'message_id': new_msg_id,
-        'channel_id': channel_id,
-        'message': message,
-        'u_id': u_id,
-        'time_created': time(),
-        'is_pinned': False,
-        'reacts': [{
-            'react_id': 1,
-            'u_ids': [],
-            'is_this_user_reacted': False,
-        }]
-    })
+    # send the message
+    details = message, time()
+    new_id = data.add_message(u_id, channel_id, details)
+    return {
+        'message_id': new_id
+    }
 
-    return {'message_id': new_msg_id}
 
 # set up scheduler wrapper function
 def run_scheduler(target, time_sent, args):
@@ -82,17 +63,17 @@ def message_sendlater(token, channel_id, message, time_sent):
     if verify_token(token) is False:
         raise AccessError(description='Invalid token')
 
+    # checking message string is valid
+    if not isinstance(message, str) or len(message) > MAX_MSG_LEN or len(message) == 0:
+        raise InputError(description='Invalid message')
+
     # get database
     data = get_store()
     # getting id of the user
     u_id = get_tokens()[token]
 
-    # checking message string is valid
-    if not isinstance(message, str) or len(message) > MAX_MSG_LEN or len(message) == 0:
-        raise InputError(description='Invalid message')
-
     # checking channel_id is valid (user is part of)
-    if channel_id not in data['Users'][u_id]['channels']:
+    if not data.user_channel.link_exists(u_id, channel_id):
         raise AccessError(
             description='You do not have access to send message in this channel')
 
@@ -100,14 +81,8 @@ def message_sendlater(token, channel_id, message, time_sent):
     if time_sent < time():
         raise InputError(description='Scheduled send time is invalid')
 
-    # assigning new message_id MUST BE GLOBALLY UNIQUE!
-    # starting from index 0
-    if len(data['Messages']) == 0:
-        new_msg_id = 0
-    else:
-        id_list = [msg['message_id'] for msg in data['Messages']]
-        new_msg_id = max(id_list) + 1
-
+    # assigning new ID for the message
+    new_id = data.messages.next_id()
 
     # the action to be completed at time time_sent
     sched_thread = Thread(target=run_scheduler, args=(
@@ -115,7 +90,9 @@ def message_sendlater(token, channel_id, message, time_sent):
     # run the schedular (target=message_send, time_sent=time_sent, )
     sched_thread.start()
 
-    return {'message_id': new_msg_id}
+    return {
+        'message_id': new_id
+    }
 
 
 def message_pin(token, message_id):

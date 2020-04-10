@@ -205,6 +205,9 @@ class Messages():
     def search(self, query_string):
         return list(
             [msg for msg in self._messages if query_string in msg['message']])
+    
+    def next_id(self):
+        return int(self._current_id + 1)
 
 class UserMessage():
     '''
@@ -440,6 +443,7 @@ class Database():
     def add_message(self, u_id, channel_id, details):
         message_id = self.messages.add(details)
         self.user_message.add_link(u_id, channel_id, message_id)
+        return message_id
 
     def remove_message(self, message_id):
         self.messages.remove(message_id)
