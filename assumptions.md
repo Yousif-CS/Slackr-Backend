@@ -134,6 +134,7 @@ message_send does.
 #### user_remove(token, u_id):
 1. Assume removing the user means removing removing all his messages in all channels
 2. Assume that removing the user who is the only member and owner of a channel is allowed
+3. Assume removing a currently logged in user force-logs him out
 
 ### **Standup functions**:
 Overarching: A member of a channel can send more than one message during a standup
