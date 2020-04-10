@@ -55,46 +55,21 @@ def channel_details(token, channel_id):
     if verify_token(token) is False:
         raise AccessError(description="Invalid token")
 
-    # checks if channel_id exists and returns the name of the channel
-    name = data.channels.channel_details(channel_id)
+    if not data.channels.channel_exists(channel_id):
+        raise InputError(description='Channel does not exist')
 
     # check that the authorised user is member of said channel
     auth_u_id = get_tokens()[token]
     if not data.user_channel.is_member(auth_u_id, channel_id):
-        raise AccessError(description="The authorised user is not a member of channel with this channel ID")
-
-    owner_ids = data.user_channel.owners(channel_id)
-    member_ids = data.user_channel.members(channel_id)
+        raise AccessError(
+            description="The authorised user is not a member of channel with this channel ID")
 
     #Create two lists and append details about owner members of the channel and all its members
-    lst_owner_membs = []
-    for own_id in owner_ids:
-        #retrieve user's details given their id
-        user_details = data.users.user_details(own_id)
-        lst_owner_membs.append(
-            {
-                'u_id': own_id,
-                'name_first': user_details['name_first'],
-                'name_last': user_details['name_last']
-            }
-        )
-
-    lst_all_membs = []
-    for mem_id in member_ids:
-        user_details = data.users.user_details(mem_id)
-        lst_all_membs.append(
-            {
-                'u_id': mem_id,
-                'name_first': user_details['name_first'],
-                'name_last': user_details['name_last']
-            }
-        )
-
     # return the dictionary containing details of the channel
     return {
-        "name": name['name'],
-        "owner_members": lst_owner_membs,
-        "all_members": lst_all_membs
+        "name": data.channels.channel_details(channel_id)['name'],
+        "owner_members": data.channel_owners(channel_id),
+        "all_members": data.channel_members(channel_id)
     }
 
 

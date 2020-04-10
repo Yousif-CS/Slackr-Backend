@@ -443,10 +443,10 @@ class Database():
         #getting message details given the message id
         msgs_info = list(
             map(lambda x: self.messages.message_details(x['message_id']), link_info))
-        
+
         #updating is_this_user_reacted based on the authorized user
         reacts_lists = [msg['reacts'] for msg in link_info]
-       
+
         for reacts_list in reacts_lists:
             for react in reacts_list:
                 react['is_this_user_reacted'] = True if u_id in react['u_ids'] else False
@@ -465,10 +465,7 @@ class Database():
         #chopping messages
         if start + MSG_BLOCK < len(full_info):
             return full_info[start: start + MSG_BLOCK], True # means more to give
-        else:
-            return full_info[start:], False # means no more to give
-
-        return list(full_info)
+        return full_info[start:], False # means no more to give
 
     def add_message(self, u_id, channel_id, details):
         message_id = self.messages.add(details)
