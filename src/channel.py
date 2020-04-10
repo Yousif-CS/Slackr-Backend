@@ -126,7 +126,8 @@ def channel_messages(token, channel_id, start):
         raise AccessError(
             description="You do not have permission to view this channel's messages")
     # getting the messages of the channel
-    messages = data.channel_messages(u_id, channel_id)
+    details = channel_id, start
+    messages = data.channel_messages(u_id, details)
 
     return {"messages": sorted(messages, key=lambda x: x['time_created']),
             "start": start,
