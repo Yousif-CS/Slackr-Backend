@@ -35,7 +35,7 @@ def userpermission_change(token, u_id, permission_id):
         raise InputError(description="Invalid permission id")
 
     # verify the invoker is an admin
-    if data.admins.is_admin(u_id_invoker):
+    if not data.admins.is_admin(u_id_invoker):
         raise AccessError(
             description="You do not have permission to change permissions")
 
@@ -44,6 +44,38 @@ def userpermission_change(token, u_id, permission_id):
         data.admins.add(u_id)
     else:
         data.admins.remove(u_id)
+
+def user_remove(token, u_id):
+    '''
+    Removes a user from slackr
+    Arguments: token and u_id of user to be removed
+    Returns: empty dictionary, but the user is entirely removed.
+    Exceptions: InputError: u_id is not a valid user
+                AccessError: remover is not an admin
+    Assumptions: removing the user means removing all traces of him including his messages
+    '''
+    # verify the user
+    if verify_token(token) is False:
+        raise AccessError(description='Invalid token')
+
+    data = get_store()
+    # getting id of the user
+    u_id_invoker = get_tokens()[token]
+
+    # verify the invoker is an admin
+    if not data.admins.is_admin(u_id_invoker):
+        raise AccessError(
+            description="You do not have permission to change permissions")
+
+    if not data.users.user_exists(u_id):
+        raise InputError(description="Invalid user id")
+
+    #removing his user details
+    data.users.remove(u_id)
+    #removing all his subscriptions to channels
+    data.user_channel.remove_link_by_user(u_id)
+    #removing all the messages sent by that user
+    data.remove_messages(u_id)
 
 def users_all(token):
     '''
