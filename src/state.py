@@ -102,7 +102,7 @@ class Users():
             raise InputError('Email does not exist')
 
         if password != self._users[u_id]['password']:
-            raise AccessError(description='Password incorrect')
+            raise InputError(description='Password incorrect')
         return u_id
 
 class Admins(Users):
