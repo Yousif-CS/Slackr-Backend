@@ -14,7 +14,7 @@ from channels import channels_create
 from message import message_send
 from error import InputError, AccessError
 from channel import channel_invite, channel_join, channel_leave, channel_messages, channel_details
-
+from user import user_profile
 
 SLACKR_OWNER = 1
 SLACKR_MEMBER = 2
@@ -583,6 +583,9 @@ def test_user_remove_messages_removed(reset, create_public_channel, make_user_ab
     assert len(messages['messages']) == 0
 
 def test_user_remove_removed_from_channel(reset, create_public_channel, make_user_ab):
+    '''
+    Checking if user is actually removed from all subscribed channels
+    '''
     # creating a public channel
     channel_id, owner_info = create_public_channel
 
@@ -594,4 +597,15 @@ def test_user_remove_removed_from_channel(reset, create_public_channel, make_use
     user_remove(owner_info['token'], user_info['u_id'])
     #getting the details of the channel
     ch_details = channel_details(owner_info['token'], channel_id['channel_id'])
-    assert len(ch_details['all_members'] == 1)
+    assert len(ch_details['all_members']) == 1
+
+def test_user_remove_all_details(reset, make_user_ab, make_user_cd):
+    '''
+    Testing that no details are left after removal
+    '''
+    # creating admin and user
+    admin_info = make_user_ab
+    user_info = make_user_cd
+    user_remove(admin_info['token'], user_info['u_id'])
+    with pytest.raises(InputError):
+        user_profile(admin_info['token'], user_info['u_id'])
