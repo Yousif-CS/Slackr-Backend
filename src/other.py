@@ -142,7 +142,7 @@ def workspace_reset():
 
     # clear database.p
     data = get_store()
-    data.delete()
+    data.reset()
     # clear standups
     with get_lock():
         standups = get_standup()
