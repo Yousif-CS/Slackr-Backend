@@ -149,28 +149,13 @@ def message_remove(token, message_id):
     # getting id of the user
     u_id = get_tokens()[token]
 
-    # checking if the message with message_id exists
-    id_list = [msg['message_id'] for msg in data['Messages']]
-    if message_id not in id_list:
-        raise InputError(description='Invalid message ID')
-
-    # given message_id does exist, check for AccessError:
-    msg_pos = id_list.index(message_id)
-    is_user_delete_own = data['Messages'][msg_pos]['u_id'] == u_id
-    matching_channel_id = data['Messages'][msg_pos]['channel_id']
-    is_user_owner = u_id in data['Channels'][matching_channel_id]['owner_members']
-    is_user_slackr_owner = u_id in data['Slack_owners']
-
-    if not (is_user_delete_own or is_user_owner or is_user_slackr_owner):
+    channel_id = data.user_message.message_channel(message_id)
+    if not data.user_channel.is_owner(u_id, channel_id) and not data.admins.is_admin(u_id) \
+        and not data.user_messages.is_sender(message_id, u_id):
         raise AccessError(
-            description='You do not have access to delete this message')
+        description='You do not have access to delete this message')
 
-    # passed above checks: delete actual message
-    # 1. delete from message_id list in Channels info
-    data['Channels'][matching_channel_id]['messages'].remove(message_id)
-    # 2. delete message dictionary from Messages list
-    data['Messages'].remove(data['Messages'][msg_pos])
-
+    data.remove_message(message_id)
     return {}
 
 
