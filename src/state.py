@@ -163,6 +163,11 @@ class Messages():
         })
         return self._current_id
 
+    def edit(self, message_id, message):
+        for msg in self._messages:
+            if msg['message_id'] == message_id:
+                msg['message'] = message
+
     def pin(self, message_id):
         if self.message_details(message_id)['is_pinned']:
             raise InputError(description='Message already pinned')
@@ -176,7 +181,7 @@ class Messages():
     def message_details(self, message_id):
         try:
             [message] = list(filter(lambda x: x['message_id'] == message_id, self._messages))
-            return message
+            return dict(message)
         except ValueError:
             return None
 
@@ -317,7 +322,6 @@ class UserMessage():
             # matching message_id -> return corresponding channel_id
             if message_id == link[0]:
                 return int(link[2])
-
 
 class UserChannel():
     '''
