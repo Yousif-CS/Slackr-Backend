@@ -6,7 +6,7 @@ that do not belong to a specific category
 import pickle
 from standup import get_standup, get_lock
 from state import get_store, get_tokens, Database
-from auth import verify_token
+from auth import verify_token, get_token
 from error import InputError, AccessError
 
 SLACKR_OWNER = 1
@@ -76,7 +76,12 @@ def user_remove(token, u_id):
     data.user_channel.remove_link_by_user(u_id)
     #removing all the messages sent by that user
     data.remove_messages(u_id)
+    #remove the user the token store if he is logged on
+    token = get_token(u_id)
+    if token is not None:
+        get_tokens().pop(token)
 
+    
 def users_all(token):
     '''
     Returns a list of all users and their associated details.
