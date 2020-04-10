@@ -166,22 +166,21 @@ def has_message_edit_permission(auth_u_id, message_id):
     data = get_store()
 
     # check if auth user is a slackr owner
-    if auth_u_id in data["Slack_owners"]:
+    if data.admins.is_admin(auth_u_id):
         return True
 
     # check if auth user wrote the message
-    for msg_dict in data["Messages"]:
-        if msg_dict["u_id"] == auth_u_id:
-            return True
+    if data.user_message.is_sender(auth_u_id, message_id):
+        return True
 
     # check if auth user is owner of channel which contains the message
-    for ch_dict in data["Channels"].values():
-        if message_id in ch_dict["messages"]:
-            if auth_u_id in ch_dict["owner_members"]:
-                return True
-            else:
-                return False
-
+    # find the message
+    # find the channel it belongs to
+    ch_id = data.user_message.message_channel(message_id)
+    if data.user_channel.is_owner(auth_u_id, ch_id):
+        return True
+    else:
+        return False
 
 def message_edit(token, message_id, message):
     '''
@@ -210,10 +209,7 @@ def message_edit(token, message_id, message):
     if message == "":
         message_remove(token, message_id)
     else:
-        for msg_dict in data["Messages"]:
-            if msg_dict["message_id"] == message_id:
-                msg_dict["message"] = message
-                break
+        data.messages.edit(message_id, message)
 
 
 def message_react(token, message_id, react_id):
