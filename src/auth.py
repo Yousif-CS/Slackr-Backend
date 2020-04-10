@@ -175,11 +175,6 @@ def auth_logout(token):
     if verify_token(token) is False:
         return {'is_success': False}
 
-    tokens = get_tokens()
-    u_id = get_tokens()[token]
-    # removing the key value pair from TOKENS
-    del tokens[token]
-    # checking if user is logged out
-    if get_token(u_id) is None:
-        return {'is_success': True}
+    #remove the token
+    get_tokens().pop(token)
     return {'is_success': False}
