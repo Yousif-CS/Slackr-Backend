@@ -122,11 +122,12 @@ def channel_messages(token, channel_id, start):
             description="You do not have permission to view this channel's messages")
     # getting the messages of the channel
     details = channel_id, start
-    messages = data.channel_messages(u_id, details)
-
-    return {"messages": sorted(messages, key=lambda x: x['time_created']),
+    messages, more = data.channel_messages(u_id, details)
+    print(len(messages))
+    print(len(data.messages.all()))
+    return {"messages": messages,
             "start": start,
-            "end": -1 if len(messages) < MESSAGE_BLOCK else start + MESSAGE_BLOCK
+            "end": -1 if not more else start + MESSAGE_BLOCK
            }
 
 
@@ -151,12 +152,6 @@ def channel_leave(token, channel_id):
     # verify the user is a member of the channel
     if not data.user_channel.is_member(u_id, channel_id):
         raise AccessError(description="Cannot leave channel: not a member")
-
-    # verify the leaving is not the only member of a private channel
-    if data.channels.is_private(channel_id) or \
-       data.user_channel.members(channel_id) == 1:
-        raise InputError(
-            description="Cannot leave a private channel as the only member")
 
     # deleting the user from the channel list
     data.user_channel.leave_channel(u_id, channel_id)
