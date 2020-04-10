@@ -122,6 +122,8 @@ The main assumption is that we only need to register the user once, and afterwar
 2. Assumes users appear in the user dictionary in the order in which they were registered.
 3. Assumes that handle_str is generated as expected.
 
+### **Other functions**
+
 #### search(token, query_str):
 1. Assume that valid search strings are no longer than 1000 characters in length 
 2. Assume that the list 'messages' orders the results from oldest to newest (e.g. time_created in ascending order) 
@@ -129,7 +131,12 @@ The main assumption is that we only need to register the user once, and afterwar
 4. Assume that if the query_str is greater than 1000 characters long that it would throw an InputError because
 message_send does.
 
-### Standup functions:
+#### user_remove(token, u_id):
+1. Assume removing the user means removing removing all his messages in all channels
+2. Assume that removing the user who is the only member and owner of a channel is allowed
+3. Assume removing a currently logged in user force-logs him out
+
+### **Standup functions**:
 Overarching: A member of a channel can send more than one message during a standup
 
 #### standup_active(token, channel_id):

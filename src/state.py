@@ -73,11 +73,11 @@ class Users():
         if email in [user['email'] for user in self._users.values()]:
             return True
         return False
-    
+
     def handle_unique(self, handle):
         if handle in [user['handle_str'] for user in self._users.values()]:
             return False 
-        
+
         return True 
 
     def set_first_name(self, u_id, name):
@@ -93,7 +93,11 @@ class Users():
         self._users[u_id]['email'] = email
 
     def validate_login(self, email, password):
-        [u_id] = [key for key, value in self._users.items() if value['email'] == email]
+        try:
+            [u_id] = [key for key, value in self._users.items() if value['email'] == email]
+        except ValueError:
+            raise InputError('Email does not exist')
+
         if password != self._users[u_id]['password']:
             raise AccessError(description='Password incorrect')
         return u_id
@@ -466,19 +470,31 @@ class Database():
         return list([d for d in all_channels if d['channel_id'] in filtered_channels])
 
     def pin(self, u_id, message_id):
+        #check message exists
         if not self.messages.message_exists(message_id):
             raise InputError(description='Message does not exist')
+
+        #getting the channel_id in which the message was sent
         channel_id = self.user_message.message_channel(message_id)
+
+        #validate the user is an owner or an admin of the channel
         if not self.user_channel.is_owner(u_id, channel_id) and not self.admins.is_admin(u_id):
             raise AccessError(description='You do not have access to pin message')
+
         self.messages.pin(message_id)
 
     def unpin(self, u_id, message_id):
+        #checking message exists
         if not self.messages.message_exists(message_id):
             raise InputError(description='Message does not exist')
+
+        #getting the channel_id in which the message was sent
         channel_id = self.user_message.message_channel(message_id)
+
+        #user should be an owner or an admin
         if not self.user_channel.is_owner(u_id, channel_id) and not self.admins.is_admin(u_id):
             raise AccessError(description='You do not have access to pin message')
+
         self.messages.unpin(message_id)
 
 STORE = Database()

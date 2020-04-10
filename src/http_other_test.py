@@ -10,9 +10,9 @@ from urllib.error import HTTPError
 import pytest
 import urls
 from http_helpers import (reset, register, login, logout,
-                          userpermission_change, users_all, search,
-                          channels_create, message_send,
-                          channel_messages, channel_join)
+                          userpermission_change, user_remove, users_all,
+                          search, channels_create, message_send, 
+                          channel_messages, channel_join, channel_details)
 
 # can change permission
 
@@ -98,6 +98,61 @@ def test_user_permission_change_data_missing(reset):
 
     with pytest.raises(HTTPError):
         urllib.request.urlopen(request)
+
+
+def test_user_remove_invalid_token(reset):
+    '''
+    test sending an invalid token
+    '''
+    _, token = register('yousif@gmail.com', 'HelloWorld', 'Yousif', 'Wang')
+    u_id, _ = register('josh@gmail.com', 'HelloWorld123', 'Josh', 'Wang')
+    with pytest.raises(HTTPError):
+        user_remove(token + 'a', u_id)
+
+def test_user_remove_invalid_u_id(reset):
+    '''
+    removing a user who does not exist
+    '''
+    admin_id, token = register('yousif@gmail.com', 'HelloWorld', 'Yousif', 'Wang')
+    u_id, _ = register('josh@gmail.com', 'HelloWorld123', 'Josh', 'Wang')
+    with pytest.raises(HTTPError):
+        user_remove(token, u_id + admin_id)
+
+
+def test_user_remove_removed_from_channels(reset):
+    '''
+    removing a user should remove him from all channels he has joined
+    '''
+    _, admin_token = register('yousif@gmail.com', 'HelloWorld', 'Yousif', 'Wang')
+    u_id, u_token = register('josh@gmail.com', 'HelloWorld123', 'Josh', 'Wang')
+    #admin creates a channel
+    channel_id = channels_create(admin_token, 'Da channel', is_public=True)
+    #joining..
+    channel_join(u_token, channel_id)
+    #new user is removed
+    user_remove(admin_token, u_id)
+    #should only contain the admin now
+    _, _, all_membs = channel_details(admin_token, channel_id)
+    assert len(all_membs) == 1
+
+def test_user_remove_removed_message(reset):
+    '''
+    A removed user has all the messages he has sent removed
+    '''
+    _, admin_token = register('yousif@gmail.com', 'HelloWorld', 'Yousif', 'Wang')
+    u_id, u_token = register('josh@gmail.com', 'HelloWorld123', 'Josh', 'Wang')
+    #admin creates a channel
+    channel_id = channels_create(admin_token, 'Da channel', is_public=True)
+    #joining..
+    channel_join(u_token, channel_id)
+    #send a message
+    message_send(u_token, channel_id, 'HelloWorld')
+    #new user is removed
+    user_remove(admin_token, u_id)
+    #their message should be removed from the channel
+    messages, _, _ = channel_messages(admin_token, channel_id, start=0)
+    assert len(messages) == 0
+
 
 # can produce a list of users
 

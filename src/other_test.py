@@ -8,13 +8,13 @@ Integration tests for functions in other.py
 #pylint: disable=unused-argument
 
 import pytest
-from other import users_all, search, userpermission_change, workspace_reset
+from other import users_all, search, userpermission_change, user_remove, workspace_reset
 from auth import auth_register, auth_logout
 from channels import channels_create
 from message import message_send
 from error import InputError, AccessError
-from channel import channel_invite, channel_join, channel_leave
-
+from channel import channel_invite, channel_join, channel_leave, channel_messages, channel_details
+from user import user_profile
 
 SLACKR_OWNER = 1
 SLACKR_MEMBER = 2
@@ -514,7 +514,7 @@ def test_userpermission_change_demote(reset, create_private_channel, make_user_a
     # promoting user
     userpermission_change(owner_info['token'], user_info['u_id'], SLACKR_OWNER)
 
-    # Invititng a new user
+    # Inviting a new user
     channel_invite(owner_info['token'],
                    channel_id['channel_id'], general_user['u_id'])
 
@@ -528,3 +528,84 @@ def test_userpermission_change_demote(reset, create_private_channel, make_user_a
     # testing joining a private channel
     with pytest.raises(AccessError):
         channel_join(user_info['token'], channel_id['channel_id'])
+
+
+def test_user_remove_no_user(reset, create_public_channel, make_user_ab):
+    '''
+    Testing removing a non-existent user
+    '''
+    # creating a public channel
+    _, owner_info = create_public_channel
+    with pytest.raises(InputError):
+        user_remove(owner_info['token'], owner_info['u_id'] + 1)
+
+def test_user_remove_invalid_token(reset, create_public_channel, make_user_ab):
+    '''
+    Invalid token raises AccessError
+    '''
+    # creating a public channel
+    _, owner_info = create_public_channel
+    # create user
+    user_info = make_user_ab
+
+    with pytest.raises(InputError):
+        user_remove(owner_info['token'] + 1, user_info['u_id'])
+
+def test_user_remove_not_admin(reset, make_user_ab, make_user_cd, make_user_ef):
+    '''
+    A reguler member tries to remove user
+    '''
+    # creating a public channel
+    admin_info = make_user_ab
+    # create users
+    user1_info = make_user_cd
+    user2_info = make_user_ef
+
+    with pytest.raises(AccessError):
+        user_remove(user1_info['token'], user2_info['u_id'])
+
+def test_user_remove_messages_removed(reset, create_public_channel, make_user_ab):
+    '''
+    Testing if the users messages are removed
+    '''
+    # creating a public channel
+    channel_id, owner_info = create_public_channel
+
+    # creating user
+    user_info = make_user_ab
+    #joining and sending a message
+    channel_join(user_info['token'], channel_id['channel_id'])
+    message_send(user_info['token'], channel_id['channel_id'], 'HelloWorld')
+    #removing user
+    user_remove(owner_info['token'], user_info['u_id'])
+    #should be empty
+    messages = channel_messages(owner_info['token'], channel_id['channel_id'], start=0)
+    assert len(messages['messages']) == 0
+
+def test_user_remove_removed_from_channel(reset, create_public_channel, make_user_ab):
+    '''
+    Checking if user is actually removed from all subscribed channels
+    '''
+    # creating a public channel
+    channel_id, owner_info = create_public_channel
+
+    # creating user
+    user_info = make_user_ab
+    #joining
+    channel_join(user_info['token'], channel_id['channel_id'])
+    #removing user
+    user_remove(owner_info['token'], user_info['u_id'])
+    #getting the details of the channel
+    ch_details = channel_details(owner_info['token'], channel_id['channel_id'])
+    assert len(ch_details['all_members']) == 1
+
+def test_user_remove_all_details(reset, make_user_ab, make_user_cd):
+    '''
+    Testing that no details are left after removal
+    '''
+    # creating admin and user
+    admin_info = make_user_ab
+    user_info = make_user_cd
+    user_remove(admin_info['token'], user_info['u_id'])
+    with pytest.raises(InputError):
+        user_profile(admin_info['token'], user_info['u_id'])
