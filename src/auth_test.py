@@ -204,7 +204,7 @@ def test_login():
 
     user = auth_register('max.smith@gmail.com',
                          'great_password101', 'Max', 'Smith')
-
+    auth_logout(user['token'])
     user_logging_in = auth_login('max.smith@gmail.com', 'great_password101')
 
     assert user['u_id'] == user_logging_in['u_id']
@@ -224,8 +224,8 @@ def test_login_invalid_email():
 def test_login_password():
     workspace_reset()
 
-    auth_register('max.smith@gmail.com', 'great_password101', 'Max', 'Smith')
-
+    user = auth_register('max.smith@gmail.com', 'great_password101', 'Max', 'Smith')
+    auth_logout(user['token'])
     with pytest.raises(InputError):
         auth_login('max.smith@gmail.com', 'poor_password')
 
@@ -235,13 +235,15 @@ def test_login_password():
 def test_login_no_user():
     workspace_reset()
 
-    auth_register('max.smith@gmail.com', 'great_password101', 'Max', 'Smith')
-    auth_register('bob99@unsw.edu.au', '45&*ght', 'Bob', 'Johnson')
-    auth_register('kate58@bigpond.com', 'secret101', 'Kate', 'Perkins')
+    u_1 = auth_register('max.smith@gmail.com', 'great_password101', 'Max', 'Smith')
+    u_2 = auth_register('bob99@unsw.edu.au', '45&*ght', 'Bob', 'Johnson')
+    u_3 = auth_register('kate58@bigpond.com', 'secret101', 'Kate', 'Perkins')
 
     with pytest.raises(InputError):
         auth_login('linda70@gmail.com', 'let_me_in')
-
+    auth_logout(u_1['token'])
+    auth_logout(u_2['token'])
+    auth_logout(u_3['token'])
 
 '''------------------testing auth_logout--------------------'''
 
@@ -249,14 +251,10 @@ def test_login_no_user():
 
 
 def test_logout_success():
-    workspace_reset()
-
-    user = auth_register('max.smith@gmail.com',
-                         'great_password101', 'Max', 'Smith')
-
+    '''
+    Continuing on the last login details
+    '''
     user_logging_in = auth_login('max.smith@gmail.com', 'great_password101')
-
-    assert user['u_id'] == user_logging_in['u_id']
 
     user_token = user_logging_in['token']
     message = auth_logout(user_token)
@@ -266,14 +264,11 @@ def test_logout_success():
 
 # Token is not valid for a user
 def test_logout_unsuccessful():
-    workspace_reset()
-
-    user = auth_register('max.smith@gmail.com',
-                         'great_password101', 'Max', 'Smith')
-
+    '''
+    Continuing on the last login details
+    '''
     user_logging_in = auth_login('max.smith@gmail.com', 'great_password101')
 
-    assert user['u_id'] == user_logging_in['u_id']
     user_token = user_logging_in['token']
 
     rand_token = user_token + 'a'
