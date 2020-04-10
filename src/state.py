@@ -205,8 +205,7 @@ class Messages():
     def remove(self, message_id):
         if not self.message_exists(message_id):
             raise InputError(description='Message does not exist')
-
-        self._messages.pop(message_id)
+        self._messages[:] = list(filter(lambda x: x['message_id'] != message_id, self._messages))
         self._num_messages -= 1
 
     def find(self, message_id):
@@ -215,7 +214,7 @@ class Messages():
     def search(self, query_string):
         return list(
             [msg for msg in self._messages if query_string in msg['message']])
-    
+
     def next_id(self):
         return int(self._current_id + 1)
 
@@ -325,10 +324,8 @@ class UserMessage():
         return msg_ids
 
     def message_channel(self, message_id):
-        for link in self._user_messages:
-            # matching message_id -> return corresponding channel_id
-            if message_id == link[0]:
-                return int(link[2])
+        link = self.fetch_link(message_id)
+        return link['channel_id']
 
 class UserChannel():
     '''
