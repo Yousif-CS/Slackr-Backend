@@ -405,6 +405,9 @@ class Database():
         self.user_message = UserMessage()
         self.user_channel = UserChannel()
 
+    def reset(self):
+        self.__init__()
+
     def add_user(self, details):
         u_id = self.users.add(details)
         #first user is an admin
@@ -554,7 +557,7 @@ def initialize_state():
 
 
 # A constant to update the database every hour
-SECONDS_TO_UPDATE = 1
+SECONDS_TO_UPDATE = 3600
 
 
 class StateTimer(Timer):
