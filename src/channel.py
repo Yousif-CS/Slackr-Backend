@@ -15,8 +15,7 @@ def channel_invite(token, channel_id, u_id):
     '''
     Invites a user (with user id u_id) to join a channel with ID channel_id.
     Once invited the user is added to the channel immediately.
-    InputError: channel ID does not correspond to a valid channel;
-    user ID does not refer to a valid user.
+    InputError: channel ID does not correspond to a valid channel; user ID does not refer to a valid user.
     AccessError: authorised user is not already a member of channel with channel ID.
     '''
     # verify the validity of the authorised user's token
@@ -25,79 +24,75 @@ def channel_invite(token, channel_id, u_id):
 
     # check that channel_id corresponds to a valid channel
     data = get_store()
-    if channel_id not in data["channels"].keys():
-        raise InputError(
-            description="Channel with this channel ID does not exist")
+    if not data.channels.channel_exists(channel_id):
+        raise InputError(description="Channel with this channel ID does not exist")
 
     # check that the authorised user belongs to this valid channel
     auth_u_id = get_tokens()[token]
-    if auth_u_id not in data["channels"][channel_id]["all_members"]:
-        raise AccessError(
-            description="The authorised user is not a member of channel with this channel ID")
+    if not data.user_channel.is_member(auth_u_id, channel_id):
+        raise AccessError(description="The authorised user is not a member of channel with this channel ID")
 
     # check that u_id corresponds to a valid user
-    if u_id not in data["users"].keys():
-        raise InputError(description="user ID is not valid")
-
-    # check that u_id does not already belong to the channel, else raise InputError
-    if u_id in data["channels"][channel_id]["all_members"]:
-        raise InputError(
-            description="user with u_id is already a member of channel with channel_id")
+    if not data.users.user_exists(u_id):
+        raise InputError(description="User ID is not valid")
 
     # add the user with u_id into the channel
-    # update both the "users" and "channels" sub-dictionaries in database.p
-    data["channels"][channel_id]["all_members"].append(u_id)
-    data["users"][u_id]["channels"].append(channel_id)
-
+    # update the database by adding a link between the user and the channel
+    #checks if user is already apart of the channel
+    data.user_channel.join_channel(u_id, channel_id)
 
 def channel_details(token, channel_id):
     '''
-    Given a Channel with ID channel_id that the authorised user
-    is part of, provide basic details about the channel.
+    Given a Channel with ID channel_id that the authorised user is part of, provide basic details about the channel.
     InputError: channel_id is not a valid channel
     AccessError: authorised user is not part of the channel with channel_id
     Output: (channel) name, owner_members, all_members
     '''
 
+    data = get_store()
+
     # verify the token is valid
     if verify_token(token) is False:
         raise AccessError(description="Invalid token")
 
-    # check that channel with channel_id exists
-    data = get_store()
-    if channel_id not in data["channels"].keys():
-        raise InputError(
-            description="Channel with this channel ID does not exist")
+    # checks if channel_id exists and returns the name of the channel
+    name = data.channels.channel_details(channel_id)
 
     # check that the authorised user is member of said channel
     auth_u_id = get_tokens()[token]
-    if auth_u_id not in data["channels"][channel_id]["all_members"]:
-        raise AccessError(
-            description="user is not a member of the channel")
+    if not data.user_channel.is_member(auth_u_id, channel_id):
+        raise AccessError(description="The authorised user is not a member of channel with this channel ID")
 
-    # return the dictionary containing details of the channel
+    owner_ids = data.user_channel.owners(channel_id)
+    member_ids = data.user_channel.members(channel_id)
+
+    #Create two lists and append details about owner members of the channel and all its members
     lst_owner_membs = []
-    for user_id in data["channels"][channel_id]["owner_members"]:
+    for own_id in owner_ids:
+        #retrieve user's details given their id
+        user_details = data.users.user_details(own_id)
         lst_owner_membs.append(
             {
-                "u_id": user_id,
-                "name_first": data["users"][user_id]["name_first"],
-                "name_last": data["users"][user_id]["name_last"]
+                'u_id': own_id,
+                'name_first': user_details['name_first'],
+                'name_last': user_details['name_last']
             }
         )
 
     lst_all_membs = []
-    for user_id in data["channels"][channel_id]["all_members"]:
+    for mem_id in member_ids:
+        user_details = data.users.user_details(mem_id)
         lst_all_membs.append(
             {
-                "u_id": user_id,
-                "name_first": data["users"][user_id]["name_first"],
-                "name_last": data["users"][user_id]["name_last"]
+                'u_id': mem_id,
+                'name_first': user_details['name_first'],
+                'name_last': user_details['name_last']
             }
         )
 
+    # return the dictionary containing details of the channel
     return {
-        "name": data["channels"][channel_id]["name"],
+        "name": name['name'],
         "owner_members": lst_owner_membs,
         "all_members": lst_all_membs
     }
