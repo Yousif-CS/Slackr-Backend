@@ -311,6 +311,11 @@ class UserMessage():
     def is_sender(self, m_id, u_id):
         return u_id in [link['u_id'] for link in self._user_messages if link['message_id'] == m_id
 
+    def channel_all_messages(self, ch_id):
+        msg_dicts = list(filter(lambda msg: msg['channel_id'] == ch_id, self._user_messages))
+        msg_ids = list(map(lambda msg: msg['message_id'], msg_dicts))
+        return msg_ids
+
 class UserChannel():
     '''
     Contains a structure that maintains the relationship

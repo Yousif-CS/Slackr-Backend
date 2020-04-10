@@ -87,9 +87,9 @@ def search(token, query_str):
 
     # find all the channels the user is a part of and search for query_str in the messages
     for ch_id in data.user_channels(auth_u_id):
+        msg_ids = data.user_message.channel_all_messages(ch_id)
         for msg_dict in data.messages.all():
-            if msg_dict["message_id"] in data["Channels"][ch_id]["messages"] and \
-                    query_str in msg_dict["message"]:
+            if msg_dict["message_id"] in msg_ids and query_str in msg_dict["message"]:
                 matching_msgs["messages"].append(msg_dict)
 
     return matching_msgs
@@ -105,7 +105,7 @@ def workspace_reset():
 
     # clear database.p
     data = get_store()
-    data = Database()
+    data.delete()
     # clear standups
     with get_lock():
         standups = get_standup()
