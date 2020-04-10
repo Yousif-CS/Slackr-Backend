@@ -13,7 +13,7 @@ SLACKR_MEMBER = 2
 
 def channel_invite(token, channel_id, u_id):
     '''
-    Invites a user (with user id u_id) to join a channel with ID channel_id. 
+    Invites a user (with user id u_id) to join a channel with ID channel_id.
     Once invited the user is added to the channel immediately.
     InputError: channel ID does not correspond to a valid channel; user ID does not refer to a valid user.
     AccessError: authorised user is not already a member of channel with channel ID.
@@ -24,25 +24,22 @@ def channel_invite(token, channel_id, u_id):
 
     # check that channel_id corresponds to a valid channel
     data = get_store()
-    channel_id = data.channels.channel_exists(channel_id)
-    if channel_id is None:
+    if data.channels.channel_exists:
         raise InputError(description="Channel with this channel ID does not exist")
 
     # check that the authorised user belongs to this valid channel
     auth_u_id = get_tokens()[token]
-    auth_u_id = data.userchannel.is_member(auth_u_id)
-    if auth_u_id is None: 
+    if data.user_channel.is_member(auth_u_id):
         raise AccessError(description="The authorised user is not a member of channel with this channel ID")
 
     # check that u_id corresponds to a valid user
-    u_id = data.users.user_exists(u_id)
-    if u_id is None:
+    if data.users.user_exists(u_id):
         raise InputError(description="User ID is not valid")
 
     # add the user with u_id into the channel
     # update the database by adding a link between the user and the channel
     #checks if user is already apart of the channel
-    data.userchannel.join(u_id, channel_id)
+    data.user_channel.join(u_id, channel_id)
 
 def channel_details(token, channel_id):
     '''
@@ -63,17 +60,15 @@ def channel_details(token, channel_id):
 
     # check that the authorised user is member of said channel
     auth_u_id = get_tokens()[token]
-    auth_u_id = data.userchannel.is_member(auth_u_id)
-    if auth_u_id is None: 
+    if data.user_channel.is_member(auth_u_id):
         raise AccessError(description="The authorised user is not a member of channel with this channel ID")
 
-    
     owner_ids = data.channels.owners(channel_id)
     member_ids = data.channels.members(channel_id)
 
-    #Create two lists and append details about owner members of the channel and all its members 
+    #Create two lists and append details about owner members of the channel and all its members
     lst_owner_membs = []
-    for own_id in owner_ids: 
+    for own_id in owner_ids:
         #retrieve user's details given their id
         user_details = data.users.details(own_id)
         lst_owner_membs.append(
@@ -193,7 +188,7 @@ def channel_join(token, channel_id):
     #verify the channel exists
     if channel_id not in data['Channels']:
         raise InputError(description="Invalid channel id")
-    
+            
     #verify user is not already a member
     if channel_id in data['Users'][u_id]['channels']:
         raise InputError(description="You are already a member")
