@@ -10,9 +10,18 @@ from error import InputError, AccessError
 #a constant to show a user is an admin
 ADMIN = 1
 #a constant to show a user is a regular member
-MEMBER = 1
+MEMBER = 2
 #a constant defining the size of a message block
 MSG_BLOCK = 50
+
+
+def is_this_user_reacted(u_id, link_info):
+        #updating is_this_user_reacted based on the authorized user
+        reacts_lists = [msg['reacts'] for msg in link_info]
+
+        for reacts_list in reacts_lists:
+            for react in reacts_list:
+                react['is_this_user_reacted'] = u_id in react['u_ids']
 
 class Users():
     def __init__(self):
@@ -46,7 +55,7 @@ class Users():
     def remove(self, u_id):
         self._users.pop(u_id)
         self._num_users -= 1
-    
+
     def user_details(self, u_id):
         if not self.user_exists(u_id):
             raise InputError('User does not exist')
@@ -105,12 +114,27 @@ class Users():
             raise InputError(description='Password incorrect')
         return u_id
 
-class Admins(Users):
+class Admins():
     '''
     A special class for users who are admins
     '''
+    def __init__(self):
+        self._admins = list()
+        self._valid_permissions = [ADMIN, MEMBER]
+    
+    def add(self, u_id):
+        if not self.is_admin(u_id):
+            self._admins.append(u_id)
+
+    def remove(self, u_id):
+        if self.is_admin(u_id):
+            self._admins.remove(u_id)
+
     def is_admin(self, u_id):
-        return u_id in self._users
+        return u_id in self._admins
+
+    def is_valid_permission(self, p_id):
+        return p_id in self._valid_permissions
 
 class Channels():
     def __init__(self):
@@ -218,7 +242,6 @@ class Messages():
     def next_id(self):
         return int(self._current_id + 1)
 
-
 class UserMessage():
     '''
     Contains a structure that maintains the relationship
@@ -239,11 +262,23 @@ class UserMessage():
             'reacts': []
         })
 
-    def fetch_channel_msgs(self, ch_id):
-        channel_msgs = list(filter(lambda x: x['channel_id'] == ch_id, self._user_messages))
-        if not channel_msgs:
-            raise InputError(description="Channel does not exist")
-        return channel_msgs
+    def fetch_links_by_channel(self, container):
+        '''
+        fetches all links by channel_id/multiple channel_ids
+        '''
+        if (isinstance(container, list)):
+            channel_msgs = list(filter(lambda x: x['channel_id'] in container, self._user_messages))
+        else:
+            channel_msgs = list(filter(lambda x: x['channel_id'] == container, self._user_messages))
+
+        return list(channel_msgs)
+
+    def fetch_links_by_user(self, u_id):
+        '''
+        fetches all message links that the user has sent
+        '''
+        filtered = list(filter(lambda x: x['u_id'] == u_id, self._user_messages))
+        return list(filtered)
 
     def remove_link_by_user(self, u_id):
         self._user_messages = list(filter(lambda x: x['u_id'] != u_id, self._user_messages))
@@ -253,7 +288,8 @@ class UserMessage():
             filter(lambda x: x['channel_id'] != channel_id, self._user_messages))
 
     def remove_link_by_message(self, message_id):
-        self._user_messages = list(filter(lambda x: x['message_id'] != message_id, self._user_messages))
+        self._user_messages = list(
+            filter(lambda x: x['message_id'] != message_id, self._user_messages))
 
     def link_exists(self, message_id):
         return message_id in [link['message_id'] for link in self._user_messages]
@@ -314,11 +350,6 @@ class UserMessage():
     def is_sender(self, m_id, u_id):
         return u_id in [link['u_id'] for link in self._user_messages if link['message_id']] == m_id
 
-    def channel_all_messages(self, ch_id):
-        msg_dicts = list(filter(lambda msg: msg['channel_id'] == ch_id, self._user_messages))
-        msg_ids = list(map(lambda msg: msg['message_id'], msg_dicts))
-        return msg_ids
-
     def message_channel(self, message_id):
         link = self.fetch_link(message_id)
         return link['channel_id']
@@ -338,10 +369,10 @@ class UserChannel():
         self._user_channels.append((u_id, channel_id, is_owner))
 
     def remove_link_by_user(self, u_id):
-        self._user_channels = list(filter(lambda x: x[0] == u_id, self._user_channels))
+        self._user_channels = list(filter(lambda x: x[0] != u_id, self._user_channels))
 
     def remove_link_by_channel(self, channel_id):
-        self._user_channels = list(filter(lambda x: x[1] == channel_id, self._user_channels))
+        self._user_channels = list(filter(lambda x: x[1] != channel_id, self._user_channels))
 
     def remove_user(self, u_id, channel_id):
         try:
@@ -408,8 +439,16 @@ class Database():
         u_id = self.users.add(details)
         #first user is an admin
         if u_id == 1:
-            self.admins.add(details)
+            self.admins.add(u_id)
         return u_id
+
+    def user_channels(self, u_id):
+        '''
+        Returns details for all the channels user is in
+        '''
+        channels = self.user_channel.user_channels(u_id)
+        details = list(map(self.channels.channel_details, channels))
+        return list(details)
 
     def add_channel(self, u_id, details):
         channel_id = self.channels.add(details)
@@ -437,19 +476,21 @@ class Database():
     def channel_messages(self, u_id, details):
         channel_id, start = details
         #getting the links between messages, users and channels
-        link_info = self.user_message.fetch_channel_msgs(channel_id)
+        link_info = self.user_message.fetch_links_by_channel(channel_id)
+        #not enough messages to retrieve
         if start > len(link_info):
             raise InputError('Invalid start index')
+        
+        #no relevant messages
+        if not link_info:
+            return [], False # False means no more messages to return
+        
         #getting message details given the message id
         msgs_info = list(
             map(lambda x: self.messages.message_details(x['message_id']), link_info))
-
-        #updating is_this_user_reacted based on the authorized user
-        reacts_lists = [msg['reacts'] for msg in link_info]
-
-        for reacts_list in reacts_lists:
-            for react in reacts_list:
-                react['is_this_user_reacted'] = True if u_id in react['u_ids'] else False
+        
+        #updating the is_this_user_reacted field for the reacts
+        is_this_user_reacted(u_id, link_info)
         #constructing the full details
         full_info = list(map(lambda x, y: {
             'message_id': y['message_id'],
@@ -476,11 +517,42 @@ class Database():
         self.messages.remove(message_id)
         self.user_message.remove_link_by_message(message_id)
 
-    def user_channels(self, u_id):
-        all_channels = self.channels.all()
-        filtered_channels = self.user_channel.user_channels(u_id)
-        return list([d for d in all_channels if d['channel_id'] in filtered_channels])
+    def message_search(self, u_id, query_str):
+        #fetching relevant channels
+        channel_ids = self.user_channel.user_channels(u_id)
+        if not channel_ids:
+            return []
 
+        #fetching relevant message links to those channels
+        filtered_links = self.user_message.fetch_links_by_channel(channel_ids)
+        #getting the relevant message ids
+        filtered_mids = list(map(lambda x: x['message_id'], filtered_links))
+        #getting all messages with a query string
+        msgs = self.messages.search(query_str)
+        #filtering those messages based on the message ids
+        relevant_msgs = list(filter(lambda x: x['message_id'] in filtered_mids, msgs))
+        #updating the is_this_user_reacted key for all the reacts
+        is_this_user_reacted(u_id, filtered_links)
+        #constructing the full details
+        relevant_msgs = list(map(lambda x, y: {
+            'message_id': y['message_id'],
+            'u_id': x['u_id'],
+            'message': y['message'],
+            'time_created': y['time_created'],
+            'reacts': x['reacts'],
+            'is_pinned': y['is_pinned']
+        }, filtered_links, relevant_msgs))
+        return sorted(relevant_msgs, key=lambda x: x['time_created'], reverse=True)
+
+    def remove_messages(self, u_id):
+        '''
+        Remove all messages associated with a user
+        '''
+        relevant_msg_links = self.user_message.fetch_links_by_user(u_id)
+        for link in relevant_msg_links:
+            self.remove_message(link['message_id'])
+
+        self.user_message.remove_link_by_user(u_id)
     def pin(self, u_id, message_id):
         #check message exists
         if not self.messages.message_exists(message_id):
@@ -508,7 +580,7 @@ class Database():
             raise AccessError(description='You do not have access to pin message')
 
         self.messages.unpin(message_id)
-
+    
 STORE = Database()
 # this dictionary contains the session tokens that
 # won't need to be stored in the Store data dictionary for pickling

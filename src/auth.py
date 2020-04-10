@@ -113,7 +113,7 @@ def auth_register(email, password, name_first, name_last):
     #Adds all user's details to the Database
     details = email, encrypted_pass, name_first, name_last, create_handle(name_first, name_last)
     u_id = data.add_user(details)
-        
+
     token = generate_token(u_id)
     # Store the token-u_id pair in the temporary TOKEN dictionary
     get_tokens()[token] = u_id

@@ -5,7 +5,7 @@ that do not belong to a specific category
 
 import pickle
 from standup import get_standup, get_lock
-from state import get_store, get_tokens, Database
+from state import get_store, get_tokens
 from auth import verify_token, get_token
 from error import InputError, AccessError
 
@@ -27,7 +27,7 @@ def userpermission_change(token, u_id, permission_id):
     u_id_invoker = get_tokens()[token]
 
     # verify that u_id is a valid user
-    if data.users.user_exists(u_id):
+    if not data.users.user_exists(u_id):
         raise InputError(description="User does not exist")
 
     # verify permission_id is valid (1 or 2)
@@ -117,25 +117,21 @@ def search(token, query_str):
     if len(query_str) > 1000:
         raise InputError(description="query_str over 1000 characaters; too long")
 
-    matching_msgs = {"messages": []}
     # empty query_str returns an empty list
     if query_str == "":
-        return matching_msgs
+        return {
+            'messages': []
+        }
 
     # find all the channels the user is a part of and search for query_str in the messages
-    for ch_id in data.user_channels(auth_u_id):
-        msg_ids = data.user_message.channel_all_messages(ch_id)
-        for msg_dict in data.messages.all():
-            if msg_dict["message_id"] in msg_ids and query_str in msg_dict["message"]:
-                matching_msgs["messages"].append(msg_dict)
-
-    return matching_msgs
+    return {
+        'messages': data.message_search(auth_u_id, query_str)
+    }
 
 
 def workspace_reset():
     '''
-    Resets the workspace state. Assumes that the base state of database.p is:
-    {"Users": {}, "Slack_owners": [], "Channels":{}, "Messages": []}
+    Resets the workspace state. Assumes that the base state of database.p has a Database() instance
     '''
     # clear the tokens dictionary
     get_tokens().clear()
