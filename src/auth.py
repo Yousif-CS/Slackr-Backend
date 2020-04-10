@@ -5,10 +5,10 @@ along with helper functions used in other files as well
 '''
 import hashlib
 import jwt
+
 from state import get_store, get_tokens
 from is_valid_email import is_valid_email
 from error import InputError
-
 
 SECRET = "Never l3t me g0"
 
@@ -69,10 +69,8 @@ def is_handle_unique(handle_str):
     Returns true if no other person has the handle
     '''
     data = get_store()
-    for identity in data["Users"]:
-        if data["Users"][identity]["handle"] == handle_str:
-            return False
-    return True
+    unique = data.users.handle_unique(handle_str)
+    return unique
 
 
 def auth_register(email, password, name_first, name_last):
@@ -112,37 +110,10 @@ def auth_register(email, password, name_first, name_last):
     # hash the password
     encrypted_pass = hashlib.sha256(password.encode()).hexdigest()
 
-    # If this is the first user, then they become the slack owner,
-    # and have u_id of 1, and have global_permissions.
-    if len(data["Users"]) == 0:
-        u_id = 1
-        data['Slack_owners'].append(u_id)
-        data["Users"][u_id] = {
-            'name_first': name_first,
-            'name_last': name_last,
-            'email': email,
-            'password': encrypted_pass,
-            'handle': create_handle(name_first, name_last),
-            'global_permission': 1,
-            'channels': [],
-        }
-    else:
-        # InputError if email not unique
-        for identity in data["Users"].values():
-            if identity["email"] == email:
-                raise InputError(
-                    description="This email is already being used by another user")
-        # append the user
-        u_id = max(data["Users"].keys()) + 1
-        data["Users"][u_id] = {
-            'name_first': name_first,
-            'name_last': name_last,
-            'email': email,
-            'password': encrypted_pass,
-            'handle': create_handle(name_first, name_last),
-            'global_permission': 2,
-            'channels': [],
-        }
+    #Adds all user's details to the Database
+    details = email, encrypted_pass, name_first, name_last, create_handle(name_first, name_last)
+    u_id = data.add_user(details)
+        
     token = generate_token(u_id)
     # Store the token-u_id pair in the temporary TOKEN dictionary
     get_tokens()[token] = u_id
@@ -160,11 +131,7 @@ def find_u_id(email):
     not correspond to an existing user in the database => returns None
     '''
     data = get_store()
-
-    for identity in data["Users"].keys():
-        if email == data["Users"][identity]["email"]:
-            return identity
-    return None
+    return data.users.email_used(email)
 
 
 def auth_login(email, password):
@@ -185,8 +152,9 @@ def auth_login(email, password):
         raise InputError(
             description='Email does not belong to a registered user')
 
-    if hashlib.sha256(password.encode()).hexdigest() != data["Users"][u_id]["password"]:
-        raise InputError(description='Password incorrect')
+    # Ensure user's password matches otherwise raise an error
+    encrypted_pass = hashlib.sha256(password.encode()).hexdigest()
+    u_id = data.users.validate_login(email, encrypted_pass)
 
     token = generate_token(u_id)
 

@@ -39,13 +39,14 @@ class Users():
             'name_last': l_name,
             'password': password,
             'handle_str': handle,
+            'global_permission': ADMIN if self._num_users == 1 else MEMBER
         }
         return self._current_id
 
     def remove(self, u_id):
         self._users.pop(u_id)
         self._num_users -= 1
-
+    
     def user_details(self, u_id):
         if not self.user_exists(u_id):
             raise InputError('User does not exist')
@@ -69,7 +70,15 @@ class Users():
         return False
 
     def email_used(self, email):
-        return email in [user['email'] for user in self._users.values()]
+        if email in [user['email'] for user in self._users.values()]:
+            return True
+        return False
+    
+    def handle_unique(self, handle):
+        if handle in [user['handle_str'] for user in self._users.values()]:
+            return False 
+        
+        return True 
 
     def set_first_name(self, u_id, name):
         self._users[u_id]['name_first'] = name
@@ -89,27 +98,12 @@ class Users():
             raise AccessError(description='Password incorrect')
         return u_id
 
-class Admins():
+class Admins(Users):
     '''
     A special class for users who are admins
     '''
-    def __init__(self):
-        self._admins = list()
-        self._valid_permissions = [ADMIN, MEMBER]
-
-    def add(self, u_id):
-        if not self.is_admin(u_id):
-            self._admins.append(u_id)
-
-    def remove(self, u_id):
-        if self.is_admin(u_id):
-            self._admins.remove(u_id)
-
-    def is_valid_permission(self, p_id):
-        return p_id in self._valid_permissions
-
     def is_admin(self, u_id):
-        return u_id in self._admins
+        return u_id in self._users
 
 class Channels():
     def __init__(self):
@@ -170,15 +164,13 @@ class Messages():
         return self._current_id
 
     def pin(self, message_id):
-        if not self.message_exists(message_id):
-            raise InputError(description='Message does not exist')
-
+        if self.message_details(message_id)['is_pinned']:
+            raise InputError(description='Message already pinned')
         self.message_details(message_id)['is_pinned'] = True
 
     def unpin(self, message_id):
-        if not self.message_exists(message_id):
-            raise InputError(description='Message does not exist')
-
+        if not self.message_details(message_id)['is_pinned']:
+            raise InputError(description='Message already unpinned')
         self.message_details(message_id)['is_pinned'] = False
 
     def message_details(self, message_id):
@@ -211,6 +203,10 @@ class Messages():
     def search(self, query_string):
         return list(
             [msg for msg in self._messages if query_string in msg['message']])
+    
+    def next_id(self):
+        return int(self._current_id + 1)
+
 
 class UserMessage():
     '''
@@ -296,7 +292,7 @@ class UserMessage():
             [react] = list(filter(lambda x: x['react_id'] == react_id, reacts))
             react['u_ids'].remove(u_id)
         except ValueError:
-            pass
+            raise InputError(description='user does not have an active react')
 
     def fetch_link(self, m_id):
         try:
@@ -315,6 +311,13 @@ class UserMessage():
         msg_dicts = list(filter(lambda msg: msg['channel_id'] == ch_id, self._user_messages))
         msg_ids = list(map(lambda msg: msg['message_id'], msg_dicts))
         return msg_ids
+
+    def message_channel(self, message_id):
+        for link in self._user_messages:
+            # matching message_id -> return corresponding channel_id
+            if message_id == link[0]:
+                return int(link[2])
+
 
 class UserChannel():
     '''
@@ -451,6 +454,7 @@ class Database():
     def add_message(self, u_id, channel_id, details):
         message_id = self.messages.add(details)
         self.user_message.add_link(u_id, channel_id, message_id)
+        return message_id
 
     def remove_message(self, message_id):
         self.messages.remove(message_id)
@@ -461,6 +465,21 @@ class Database():
         filtered_channels = self.user_channel.user_channels(u_id)
         return list([d for d in all_channels if d['channel_id'] in filtered_channels])
 
+    def pin(self, u_id, message_id):
+        if not self.messages.message_exists(message_id):
+            raise InputError(description='Message does not exist')
+        channel_id = self.user_message.message_channel(message_id)
+        if not self.user_channel.is_owner(u_id, channel_id) and not self.admins.is_admin(u_id):
+            raise AccessError(description='You do not have access to pin message')
+        self.messages.pin(message_id)
+
+    def unpin(self, u_id, message_id):
+        if not self.messages.message_exists(message_id):
+            raise InputError(description='Message does not exist')
+        channel_id = self.user_message.message_channel(message_id)
+        if not self.user_channel.is_owner(u_id, channel_id) and not self.admins.is_admin(u_id):
+            raise AccessError(description='You do not have access to pin message')
+        self.messages.unpin(message_id)
 
 STORE = Database()
 # this dictionary contains the session tokens that
@@ -497,7 +516,12 @@ def initialize_store():
         try:
             STORE = pickle.load(file, encoding="utf-8")
         except EOFError:
-            STORE = Database()
+            STORE = {
+                'users': {},
+                'Slack_owners': [],
+                'channels': {},
+                'messages': [],
+            }
 
 
 def initialize_state():
