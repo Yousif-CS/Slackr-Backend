@@ -25,6 +25,18 @@ def u_per_change():
     return json.dumps({})
 
 
+@OTHER.route('/admin/user/remove', methods=['DELETE'])
+def user_remove():
+    '''
+    A wrapper for other.user_remove()
+    '''
+    payload = request.get_json()
+    if not payload['token'] or not payload['u_id']:
+        raise RequestError(description='Missing data in request body')
+
+    other.user_remove(payload['token'], int(payload['u_id']))
+    return json.dumps({})
+
 @OTHER.route('/users/all', methods=['GET'])
 def users_all():
     '''
