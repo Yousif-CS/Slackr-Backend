@@ -240,6 +240,10 @@ class UserMessage():
             'reacts': []
         })
 
+    def fetch_message_reacts(self, msg_id):
+        [msg] = [m_dict for m_dict in self._user_messages if m_dict["message_id"] == msg_id]
+        return msg['reacts']
+
     def fetch_channel_msgs(self, start, ch_id):
         try:
             channel_msgs = list(filter(lambda x: x['channel_id'] == ch_id, self._user_messages))

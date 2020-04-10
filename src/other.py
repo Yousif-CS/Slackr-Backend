@@ -123,11 +123,18 @@ def search(token, query_str):
         return matching_msgs
 
     # find all the channels the user is a part of and search for query_str in the messages
-    for ch_id in data.user_channels(auth_u_id):
+    for ch_id in data.user_channel.user_channels(auth_u_id):
         msg_ids = data.user_message.channel_all_messages(ch_id)
         for msg_dict in data.messages.all():
             if msg_dict["message_id"] in msg_ids and query_str in msg_dict["message"]:
-                matching_msgs["messages"].append(msg_dict)
+                matching_msgs["messages"].append({
+                    "message_id": msg_dict["message_id"],
+                    "u_id": auth_u_id,
+                    "message": msg_dict["message"],
+                    "time_create": msg_dict["time_created"],
+                    "reacts": data.user_message.fetch_message_reacts(msg_dict["message_id"]),
+                    "is_pinned": msg_dict["is_pinned"]
+                })
 
     return matching_msgs
 
