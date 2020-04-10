@@ -49,5 +49,6 @@ SETHANDLE_URL = f"http://{HOSTNAME}:{PORT}/user/profile/sethandle"
 
 # other urls
 PERMISSION_CHANGE_URL = f"http://{HOSTNAME}:{PORT}/admin/userpermission/change"
+USER_REMOVE_URL = f"http://{HOSTNAME}:{PORT}/admin/user/remove"
 USERS_ALL_URL = f"http://{HOSTNAME}:{PORT}/users/all"
 SEARCH_URL = f"http://{HOSTNAME}:{PORT}/search"
