@@ -174,7 +174,7 @@ def has_message_edit_permission(auth_u_id, message_id):
         return True
 
     # check if auth user wrote the message
-    if data.user_message.is_sender(auth_u_id, message_id):
+    if data.user_message.is_sender(message_id, auth_u_id):
         return True
 
     # check if auth user is owner of channel which contains the message
