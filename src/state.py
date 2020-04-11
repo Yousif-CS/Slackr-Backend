@@ -259,7 +259,10 @@ class UserMessage():
             'message_id': message_id,
             'u_id': u_id,
             'channel_id': channel_id,
-            'reacts': []
+            'reacts': [{
+                'react_id': 1,
+                'u_ids': []
+            }]
         })
 
     def fetch_links_by_channel(self, container):
@@ -505,8 +508,8 @@ class Database():
         full_info.sort(key=lambda x: x['time_created'], reverse=True)
         #chopping messages
         if start + MSG_BLOCK < len(full_info):
-            return full_info[start: start + MSG_BLOCK], True # means more to give
-        return full_info[start:], False # means no more to give
+            return list(full_info[start: start + MSG_BLOCK]), True # means more to give
+        return list(full_info[start:]), False # means no more to give
 
     def add_message(self, u_id, channel_id, details):
         message_id = self.messages.add(details)
