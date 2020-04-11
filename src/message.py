@@ -151,7 +151,7 @@ def message_remove(token, message_id):
 
     channel_id = data.user_message.message_channel(message_id)
     if not data.user_channel.is_owner(u_id, channel_id) and not data.admins.is_admin(u_id) \
-        and not data.user_messages.is_sender(message_id, u_id):
+        and not data.user_message.is_sender(message_id, u_id):
         raise AccessError(
         description='You do not have access to delete this message')
 

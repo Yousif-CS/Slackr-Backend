@@ -511,21 +511,6 @@ def test_channel_leave_correct_details(reset, create_private_channel, create_use
     assert len(all_membs) == 1
 
 
-def test_channel_leave_owner_private(reset, create_private_channel):
-    '''
-    testing leaving an existing private channel as the owner. This is to test if 
-    it is okay since the private channel would have no members that can invite people later on
-    '''
-
-    # creating channel and retrieving its details and the owner's
-    channel_id, owner_info = create_private_channel
-
-    # checking owner is not a member anymore
-    with pytest.raises(Exception):
-        # leaving channel
-        channel_leave(owner_info['token'], channel_id['channel_id'])
-
-
 def test_channel_leave_non_member(reset, create_public_channel, create_user1):
     '''
     Testing leaving a channel as a non-member

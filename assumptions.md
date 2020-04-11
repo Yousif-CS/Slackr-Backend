@@ -25,7 +25,6 @@ The main assumption is that we only need to register the user once, and afterwar
 1. Assuming big ints such as 123123 are considered invalid channel id's (at least initially)
 2. Assuming 'I am an invalid token' string to be an invalid token
 3. Assuming the function throws at least a general 'Exception' when dealing with invalid tokens
-4. Assuming that the function throws an some sort of exception if the last user on a private channel tries to leave as there would be no one left to invite others
 
 #### channel_join():
 1. Assuming big ints such as 1232123 are considered invalid channel id's
