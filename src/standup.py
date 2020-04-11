@@ -53,6 +53,10 @@ def flush_standup(channel_id):
         try:
             [to_flush] = list(filter(lambda x: x['channel_id'] == channel_id, standups))
             to_send = '\n'.join(to_flush['messages'])
+            #message is empty.. do not bother
+            if not to_send:
+                standups.remove(to_flush)
+                return
             #get the token given u_id
             user_token = get_token(to_flush['u_id'])
             if user_token is None:
@@ -63,11 +67,9 @@ def flush_standup(channel_id):
                 auth_logout(user_token)
             else:
                 message_send(user_token, channel_id, to_send)
+            standups.remove(to_flush)
         except ValueError:
             pass
-        standups.remove(to_flush)
-
-
 
 
 def run_scheduler(target, running_time, args):
@@ -163,7 +165,7 @@ def standup_send(token, channel_id, message):
     u_id = get_tokens()[token]
 
     # verify the channel exists
-    if data.channels.channel_exists(channel_id):
+    if not data.channels.channel_exists(channel_id):
         raise InputError(description="Invalid channel id")
 
     # verify user is within channel
@@ -180,7 +182,7 @@ def standup_send(token, channel_id, message):
     standups = get_standup()
     with STANDUP_LOCK:
         try:
-            [standup] = list(filter(lambda x: x[channel_id] == channel_id, standups))
+            [standup] = list(filter(lambda x: x['channel_id'] == channel_id, standups))
             standup['messages'].append(message)
         except ValueError:
             raise InputError(description="No active standup in this channel")

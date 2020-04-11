@@ -30,7 +30,8 @@ def test_channels_create_bad():
     a_token = login('admin@gmail.com', 'pass123456')[1]
     with pytest.raises(HTTPError):
         channels_create(a_token, 225, True)
-
+    #for next test
+    logout(a_token)
 def test_channels_create_invalid_token():
     '''
     Testing valid token when attempting to create channel
@@ -98,6 +99,7 @@ def test_channels_list_invalid_token():
     # chuck in invalid token
     with pytest.raises(HTTPError):
         channels_list(a_token + 'invalid')
+    logout(a_token)
 
 def test_channels_listall_ok():
     '''

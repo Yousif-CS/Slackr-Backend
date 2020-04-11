@@ -98,8 +98,6 @@ def channel_messages(token, channel_id, start):
     # getting the messages of the channel
     details = channel_id, start
     messages, more = data.channel_messages(u_id, details)
-    print(len(messages))
-    print(len(data.messages.all()))
     return {"messages": messages,
             "start": start,
             "end": -1 if not more else start + MESSAGE_BLOCK
