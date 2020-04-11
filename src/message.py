@@ -234,6 +234,10 @@ def message_react(token, message_id, react_id):
     # getting id of the user
     u_id = get_tokens()[token]
 
+    if not data.messages.message_exists(message_id):
+        raise InputError(
+            description='Invalid message ID')
+
     channel_id = data.user_message.message_channel(message_id)
     if not data.user_channel.link_exists(u_id, channel_id):
         raise InputError(
@@ -260,6 +264,10 @@ def message_unreact(token, message_id, react_id):
     data = get_store()
     # getting id of the user
     u_id = get_tokens()[token]
+
+    if not data.messages.message_exists(message_id):
+        raise InputError(
+            description='Invalid message ID')
 
     channel_id = data.user_message.message_channel(message_id)
     if not data.user_channel.link_exists(u_id, channel_id):

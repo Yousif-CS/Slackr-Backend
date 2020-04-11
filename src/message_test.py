@@ -933,7 +933,7 @@ def test_message_react_valid_react(make_users):
     assert messages_private[0]['reacts'] == [{
         'react_id': 1,
         'u_ids': [user_ab['u_id']],
-        'is_this_user_reacted': False,
+        'is_this_user_reacted': True,
     }]
 
 
