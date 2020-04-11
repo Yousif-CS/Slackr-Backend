@@ -45,7 +45,7 @@ def make_user_cd():
 def make_user_ef():
     user_ef = auth_register(
         "edward@gmail.com", "12345687", "Edward", "Frankenstein")
-    return (user_ef["token"], user_ef["u_id"])
+    return user_ef
 
 
 @pytest.fixture
@@ -482,7 +482,6 @@ def test_userpermission_change_promote(reset, create_private_channel, make_user_
     # test, he should be a slackr owner
 
     # create a general user
-    make_user_ab #pylint: disable=pointless-statement
     general_user = make_user_cd
 
     # testing joining a private channel
@@ -548,23 +547,21 @@ def test_user_remove_invalid_token(reset, create_public_channel, make_user_ab):
     # create user
     user_info = make_user_ab
 
-    with pytest.raises(InputError):
-        user_remove(owner_info['token'] + 1, user_info['u_id'])
+    with pytest.raises(AccessError):
+        user_remove(owner_info['token'] + 'a', user_info['u_id'])
 
 def test_user_remove_not_admin(reset, make_user_ab, make_user_cd, make_user_ef):
     '''
     A reguler member tries to remove user
     '''
-    # creating a public channel
-    admin_info = make_user_ab
-    # create users
+    # creating users
     user1_info = make_user_cd
     user2_info = make_user_ef
 
     with pytest.raises(AccessError):
         user_remove(user1_info['token'], user2_info['u_id'])
 
-def test_user_remove_messages_removed(reset, create_public_channel, make_user_ab):
+def test_user_remove_messages_removed(reset, create_public_channel, make_user_cd):
     '''
     Testing if the users messages are removed
     '''
@@ -572,17 +569,19 @@ def test_user_remove_messages_removed(reset, create_public_channel, make_user_ab
     channel_id, owner_info = create_public_channel
 
     # creating user
-    user_info = make_user_ab
+    user_info = make_user_cd
     #joining and sending a message
     channel_join(user_info['token'], channel_id['channel_id'])
     message_send(user_info['token'], channel_id['channel_id'], 'HelloWorld')
+    print(channel_messages(owner_info['token'], channel_id['channel_id'], start=0))
+
     #removing user
     user_remove(owner_info['token'], user_info['u_id'])
     #should be empty
     messages = channel_messages(owner_info['token'], channel_id['channel_id'], start=0)
     assert len(messages['messages']) == 0
 
-def test_user_remove_removed_from_channel(reset, create_public_channel, make_user_ab):
+def test_user_remove_removed_from_channel(reset, create_public_channel, make_user_cd):
     '''
     Checking if user is actually removed from all subscribed channels
     '''
@@ -590,7 +589,7 @@ def test_user_remove_removed_from_channel(reset, create_public_channel, make_use
     channel_id, owner_info = create_public_channel
 
     # creating user
-    user_info = make_user_ab
+    user_info = make_user_cd
     #joining
     channel_join(user_info['token'], channel_id['channel_id'])
     #removing user
