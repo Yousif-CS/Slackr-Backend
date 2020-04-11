@@ -8,6 +8,7 @@ Using urllib module to test channel functions (check http_helpers.py)
 # pylint: disable=missing-function-docstring
 # pylint: disable=mixed-indentation
 import time
+from math import isclose
 from urllib.error import HTTPError
 import pytest
 
@@ -25,12 +26,11 @@ def test_channel_invite_public_ok(reset):
     '''
     Test inviting a user to a public channel places that user immediately in the channel
     '''
-    owner_token = register('max.d@gmail.com', 'wubbalubba', 'Max', 'Smith')[1]
-    user_id = register('bob@gmail.com', 'wubbalubba', 'Bob', 'Smith')[0]
+    _, owner_token = register('max.d@gmail.com', 'wubbalubba', 'Max', 'Smith')
+    user_id, user_token = register('bob@gmail.com', 'wubbalubba', 'Bob', 'Smith')
     channel_id = channels_create(owner_token, 'Maxs Channel', is_public=True)
 
     channel_invite(owner_token, channel_id, user_id)
-    user_token = login('bob@gmail.com', 'wubbalubba')[1]
     all_membs = channel_details(user_token, channel_id)[2]
     u_ids = [member['u_id'] for member in all_membs]
 
@@ -41,12 +41,11 @@ def test_channel_invite_private_ok(reset):
     '''
     Test inviting a user to a public channel places that user immediately in the channel
     '''
-    owner_token = register('max.d@gmail.com', 'wubbalubba', 'Max', 'Smith')[1]
-    user_id = register('bob@gmail.com', 'wubbalubba', 'Bob', 'Smith')[0]
+    _, owner_token = register('max.d@gmail.com', 'wubbalubba', 'Max', 'Smith')
+    user_id, user_token = register('bob@gmail.com', 'wubbalubba', 'Bob', 'Smith')
     channel_id = channels_create(owner_token, 'Maxs Channel', is_public=False)
 
     channel_invite(owner_token, channel_id, user_id)
-    user_token = login('bob@gmail.com', 'wubbalubba')[1]
     all_membs = channel_details(user_token, channel_id)[2]
     u_ids = [member['u_id'] for member in all_membs]
 
@@ -100,11 +99,10 @@ def test_channel_details_correct_info(reset):
 	'''
 
 	owner_id, owner_token = register('max.d@gmail.com', 'wubbalubba', 'Max', 'Smith')
-	user_id = register('bob@gmail.com', 'wubbalubba', 'Bob', 'Smith')[0]
+	user_id, user_token = register('bob@gmail.com', 'wubbalubba', 'Bob', 'Smith')
 	channel_id = channels_create(owner_token, 'Maxs Channel', is_public=False)
 
 	channel_invite(owner_token, channel_id, user_id)
-	user_token = login('bob@gmail.com', 'wubbalubba')[1]
  
 	name, owner_membs, all_membs = channel_details(user_token, channel_id)
 	members_ids = [member['u_id'] for member in all_membs]
@@ -177,9 +175,8 @@ def test_channel_messages_one_message(reset):
     # asserting
     assert messages[0]['message'] == 'first message!'
     assert messages[0]['message_id'] == msg_id
-    assert messages[0]['channel_id'] == channel_id
     assert messages[0]['u_id'] == my_uid
-    assert time_created - messages[0]['time_created'] < 1
+    assert isclose(time_created, messages[0]['time_created'], abs_tol=1)
     assert messages[0]['reacts'][0]['u_ids'] == []
     assert start == 0
     assert end == -1
@@ -202,7 +199,7 @@ def test_channel_messages_two_messages():
     # asserting
     assert messages[0]['message'] == 'second message!'
     assert messages[0]['message_id'] == msg_id
-    assert time_created - messages[0]['time_created'] < 1
+    assert isclose(time_created, messages[0]['time_created'], abs_tol=1)
     assert messages[1]['message'] == 'first message!'
     assert start == 0
     assert end == -1
@@ -347,20 +344,6 @@ def test_channel_leave_not_a_member(reset):
         owner_token, 'Yousifs Channel', is_public=True)
     with pytest.raises(HTTPError):
         channel_leave(user_token, channel_id)
-
-
-def test_channel_leave_only_member_to_private(reset):
-    '''
-    Invalid request to leave a private channel as the only member
-    '''
-    owner_token = register('z5236259@unsw.edu.au',
-                           '1231FFF!', 'Yousif', 'Khalid')[1]
-    # create a channel
-    channel_id = channels_create(
-        owner_token, 'Yousifs Channel', is_public=False)
-    with pytest.raises(HTTPError):
-        channel_leave(owner_token, channel_id)
-
 
 def test_channel_leave_invalid_token(reset):
     '''
