@@ -453,14 +453,12 @@ def user_remove(token, u_id):
     '''
     HTTP request to change user permissions
     '''
-    data = json.dumps({
+    data = urllib.parse.urlencode({
         'token': token,
         'u_id': u_id
-    }).encode()
+    })
 
-    request = urllib.request.Request(urls.USER_REMOVE_URL, data=data,
-                                     method='DELETE', headers={'Content-Type': 'application/json'})
-
+    request = urllib.request.Request(f"{urls.USER_REMOVE_URL}?{data}", method='DELETE')
     urllib.request.urlopen(request)
 
 def users_all(token):
