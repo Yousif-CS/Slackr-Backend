@@ -22,7 +22,7 @@ def st_start():
         raise RequestError(description=f"Missing data in request body")
 
     to_send = standup.standup_start(payload['token'],
-                                    payload['channel_id'], payload['length'])
+                                    int(payload['channel_id']), int(payload['length']))
 
     return json.dumps(to_send)
 
@@ -54,6 +54,6 @@ def st_send():
         raise RequestError(description=f"Missing data in request body")
 
     standup.standup_send(payload['token'],
-                         payload['channel_id'], payload['message'])
+                         int(payload['channel_id']), payload['message'])
 
     return json.dumps({})
