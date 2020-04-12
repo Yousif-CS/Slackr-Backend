@@ -202,12 +202,14 @@ class Messages():
     def pin(self, message_id):
         if self.message_details(message_id)['is_pinned']:
             raise InputError(description='Message already pinned')
-        self.message_details(message_id)['is_pinned'] = True
+        ids = [msg['message_id'] for msg in self._messages]
+        self._messages[ids.index(message_id)]['is_pinned'] = True
 
     def unpin(self, message_id):
         if not self.message_details(message_id)['is_pinned']:
             raise InputError(description='Message already unpinned')
-        self.message_details(message_id)['is_pinned'] = False
+        ids = [msg['message_id'] for msg in self._messages]
+        self._messages[ids.index(message_id)]['is_pinned'] = False
 
     def message_details(self, message_id):
         try:
@@ -351,7 +353,7 @@ class UserMessage():
         return react_id in self._react_ids
 
     def is_sender(self, m_id, u_id):
-        return u_id in [link['u_id'] for link in self._user_messages if link['message_id']] == m_id
+        return u_id in [link['u_id'] for link in self._user_messages if link['message_id'] == m_id]
 
     def message_channel(self, message_id):
         link = self.fetch_link(message_id)

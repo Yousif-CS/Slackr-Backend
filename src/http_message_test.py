@@ -39,6 +39,7 @@ def test_message_send_invalid_message():
     a_token = login('admin@gmail.com', 'pass123456')[1]
     with pytest.raises(HTTPError):
         message_send(a_token, 1, 'a' * 1001)
+    logout(a_token)
 
 def test_message_send_invalid_token():
     '''
@@ -47,6 +48,7 @@ def test_message_send_invalid_token():
     a_token = login('admin@gmail.com', 'pass123456')[1]
     with pytest.raises(HTTPError):
         message_send(a_token + 'x', 1, 'Hello world')
+    logout(a_token)
 
 def test_message_send_not_in_channel():
     '''
@@ -55,7 +57,7 @@ def test_message_send_not_in_channel():
     k_token = register('ken@gmail.com', 'kenis123', 'Ken', 'Li')[1]
     with pytest.raises(HTTPError):
         message_send(k_token, 1, 'Bad message')
-
+    logout(k_token)
 
 # testing message sendlater
 def test_message_sendlater_ok(reset):
@@ -66,7 +68,8 @@ def test_message_sendlater_ok(reset):
     channel_id = channels_create(a_token, 'test_public', True)
 
     msg_id = message_sendlater(a_token, channel_id, 'sending later', time.time() + 3)
-    assert msg_id == 0
+    assert msg_id == 1
+    logout(a_token)
 
 def test_message_sendlater_badtime():
     '''
@@ -75,6 +78,7 @@ def test_message_sendlater_badtime():
     a_token = login('admin@gmail.com', 'pass123456')[1]
     with pytest.raises(HTTPError):
         message_sendlater(a_token, 1, 'sending later', time.time() - 0.01)
+    logout(a_token)
 
 def test_message_sendlater_threading(reset):
     '''
@@ -89,6 +93,7 @@ def test_message_sendlater_threading(reset):
     msg_list = channel_messages(k_token, channel_id, 0)[0]
     assert len(msg_list) == 3
     assert msg_list[0]['message'] == 'sending later'
+    logout(k_token)
 
 def test_message_sendlater_not_in_channel(reset):
     '''
@@ -99,6 +104,7 @@ def test_message_sendlater_not_in_channel(reset):
     k_token = register('ken@gmail.com', 'kenis123', 'Ken', 'Li')[1]
     with pytest.raises(HTTPError):
         message_sendlater(k_token, channel_id, 'Bad message', time.time() + 1)
+    logout(a_token)
 
 def test_message_sendlater_invalid_token():
     '''
@@ -108,6 +114,7 @@ def test_message_sendlater_invalid_token():
     channel_id = channels_create(a_token, 'test_public', True)
     with pytest.raises(HTTPError):
         message_sendlater(a_token + 'x', channel_id, 'Hello world', time.time() + 1)
+    logout(a_token)
 
 # testing message react
 def test_message_react_ok(reset):
@@ -125,11 +132,13 @@ def test_message_react_not_in_channel():
     k_token = register('ken@gmail.com', 'kenis123', 'Ken', 'Li')[1]
     with pytest.raises(HTTPError):
         message_react(k_token, 1, 1)
+    logout(k_token)
 
 def test_message_react_nonexistent_message_id():
     a_token = login('admin@gmail.com', 'pass123456')[1]
     with pytest.raises(HTTPError):
         message_react(a_token, 2222, 1)
+    logout(a_token)
 
 def test_message_react_invalid_react():
     a_token = login('admin@gmail.com', 'pass123456')[1]
@@ -137,6 +146,7 @@ def test_message_react_invalid_react():
 
     with pytest.raises(HTTPError):
         message_react(a_token, msg1_id, 2)
+    logout(a_token)
 
 def test_message_react_already_reacted():
     a_token = login('admin@gmail.com', 'pass123456')[1]
@@ -146,12 +156,14 @@ def test_message_react_already_reacted():
 
     with pytest.raises(HTTPError):
         message_react(a_token, msg1_id, 1)
+    logout(a_token)
 
 def test_message_react_invalid_token():
     a_token = login('admin@gmail.com', 'pass123456')[1]
 
     with pytest.raises(HTTPError):
         message_react(a_token + 'x', 1, 1)
+    logout(a_token)
 
 # testing message_unreact
 def test_message_unreact_own(reset):
@@ -173,12 +185,14 @@ def test_message_unreact_not_in_channel():
     channel_leave(c_token, 1)
     with pytest.raises(HTTPError):
         message_unreact(c_token, 1, 1)
+    logout(c_token)
 
 def test_message_unreact_invalid_react():
     a_token = login('admin@gmail.com', 'pass123456')[1]
 
     with pytest.raises(HTTPError):
         message_unreact(a_token, 0, 2)
+    logout(a_token)
 
 def test_message_unreact_no_existing_react(reset):
     a_token = register('admin@gmail.com', 'pass123456', 'Admin', 'Heeblo')[1]
@@ -187,12 +201,14 @@ def test_message_unreact_no_existing_react(reset):
 
     with pytest.raises(HTTPError):
         message_unreact(a_token, msg0_id, 1)
+    logout(a_token)
 
 def test_message_unreact_invalid_token():
     a_token = login('admin@gmail.com', 'pass123456')[1]
 
     with pytest.raises(HTTPError):
         message_react(a_token + 'x', 0, 1)
+    logout(a_token)
 
 # testing message_pin
 def test_message_pin_owner(reset):
@@ -223,6 +239,7 @@ def test_message_pin_invalid_message_id():
     a_token = login('admin@gmail.com', 'pass123456')[1]
     with pytest.raises(HTTPError):
         message_pin(a_token, 35)
+    logout(a_token)
 
 def test_message_pin_not_owner_tries():
     c_token = register('cen@gmail.com', 'ssap12652', 'Chen', 'Bee')[1]
@@ -231,18 +248,21 @@ def test_message_pin_not_owner_tries():
 
     with pytest.raises(HTTPError):
         message_pin(c_token, msg1_id)
+    logout(c_token)
 
 def test_message_pin_already_pinned():
     # recall from first test, admin already pinned their own message
     a_token = login('admin@gmail.com', 'pass123456')[1]
     with pytest.raises(HTTPError):
         message_pin(a_token, 1)
+    logout(a_token)
 
 def test_message_pin_not_member():
     c_token = login('cen@gmail.com', 'ssap12652')[1]
     channel_leave(c_token, 1)
     with pytest.raises(HTTPError):
         message_pin(c_token, 1)
+    logout(c_token)
 
 # testing message_unpin
 def test_message_unpin_owner(reset):
@@ -267,6 +287,7 @@ def test_message_unpin_invalid_message(reset):
 
     with pytest.raises(HTTPError):
         message_unpin(a_token, msg0_id + 1)
+    logout(a_token)
 
 def test_message_unpin_not_channel_owner(reset):
     a_token = register('admin@gmail.com', 'pass123456', 'Admin', 'Heeblo')[1]
@@ -281,6 +302,7 @@ def test_message_unpin_not_channel_owner(reset):
 
     with pytest.raises(HTTPError):
         message_unpin(u_token, msg0_id)
+    logout(a_token)
 
 def test_message_unpin_not_pinned(reset):
     a_token = register('admin@gmail.com', 'pass123456', 'Admin', 'Heeblo')[1]
@@ -289,6 +311,7 @@ def test_message_unpin_not_pinned(reset):
 
     with pytest.raises(HTTPError):
         message_unpin(a_token, msg0_id)
+    logout(a_token)
 
 def test_message_unpin_slackr_owner_not_in_channel(reset):
     a_token = register('admin@gmail.com', 'pass123456', 'Admin', 'Heeblo')[1]
@@ -297,21 +320,26 @@ def test_message_unpin_slackr_owner_not_in_channel(reset):
     k_channel_id = channels_create(k_token, 'test_public', True)
     msg0_id = message_send(k_token, k_channel_id, 'Kens message in his channel')
     message_pin(k_token, msg0_id)
+    # admin unpins the message sent by ken
+    message_unpin(a_token, msg0_id)
 
-    with pytest.raises(HTTPError):
-        message_unpin(a_token, msg0_id)
+    msg_list = channel_messages(k_token, k_channel_id, 0)[0]
+    assert not msg_list[0]['is_pinned']
+    logout(a_token)
+    logout(k_token)
 
 def test_message_unpin_user_not_in_channel():
     c_token = register('cen@gmail.com', 'ssap12652', 'Chen', 'Bee')[1]
 
     with pytest.raises(HTTPError):
         message_unpin(c_token, 1)
+    logout(c_token)
 
 def test_message_unpin_invalid_token():
     a_token = login('admin@gmail.com', 'pass123456')[1]
     with pytest.raises(HTTPError):
         message_unpin(a_token + 'x', 1)
-
+    logout(a_token)
 
 # testing message_remove
 def test_message_remove_own(reset):
@@ -338,6 +366,7 @@ def test_message_remove_twice(reset):
 
     with pytest.raises(HTTPError):
         message_remove(a_token, 0)
+    logout(a_token)
 
 def test_message_remove_slackr_owner(reset):
     # slackr owner
@@ -355,16 +384,20 @@ def test_message_remove_slackr_owner(reset):
     # unremoved message (2nd one sent) retains its ID
     assert msg_list[0]['message_id'] == 2
 
+    logout(a_token)
+    logout(k_token)
+
 def test_message_remove_regular_user_not_in_channel():
     c_token = register('cen@gmail.com', 'ssap12652', 'Chen', 'Bee')[1]
     with pytest.raises(HTTPError):
         message_remove(c_token, 2)
+    logout(c_token)
 
 def test_message_remove_invalid_token():
     a_token = login('admin@gmail.com', 'pass123456')[1]
     with pytest.raises(HTTPError):
         message_remove(a_token + 'x', 2)
-
+    logout(a_token)
 
 # testing message_edit
 

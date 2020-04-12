@@ -149,11 +149,15 @@ def message_remove(token, message_id):
     # getting id of the user
     u_id = get_tokens()[token]
 
+    if not data.messages.message_exists(message_id):
+        raise InputError(
+            description='Invalid message ID')
+
     channel_id = data.user_message.message_channel(message_id)
-    if not data.user_channel.is_owner(u_id, channel_id) and not data.admins.is_admin(u_id) \
-        and not data.user_message.is_sender(message_id, u_id):
+    if not (data.user_channel.is_owner(u_id, channel_id) or data.admins.is_admin(u_id) \
+        or data.user_message.is_sender(message_id, u_id)):
         raise AccessError(
-        description='You do not have access to delete this message')
+            description='You do not have access to delete this message')
 
     data.remove_message(message_id)
     return {}
@@ -170,7 +174,7 @@ def has_message_edit_permission(auth_u_id, message_id):
         return True
 
     # check if auth user wrote the message
-    if data.user_message.is_sender(auth_u_id, message_id):
+    if data.user_message.is_sender(message_id, auth_u_id):
         return True
 
     # check if auth user is owner of channel which contains the message
@@ -230,6 +234,10 @@ def message_react(token, message_id, react_id):
     # getting id of the user
     u_id = get_tokens()[token]
 
+    if not data.messages.message_exists(message_id):
+        raise InputError(
+            description='Invalid message ID')
+
     channel_id = data.user_message.message_channel(message_id)
     if not data.user_channel.link_exists(u_id, channel_id):
         raise InputError(
@@ -256,6 +264,10 @@ def message_unreact(token, message_id, react_id):
     data = get_store()
     # getting id of the user
     u_id = get_tokens()[token]
+
+    if not data.messages.message_exists(message_id):
+        raise InputError(
+            description='Invalid message ID')
 
     channel_id = data.user_message.message_channel(message_id)
     if not data.user_channel.link_exists(u_id, channel_id):
