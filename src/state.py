@@ -4,7 +4,7 @@ with the server's data when its launched
 '''
 from threading import Timer, Thread
 import pickle
-
+import sys
 from error import InputError, AccessError
 
 #a constant to show a user is an admin
@@ -14,7 +14,11 @@ MEMBER = 2
 #a constant defining the size of a message block
 MSG_BLOCK = 50
 
-
+# needed for generating the image_url
+ROUTE = '/imgurl'
+HOST = 'http://127.0.0.1'
+PORT = int(sys.argv[1]) if len(sys.argv) == 2 else 8080
+IMAGE_DIR = './images'
 def is_this_user_reacted(u_id, link_info):
     #updating is_this_user_reacted based on the authorized user
     reacts_lists = [msg['reacts'] for msg in link_info]
@@ -28,6 +32,7 @@ class Users():
         self._users = dict()
         self._num_users = 0
         self._current_id = 0
+        self._img_dir = IMAGE_DIR
     def add(self, details):
         '''
         adds user with given details to the database
@@ -48,7 +53,7 @@ class Users():
             'name_last': l_name,
             'password': password,
             'handle_str': handle,
-            'global_permission': ADMIN if self._num_users == 1 else MEMBER
+            'img_path': "",
         }
         return self._current_id
 
@@ -67,6 +72,8 @@ class Users():
             'name_first': details['name_first'],
             'name_last': details['name_last'],
             'handle_str': details['handle_str'],
+            'profile_img_url': f"{HOST}:{PORT}{ROUTE}?path={details['img_path']}"\
+                if details['img_path'] else ""
         }
 
     def all(self):
@@ -103,6 +110,9 @@ class Users():
 
     def set_email(self, u_id, email):
         self._users[u_id]['email'] = email
+
+    def set_image(self, u_id):
+        self._users[u_id]['img_path'] = f"{self._img_dir}{u_id}.jpg"
 
     def validate_login(self, email, password):
         try:
@@ -466,7 +476,8 @@ class Database():
         return list([{
             'u_id': member['u_id'],
             'name_first':member['name_first'],
-            'name_last': member['name_last']
+            'name_last': member['name_last'],
+            'profile_img_url': member['profile_img_url']
         } for member in members_info])
 
     def channel_owners(self, channel_id):
@@ -475,7 +486,8 @@ class Database():
         return list([{
             'u_id': member['u_id'],
             'name_first':member['name_first'],
-            'name_last': member['name_last']
+            'name_last': member['name_last'],
+            'profile_img_url': member['profile_img_url']
         } for member in members_info])
 
     def channel_messages(self, u_id, details):
@@ -592,6 +604,22 @@ STORE = Database()
 # {"token_str1": u_id1, "token_str2": u_id2, ..}
 TOKENS = dict()
 
+
+def image_config():
+    '''
+    returns all the configurations needed to save and serve images
+    '''
+    # pylint: disable=global-statement
+    global IMAGE_DIR
+    global HOST
+    global PORT
+    global ROUTE
+    return {
+        'path': IMAGE_DIR,
+        'host': HOST,
+        'port': PORT,
+        'route': ROUTE,
+    }
 
 def get_store():
     '''
