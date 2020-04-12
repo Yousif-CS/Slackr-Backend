@@ -33,11 +33,15 @@ def userpermission_change(token, u_id, permission_id):
     # verify permission_id is valid (1 or 2)
     if not data.admins.is_valid_permission(permission_id):
         raise InputError(description="Invalid permission id")
-
+    
     # verify the invoker is an admin
     if not data.admins.is_admin(u_id_invoker):
         raise AccessError(
             description="You do not have permission to change permissions")
+
+    # verify the admin cannot demote himself
+    if u_id_invoker == u_id and permission_id == SLACKR_MEMBER:
+        raise InputError(description= 'Cannot demote current user')
 
     # set new permissions
     if permission_id == SLACKR_OWNER:
@@ -70,13 +74,17 @@ def user_remove(token, u_id):
     if not data.users.user_exists(u_id):
         raise InputError(description="Invalid user id")
 
-    #removing his user details
+    # verify the admin is not removing himself 
+    if u_id == u_id_invoker:
+        raise InputError(description='Cannot remove current user')
+
+    # removing his user details
     data.users.remove(u_id)
-    #removing all his subscriptions to channels
+    # removing all his subscriptions to channels
     data.user_channel.remove_link_by_user(u_id)
-    #removing all the messages sent by that user
+    # removing all the messages sent by that user
     data.remove_messages(u_id)
-    #remove the user the token store if he is logged on
+    # remove the user the token store if he is logged on
     token = get_token(u_id)
     if token is not None:
         get_tokens().pop(token)

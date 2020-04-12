@@ -130,10 +130,14 @@ The main assumption is that we only need to register the user once, and afterwar
 4. Assume that if the query_str is greater than 1000 characters long that it would throw an InputError because
 message_send does.
 
+#### userpermission_change(token, u_id, p_id):
+1. Assume the admin cannot demote himself
 #### user_remove(token, u_id):
 1. Assume removing the user means removing removing all his messages in all channels
 2. Assume that removing the user who is the only member and owner of a channel is allowed
 3. Assume removing a currently logged in user force-logs him out
+4. Assume the admin cannot remove himself
+
 
 ### **Standup functions**:
 Overarching: A member of a channel can send more than one message during a standup
@@ -144,7 +148,7 @@ Overarching: A member of a channel can send more than one message during a stand
 # HTTP wrappers Assumptions
 
 ## Channel wrappers
-`Overarching assumption is the data in the request is given in json format which contains the following keys:`
+`Overarching assumption is the data in the request contains the following keys/query parameters:`
 1. token
 2. channel_id
 3. u_id
@@ -157,7 +161,7 @@ Overarching: A member of a channel can send more than one message during a stand
 3. length
 
 ## Other wrappers
-`Overarching assumption is that the data in request is given in json format which contains the following keys:`
+`Overarching assumption is that the data in request is given contains the following keys/query paramters:`
 1. token
 2. u_ir
 3. permission_id
