@@ -153,6 +153,13 @@ def test_user_remove_removed_message(reset):
     messages, _, _ = channel_messages(admin_token, channel_id, start=0)
     assert len(messages) == 0
 
+def test_user_remove_own(reset):
+    '''
+    Invalid request to remove one's ownself
+    '''
+    admin_info, admin_token = register('yousif@gmail.com', 'HelloWorld', 'Yousif', 'Wang')
+    with pytest.raises(HTTPError):
+        user_remove(admin_token, admin_info)
 
 # can produce a list of users
 
@@ -279,6 +286,14 @@ def test_userpermission_change_invalid_token(reset):
     with pytest.raises(HTTPError):
         userpermission_change(j_token + 'x', k_id, 1)
 
+
+def test_userpermission_change_demote_own(reset):
+    '''
+    Invalid request to demote ones ownself
+    '''
+    admin_id, admin_token = register('Hola@gmail.com', 'asdasdasd', 'Yousif', 'Khalid')
+    with pytest.raises(HTTPError):
+        userpermission_change(admin_token, admin_id, 2)
 
 def test_users_all_invalid_token(reset):
     '''
