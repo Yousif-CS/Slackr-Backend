@@ -8,6 +8,7 @@ from time import time, sleep
 from state import get_store, get_tokens
 from auth import verify_token
 from error import InputError, AccessError
+from hangman import start_game, guess
 
 MAX_MSG_LEN = 1000
 
@@ -36,6 +37,28 @@ def message_send(token, channel_id, message):
     if not data.user_channel.link_exists(u_id, channel_id):
         raise AccessError(
             description='You do not have access to send messages in this channel')
+
+    # hangman stuff
+    # detect commands /hangman, /guess <leterName>, /quit
+    # /hangman command
+    if message == '/hangman':
+        if data.channels.is_hangman_running(channel_id):
+            raise InputError(description="Hangman is already running")
+        hangman_data = start_game(channel_id)
+        data.channels.start_hangman(channel_id, hangman_data)
+
+    # /guess X and /quit
+    if data.channels.is_hangman_running(channel_id):
+        # message needs to start with '/guess' and contain 1 single letter
+        if message.startswith('/guess') and message.split(" ", 1)[1].isalpha() \
+            and len(message.split(" ", 1)[1].strip()) == 1:
+            letter = message.split(" ", 1)[1].strip()
+            new_details = guess(letter, channel_id, data.users.user_details[u_id]['name_first'])
+            # send new details to database
+            data.channels.edit_hangman(channel_id, new_details)
+
+        if message == '/quit':
+            data.channels.quit_hangman(channel_id)
 
     # send the message
     details = message, time()
