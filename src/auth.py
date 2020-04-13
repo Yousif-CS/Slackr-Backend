@@ -3,8 +3,14 @@ This file contains implementations for
 authentication functions: register, login and logout, token generation
 along with helper functions used in other files as well
 '''
+import os
+from email.message import EmailMessage
+import random
+import uuid
+import smtplib
 import hashlib
 import jwt
+
 
 from state import get_store, get_tokens
 from is_valid_email import is_valid_email
@@ -32,6 +38,22 @@ def generate_token(u_id):
     use jwt to generate a token
     '''
     return jwt.encode({"u_id": u_id}, SECRET, algorithm="HS256").decode('utf-8')
+
+def generate_reset_code():
+    '''
+    Generate a reset_code to reset a user's password
+    Input: None
+    Returns: Reset_code
+    '''
+    #String length ranges from 12 to 16 characters
+    str_len = random.randint(12, 16)
+    
+    #Generate a unique and secure reset code
+    reset_code = uuid.uuid4().hex
+    reset_code = reset_code.upper()[0:str_len]
+
+    return reset_code
+
 
 # retrieves token given a user id, returns None if the user is logged out FOR AUTH_LOGOUT
 
@@ -178,3 +200,30 @@ def auth_logout(token):
     #remove the user's token
     get_tokens().pop(token)
     return {'is_success': True}
+
+def auth_passwordreset_request(email):
+    '''
+    Sends a reset code to a user's email and adds
+    the reset code to a dictionary
+    Input: User's email
+    Returns: None
+    '''
+    data = get_store()
+
+    if not data.users.email_used(email):
+        raise InputError(description="Email doesn't correspond to a registered user")
+        
+    code = generate_reset_code()
+
+    sender_email = os.environ.get('EMAIL_ADDR') #'comp1531resetpass@gmail.com'
+    sender_pass = os.environ.get('EMAIL_PASS') #'git_commitment_issues'
+    msg = EmailMessage()
+    msg['From'] = sender_email
+    msg['To'] = email
+    msg.set_content(code)
+
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+        smtp.login(sender_email, sender_pass)
+        smtp.send_message(msg)
+
+    #add code to reset_code dictionary for user
