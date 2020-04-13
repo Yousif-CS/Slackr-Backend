@@ -30,11 +30,12 @@ def user_remove():
     '''
     A wrapper for other.user_remove()
     '''
-    payload = request.get_json()
-    if not payload['token'] or not payload['u_id']:
+    token = request.args.get('token')
+    u_id = request.args.get('u_id')
+    if not token or not u_id:
         raise RequestError(description='Missing data in request body')
 
-    other.user_remove(payload['token'], int(payload['u_id']))
+    other.user_remove(token, int(u_id))
     return json.dumps({})
 
 @OTHER.route('/users/all', methods=['GET'])

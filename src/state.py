@@ -16,12 +16,12 @@ MSG_BLOCK = 50
 
 
 def is_this_user_reacted(u_id, link_info):
-        #updating is_this_user_reacted based on the authorized user
-        reacts_lists = [msg['reacts'] for msg in link_info]
+    #updating is_this_user_reacted based on the authorized user
+    reacts_lists = [msg['reacts'] for msg in link_info]
 
-        for reacts_list in reacts_lists:
-            for react in reacts_list:
-                react['is_this_user_reacted'] = u_id in react['u_ids']
+    for reacts_list in reacts_lists:
+        for react in reacts_list:
+            react['is_this_user_reacted'] = u_id in react['u_ids']
 
 class Users():
     def __init__(self):
@@ -634,7 +634,7 @@ def initialize_state():
 
 
 # A constant to update the database every hour
-SECONDS_TO_UPDATE = 3600
+SECONDS_TO_UPDATE = 2
 
 
 class StateTimer(Timer):

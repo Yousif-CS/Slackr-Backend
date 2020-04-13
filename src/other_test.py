@@ -497,7 +497,7 @@ def test_userpermission_change_promote(reset, create_private_channel, make_user_
             assert False
 
 
-def test_userpermission_change_demote(reset, create_private_channel, make_user_ab, make_user_cd):
+def test_userpermission_change_demote(reset, create_private_channel, make_user_cd, make_user_ef):
     '''
     Testing demoting a user restricts him to join private channels
     '''
@@ -506,28 +506,35 @@ def test_userpermission_change_demote(reset, create_private_channel, make_user_a
     # since owner is the first user who signs up in this
     # test, he should be a slackr owner
 
-    # create two users
-    user_info = make_user_ab
-    general_user = make_user_cd
-
+    # create new user
+    user_info = make_user_cd
+ 
     # promoting user
     userpermission_change(owner_info['token'], user_info['u_id'], SLACKR_OWNER)
 
-    # Inviting a new user
+    # Inviting new user
     channel_invite(owner_info['token'],
-                   channel_id['channel_id'], general_user['u_id'])
+                   channel_id['channel_id'], user_info['u_id'])
 
     # demoting user
     userpermission_change(owner_info['token'],
                           user_info['u_id'], SLACKR_MEMBER)
 
     # User leaves the channel
-    channel_leave(user_info['token'], user_info['u_id'])
+    channel_leave(user_info['token'], channel_id['channel_id'])
 
     # testing joining a private channel
     with pytest.raises(AccessError):
         channel_join(user_info['token'], channel_id['channel_id'])
 
+def test_userpermission_change_demote_own(reset, make_user_ab):
+    '''
+    Testing we cannot demote ones ownself
+    '''
+    # creating admin
+    admin_info = make_user_ab
+    with pytest.raises(InputError):
+        userpermission_change(admin_info['token'], admin_info['u_id'], SLACKR_MEMBER)
 
 def test_user_remove_no_user(reset, create_public_channel, make_user_ab):
     '''
@@ -580,6 +587,15 @@ def test_user_remove_messages_removed(reset, create_public_channel, make_user_cd
     #should be empty
     messages = channel_messages(owner_info['token'], channel_id['channel_id'], start=0)
     assert len(messages['messages']) == 0
+
+def test_user_remove_own_self(reset, make_user_ab):
+    '''
+    Testing user cannot remove himself
+    '''
+    # creating admin
+    admin_info = make_user_ab
+    with pytest.raises(InputError):
+        user_remove(admin_info['token'], admin_info['u_id'])
 
 def test_user_remove_removed_from_channel(reset, create_public_channel, make_user_cd):
     '''
