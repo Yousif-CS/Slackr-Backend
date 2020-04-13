@@ -3,12 +3,26 @@ This module contains all the routes for miscellaneous functionalities
 '''
 
 import json
-from flask import request, Blueprint
+import io
+from flask import request, Blueprint, send_file
+from PIL import Image
 import other
 from error import RequestError
 
 OTHER = Blueprint('other', __name__)
 
+
+def serve_img(img):
+    '''
+    A function that loads the image to send
+    Sourced from:
+    https://stackoverflow.com/questions/7877282/how-to-send-image-generated-by-pil-to-browser
+    Input: an Image object
+    '''
+    img_io = io.BytesIO()
+    img.save(img_io, 'JPEG', quality=70)
+    img_io.seek(0)
+    return send_file(img_io, mimetype='image/jpeg')
 
 @OTHER.route('/admin/userpermission/change', methods=['POST'])
 def u_per_change():
@@ -74,3 +88,14 @@ def reset():
     '''
     other.workspace_reset()
     return json.dumps({})
+
+@OTHER.route('/imgurl', methods=['GET'])
+def fetch_image():
+    '''
+    A route to fetch a certain image given the url
+    '''
+    path = request.args.get('path')
+    print('THE PATH IS: ', path)
+    img = Image.open(path, 'r')
+    return serve_img(img)
+    

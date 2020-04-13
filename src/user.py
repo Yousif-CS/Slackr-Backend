@@ -2,11 +2,15 @@
 This file contains implementations for user functions
 '''
 
-from state import get_store, get_tokens
+import io
+import requests
+from PIL import Image
+from state import get_store, get_tokens, image_config
 from auth import verify_token
 from error import InputError, AccessError
 from is_valid_email import is_valid_email
 
+OK_STATUS = 200
 
 def user_profile(token, u_id):
     '''
@@ -105,3 +109,45 @@ def user_profile_setemail(token, email):
 
     # Change the user's email in the STORE databas if the above hurdles are passed
     data.users.set_email(u_id, email)
+
+def profile_uploadphoto(token, url, box):
+    '''
+    Crops a given image from a url and stores it in the database
+    Arguments: token, image url, coordinates to be cropped
+    Returns: nothing, but with url for the cropped image stored in the users details
+    '''
+    # # verify that the token is valid
+    # if verify_token(token) is False:
+    #     raise AccessError(description="Invalid token")
+
+    # preparing the coordinates
+    x_start, y_start, x_end, y_end = box
+
+    # getting the image
+    response = requests.get(url)
+    # checking the image url given is valid
+    if response.status_code != OK_STATUS:
+        raise InputError(description='Cannot open image')
+
+    # getting the image
+    image = Image.open(io.BytesIO(response.content))
+
+    # making sure the image type is JPG
+    if image.format != 'JPEG':
+        raise InputError('Invalid image format')
+
+    # checking the supplied coordinates are valid
+    img_width, img_height = image.size
+    if x_start < 0 or y_start < 0 or \
+       x_end > img_width or y_end > img_height:
+        raise InputError('Invalid crop coordinates')
+
+    # crop the image
+    cropped_img = image.crop(box)
+    # get the database
+    data = get_store()
+    # saving the image into the database
+    u_id = get_tokens()[token]
+    # pylint: disable=global-statement
+    cropped_img.save(f"{image_config()['path']}/{u_id}.jpg")
+    data.users.set_image(u_id)

@@ -66,3 +66,25 @@ def profile_sethandle():
 
     user.user_profile_sethandle(payload["token"], payload["handle_str"])
     return json.dumps({})
+
+@USER.route('/profile/uploadphoto', methods=['POST'])
+def profile_uploadphoto():
+    '''
+    A route to upload a cropped photo given its url
+    '''
+    payload = request.get_json()
+
+    if not payload['token'] or not payload['img_url']:
+        raise RequestError(description="Missing data in request body")
+
+    if not payload['x_start'] or not payload['y_start']:
+        raise RequestError(description="Missing data in request body")
+
+    if not payload['x_end'] or not payload['y_end']:
+        raise RequestError(description="Missing data in request body")
+
+    box = (int(payload['x_start']), int(payload['y_start']),
+           int(payload['x_end']), int(payload['y_end']))
+
+    user.profile_uploadphoto(payload['token'], payload['img_url'], box)
+    return json.dumps({})
