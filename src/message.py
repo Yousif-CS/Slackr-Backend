@@ -8,7 +8,7 @@ from time import time, sleep
 from state import get_store, get_tokens
 from auth import verify_token
 from error import InputError, AccessError
-from hangman import start_game, guess, end_game
+from hangman import start_game, guess
 
 MAX_MSG_LEN = 1000
 
