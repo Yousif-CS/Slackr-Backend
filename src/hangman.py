@@ -8,7 +8,7 @@ import string
 from state import get_store
 
 word_file = "/usr/share/dict/words"
-with open(word_file) as FILE:
+with open(word_file) as FILE:   
     WORDS = FILE.read().splitlines()
 MAX_LIVES = 10
 
@@ -30,17 +30,15 @@ def start_game(channel_id):
     Unique to each channel; assuming only one game per channel at a time.
     Turns on hangman mode in state.py
     '''
-    # deleting the line below: not needed when starting game for first time
-    # data = get_store().channels.get_hangman(channel_id)
-    target_word = generate_word()
+    data = get_store().channels.get_hangman(channel_id)
     data = {
-        "target_word": target_word,
+        "target_word": generate_word(),
         "user_guess": ['?' for letter in target_word],
+        "letters_guessed": dict.fromkeys(string.ascii_uppercase, False), 
         # dictionary with alphabet letters as keys and values default to False
-        "letters_guessed": dict.fromkeys(string.ascii_uppercase, False),
         "lives_remaining": MAX_LIVES,
-        "has_won": False,
-        "output": "Let's play Hangman! Type /quit to quit the game at any time."
+        "game_end": False,
+        "output": "\n HANGMAN BOT:\n Let's play Hangman! Type /quit to quit the game."
     }
 
     assert len(data['user_guess']) == len(data['target_word'])
@@ -58,11 +56,17 @@ def guess(letter, channel_id, name_first):
     c. the guess is invalid (not alpha or not single char)
     '''
     data = get_store().channels.get_hangman(channel_id)
+    data['output'] = "\nHANGMAN BOT: \n"
 
+    # input invalid
     if len(letter) == 0 or len(letter) > 1 or letter.isalpha() is False:
-        data['output'] = "Please try again. Enter only a single letter: "
+        data['output'] += "Please try again. Enter only a single letter: "
+
+    # letter already guessed
     elif data['letters_guessed'][letter.upper()] is True:
-        data['output'] = "This letter has already been guessed, please enter another letter: "
+        data['output'] += "This letter has already been guessed, please enter another letter: "
+
+    # correct guess
     elif letter in data['target_word']:
         data['letters_guessed'][letter.upper()] = True
 
@@ -71,16 +75,19 @@ def guess(letter, channel_id, name_first):
             if data['target_word'][i] == letter.upper():
                 data['user_guess'][i] = letter.upper()
 
-        data['output'] = "That's right!\n" + ' '.join(data['user_guess'])
+        data['output'] += "That's right!\n" + ' '.join(data['user_guess'])
 
         if '?' not in data['user_guess']:
-            data['has_won'] = True
+            data['game_end'] = True
             data['output'] += f"\n Congratulations {name_first}! You win!"
+
+    # incorrect guess
     else:
         data['letters_guessed'][letter.upper()] = True
         data['lives_remaining'] -= 1
-        data['output'] = f"That's wrong, you have {data['lives_remaining']} lives remaining."
+        data['output'] += f"That's wrong, you have {data['lives_remaining']} lives remaining."
         if data['lives_remaining'] == 0:
             data['output'] += "\n You lose! :("
+            data['game_end'] = True
 
-    return data
+    return data 
