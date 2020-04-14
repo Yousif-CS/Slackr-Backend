@@ -4,6 +4,7 @@ with the server's data when its launched
 '''
 from threading import Timer, Thread
 import pickle
+import hashlib
 import sys
 from error import InputError, AccessError
 
@@ -17,7 +18,7 @@ MSG_BLOCK = 50
 # needed for generating the image_url
 ROUTE = '/imgurl'
 HOST = 'http://127.0.0.1'
-PORT = int(sys.argv[1]) if len(sys.argv) == 2 else 8080
+PORT = sys.argv[1] if len(sys.argv) == 2 else 8080
 IMAGE_DIR = './images'
 def is_this_user_reacted(u_id, link_info):
     #updating is_this_user_reacted based on the authorized user
@@ -53,7 +54,7 @@ class Users():
             'name_last': l_name,
             'password': password,
             'handle_str': handle,
-            'img_path': "",
+            'img_path': ""
         }
         return self._current_id
 
@@ -89,13 +90,22 @@ class Users():
         if email in [user['email'] for user in self._users.values()]:
             return True
         return False
+    
+    def find_u_id(self, email):
+        u_id = 1
+        for user in self._users.values():
+            if email in user['email']:
+                return u_id
+            u_id += 1
+        
+        return None
 
     def handle_unique(self, handle):
         if handle in [user['handle_str'] for user in self._users.values()]:
-            return False 
+            return False
 
-        return True 
-
+        return True
+    
     def set_first_name(self, u_id, name):
         self._users[u_id]['name_first'] = name
 
@@ -110,6 +120,10 @@ class Users():
 
     def set_email(self, u_id, email):
         self._users[u_id]['email'] = email
+    
+    def set_password(self, u_id, password):
+        encrypt_pass = hashlib.sha256(password.encode()).hexdigest()
+        self._users[u_id]['password'] = encrypt_pass
 
     def set_image(self, u_id):
         self._users[u_id]['img_path'] = f"{self._img_dir}{u_id}.jpg"
@@ -183,6 +197,37 @@ class Channels():
         channels_copy = dict(self._channels)
         return list(map(self.channel_details, channels_copy))
 
+class Codes():
+    def __init__(self):
+        self._codes_dict = dict()
+        self._num_codes = 0
+
+    def _push(self, email, reset_code):
+        if email in self._codes_dict:
+            self._del(email)
+        
+        self._codes_dict[email] = reset_code
+        self._num_codes += 1
+
+        return None
+    
+    def _del(self, email):
+        del self._codes_dict[email]
+        self._num_codes -= 1
+
+        return None
+    
+    def code_exists(self, reset_code):
+        try:
+            for values in self._codes_dict.values():
+                if reset_code in values:
+                    return True
+        except ValueError:
+            raise InputError(description="Reset code is not valid")
+    
+    def find_email(self, reset_code):
+        return [key for (key,value) in self._codes_dict.items() if value == reset_code]
+    
 class Messages():
     def __init__(self):
         self._messages = list()
@@ -443,19 +488,28 @@ class Database():
         self.users = Users()
         self.admins = Admins()
         self.channels = Channels()
+        self.codes = Codes()
         self.messages = Messages()
         self.user_message = UserMessage()
         self.user_channel = UserChannel()
 
     def reset(self):
         self.__init__()
-
+        
     def add_user(self, details):
         u_id = self.users.add(details)
         #first user is an admin
         if u_id == 1:
             self.admins.add(u_id)
         return u_id
+    
+    def append_code(self, email, code):
+        self.codes._push(email, code)
+        return None
+
+    def del_code(self, email):
+        self.codes._del(email)
+        return None
 
     def user_channels(self, u_id):
         '''

@@ -186,7 +186,6 @@ def auth_login(email, password):
     # Store the token-u_id pair in the temporary TOKEN dictionary
 
 
-
 def auth_logout(token):
     '''
     input:valid token
@@ -226,4 +225,35 @@ def auth_passwordreset_request(email):
         smtp.login(sender_email, sender_pass)
         smtp.send_message(msg)
 
-    #add code to reset_code dictionary for user
+    #add reset code to dictionary for user
+    #data.append_code(email, code)
+
+    return code 
+
+
+def auth_passwordreset_reset(reset_code, new_password):
+    if len(new_password) < 6:
+        raise InputError(
+            description="Password too short, must be at least 6 characters")
+
+    data = get_store()
+    data.codes.code_exists(reset_code)
+    email = data.codes.find_email(reset_code)
+
+    u_id = data.users.find_u_id(email)
+    data.users.set_password(u_id, new_password)
+
+    data.del_code(email)
+    
+
+if __name__ == '__main__':
+    reg_dict = auth_register('comp1531resetpass@gmail.com', 'wubbalubba', 'Max', 'Smith')
+    data = get_store()
+    data.users.set_password(1, 'password123')
+    auth_logout(reg_dict['token'])
+    auth_login('comp1531resetpass@gmail.com', 'password123')
+    u_id = data.users.find_u_id('comp1531resetpass@gmail.com')
+    print(u_id)
+    data.append_code('comp1531resetpass@gmail.com', 'wubbalubba')
+    #auth_passwordreset_reset(code, 'wubbawubba')
+    
