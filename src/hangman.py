@@ -31,8 +31,9 @@ def start_game(channel_id):
     Turns on hangman mode in state.py
     '''
     data = get_store().channels.get_hangman(channel_id)
+    target_word = generate_word()
     data = {
-        "target_word": generate_word(),
+        "target_word": target_word,
         "user_guess": ['?' for letter in target_word],
         "letters_guessed": dict.fromkeys(string.ascii_uppercase, False), 
         # dictionary with alphabet letters as keys and values default to False

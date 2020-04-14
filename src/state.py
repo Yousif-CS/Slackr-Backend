@@ -17,7 +17,7 @@ MSG_BLOCK = 50
 # needed for generating the image_url
 ROUTE = '/imgurl'
 HOST = 'http://127.0.0.1'
-PORT = int(sys.argv[1]) if len(sys.argv) == 2 else 8080
+PORT = 5000
 IMAGE_DIR = './images'
 def is_this_user_reacted(u_id, link_info):
     #updating is_this_user_reacted based on the authorized user
@@ -162,6 +162,7 @@ class Channels():
             'is_public': is_public,
             'hangman': {
                 'is_running': False,
+                'data': {}
                 # data added here when game begins
                 # target_word
                 # user_guess
