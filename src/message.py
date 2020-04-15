@@ -8,7 +8,7 @@ from time import time, sleep
 from state import get_store, get_tokens
 from auth import verify_token
 from error import InputError, AccessError
-from hangman import start_game, guess
+from hangman import start_game, guess, end_game
 
 MAX_MSG_LEN = 1000
 
@@ -38,31 +38,45 @@ def message_send(token, channel_id, message):
         raise AccessError(
             description='You do not have access to send messages in this channel')
 
+    # send the message
+    details = message, time()
+    new_id = data.add_message(u_id, channel_id, details)
+
     # hangman stuff
     # detect commands /hangman, /guess <leterName>, /quit
     # /hangman command
-    if '/hangman' in message:
+
+    if message == '/hangman':
         if data.channels.is_hangman_running(channel_id):
             raise InputError(description="Hangman is already running")
         hangman_data = start_game(channel_id) # obtain all the base data needed to start a game of hangman
         data.channels.start_hangman(channel_id, hangman_data) # store this data as part of the channel's info
-        message += data.channels.get_hangman(channel_id)['output']
+        hangman_details = data.channels.get_hangman(channel_id)['output']
+        hbot_id = data.channels.get_hbot_details(channel_id)[0]
+        hbot_token = data.channels.get_hbot_details(channel_id)[1]
+        message_send(hbot_token, channel_id, hangman_details)
 
-    # /guess X and /quit
-    if data.channels.is_hangman_running(channel_id) and '/hangman' not in message:
+    if data.channels.is_hangman_running(channel_id):
         # message needs to start with '/guess' and contain 1 single letter
+        hbot_id = data.channels.get_hbot_details(channel_id)[0]
+        hbot_token = data.channels.get_hbot_details(channel_id)[1]
         if message.startswith('/guess'):
-            letter = message.split(" ", 1)[1].strip()
-            new_details = guess(letter, channel_id, data.users.user_details[u_id]['name_first'])
-            # send new details to database
-            data.channels.edit_hangman(channel_id, new_details)
+            try:
+                letter = message.split(" ", 1)[1].strip()
+                new_details = guess(letter, channel_id, data.users.user_details(u_id)['name_first'])
+                # send new details to database
+                data.channels.edit_hangman(channel_id, new_details)
+                message_send(hbot_token, channel_id, new_details['output'])
+            except:
+                raise InputError(description="Please guess only a single letter!")
 
-        if '/quit' in message or data.channels.get_hangman(channel_id)['game_end'] is True:
-            data.channels.quit_hangman(channel_id)
 
-    # send the message
-    details = message, time()
-    new_id = data.add_message(u_id, channel_id, details)
+    if message == '/quit' or data.channels.get_hangman(channel_id)['game_end']:
+        hbot_id = data.channels.get_hbot_details(channel_id)[0]
+        hbot_token = data.channels.get_hbot_details(channel_id)[1]
+        data.channels.quit_hangman(channel_id)
+        message_send(hbot_token, channel_id, "Goodbye!")
+
     return {
         'message_id': new_id
     }

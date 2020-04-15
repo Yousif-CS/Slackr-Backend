@@ -39,8 +39,10 @@ def start_game(channel_id):
         # dictionary with alphabet letters as keys and values default to False
         "lives_remaining": MAX_LIVES,
         "game_end": False,
-        "output": "\n HANGMAN BOT:\n Let's play Hangman! Type /quit to quit the game."
+        "output": "Let's play Hangman! \n(Type /quit to end the game) \nThe word to guess is:\n"
     }
+
+    data['output'] += ' '.join(data['user_guess'])
 
     assert len(data['user_guess']) == len(data['target_word'])
 
@@ -57,15 +59,16 @@ def guess(letter, channel_id, name_first):
     c. the guess is invalid (not alpha or not single char)
     '''
     data = get_store().channels.get_hangman(channel_id)
-    data['output'] = "\nHANGMAN BOT: \n"
 
-    # input invalid
+    assert letter.isalpha()
+
+    # input invalid #TODO: this isn't working
     if len(letter) == 0 or len(letter) > 1 or letter.isalpha() is False:
-        data['output'] += "Please try again. Enter only a single letter: "
+        data['output'] = "Please try again. Enter only a single letter: "
 
     # letter already guessed
     elif data['letters_guessed'][letter.upper()] is True:
-        data['output'] += "This letter has already been guessed, please enter another letter: "
+        data['output'] = "This letter has already been guessed, please enter another letter: "
 
     # correct guess
     elif letter in data['target_word']:
@@ -76,19 +79,26 @@ def guess(letter, channel_id, name_first):
             if data['target_word'][i] == letter.upper():
                 data['user_guess'][i] = letter.upper()
 
-        data['output'] += "That's right!\n" + ' '.join(data['user_guess'])
+        data['output'] = "That's right!\n" + ' '.join(data['user_guess'])
 
         if '?' not in data['user_guess']:
             data['game_end'] = True
-            data['output'] += f"\n Congratulations {name_first}! You win!"
+            data['output'] = f"\n Congratulations {name_first}! You win!"
 
     # incorrect guess
     else:
         data['letters_guessed'][letter.upper()] = True
         data['lives_remaining'] -= 1
-        data['output'] += f"That's wrong, you have {data['lives_remaining']} lives remaining."
+        data['output'] = f"That's wrong, you have {data['lives_remaining']} lives remaining."
         if data['lives_remaining'] == 0:
             data['output'] += "\n You lose! :("
             data['game_end'] = True
 
     return data 
+
+def end_game(channel_id):
+    data = get_store().channels.get_hangman(channel_id)
+    data['output'] = "Goodbye!"
+
+    return data
+        

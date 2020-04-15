@@ -161,6 +161,8 @@ class Channels():
             'name': name,
             'is_public': is_public,
             'hangman': {
+                'bot_id': -1,
+                'bot_token': 'o',
                 'is_running': False,
                 'data': {}
                 # data added here when game begins
@@ -168,7 +170,7 @@ class Channels():
                 # user_guess
                 # letters_to_guess
                 # lives_remaining
-                # has_won
+                # game_end
                 # output
             }
         }
@@ -199,13 +201,24 @@ class Channels():
     def is_hangman_running(self, channel_id):
         return bool(self._channels[channel_id]['hangman']['is_running'])
 
+    def add_hbot_details(self, channel_id, bot_id, bot_token):
+        self._channels[channel_id]['hangman']['bot_id'] = bot_id
+        self._channels[channel_id]['hangman']['bot_token'] = bot_token
+
+    def get_hbot_details(self, channel_id):
+        return (
+            self._channels[channel_id]['hangman']['bot_id'], 
+            self._channels[channel_id]['hangman']['bot_token']
+        )
+
     # changes the state of hangman in specified channel to True,
     # and pass in details to channel dictionary
     def start_hangman(self, channel_id, details):
         self._channels[channel_id]['hangman']['is_running'] = True
         # initialising variables to start game
         self._channels[channel_id]['hangman']['data'] = details
-        # TODO: send the message as admin
+        # TODO: send the message as a bot?
+
 
     def get_hangman(self, channel_id):
         return dict(self._channels[channel_id]['hangman']['data'])

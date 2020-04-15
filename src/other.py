@@ -41,7 +41,7 @@ def userpermission_change(token, u_id, permission_id):
 
     # verify the admin cannot demote himself
     if u_id_invoker == u_id and permission_id == SLACKR_MEMBER:
-        raise InputError(description= 'Cannot demote current user')
+        raise InputError(description='Cannot demote current user')
 
     # set new permissions
     if permission_id == SLACKR_OWNER:
