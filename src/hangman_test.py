@@ -32,6 +32,15 @@ def test_generate_word(reset):
     assert len(generate_word()) <= 10
     assert len(generate_word()) <= 10
 
+def test_start_game(reset):
+    owner = auth_register("help@email.com", "quarantine driving me crazy", "bot", "aksd")
+    new_ch = channels_create(owner['token'], 'Channel1', is_public=True)
+    data = start_game(new_ch['channel_id'])
+    assert data == ''
+    message_send(owner['token'], new_ch['channel_id'], '/hangman') 
+    message_send(owner['token'], new_ch['channel_id'], '/guess E') 
+    assert channel_messages(owner['token'], new_ch['channel_id'], 0)== ''
+
 def test_hangman(reset):
     owner = auth_register("help@email.com", "quarantine driving me crazy", "bot", "aksd")
     new_ch = channels_create(owner['token'], 'Channel1', is_public=True)

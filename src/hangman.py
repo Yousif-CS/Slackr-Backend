@@ -71,13 +71,14 @@ def guess(letter, channel_id, name_first):
         data['output'] = "This letter has already been guessed, please enter another letter: "
 
     # correct guess
-    elif letter in data['target_word']:
+    elif letter.upper() in data['target_word']:
         data['letters_guessed'][letter.upper()] = True
 
         i = 0
         while i < len(data['target_word']):
             if data['target_word'][i] == letter.upper():
                 data['user_guess'][i] = letter.upper()
+            i += 1
 
         data['output'] = "That's right!\n" + ' '.join(data['user_guess'])
 
