@@ -8,7 +8,8 @@ Integration tests for auth functions
 #pylint: disable=singleton-comparison
 
 import pytest
-from auth import auth_register, auth_login, auth_logout
+from state import get_store
+from auth import auth_register, auth_login, auth_logout, auth_passwordreset_request, auth_passwordreset_reset
 from channel import channel_join
 from channels import channels_create
 from error import InputError, AccessError
@@ -16,9 +17,16 @@ from user import user_profile
 from other import workspace_reset
 
 
-'''------------------testing auth_register--------------------'''
-# Test valid registration details successfully registers a user
 
+#def test_passwordreset_valid():
+    #data = get_store()
+    #print(data.codes.return_dict())
+
+
+
+
+'''------------------testing auth_register--------------------'''
+# Test valid registration details successfully registers a user     
 
 def test_auth_register_correct_details():
     workspace_reset()
@@ -30,7 +38,8 @@ def test_auth_register_correct_details():
             "email": "max.smith@gmail.com",
             "name_first": "Max",
             "name_last": "Smith",
-            "handle_str": "maxsmith"
+            "handle_str": "maxsmith",
+            "profile_img_url": ""
         }
     }
 
@@ -46,7 +55,8 @@ def test_auth_register_long_name():
             "email": "max.smith@gmail.com",
             "name_first": "Maximum",
             "name_last": "Smitherinoooooooooos",
-            "handle_str": "maximumsmitherinoooo"
+            "handle_str": "maximumsmitherinoooo",
+            "profile_img_url": ""
         }
     }
 
@@ -279,7 +289,6 @@ def test_logout_unsuccessful():
 
 # A logged out user trying to join a channel
 
-
 def test_logout_join_fails():
     workspace_reset()
 
@@ -295,3 +304,40 @@ def test_logout_join_fails():
 
     with pytest.raises(AccessError):
         channel_join(user2["token"], ch_id)
+
+def test_passwordreset_request():
+    workspace_reset()
+    auth_register('comp1531resetpass@gmail.com', 'password123', 'Max', 'Smith')
+    auth_passwordreset_request('comp1531resetpass@gamil.com')
+
+def test_reseting_password():
+    workspace_reset()
+    data = get_store()
+    reg_dict = auth_register('comp1531resetpass@gmail.com', 'password123', 'Max', 'Smith')
+    auth_logout(reg_dict['token'])
+    data.users.set_password(reg_dict['u_id'], 'wubbalubba')
+    auth_login('comp1531resetpass@gmail.com', 'wubbalubba')
+
+
+def test_passwordreset_request_wrong_email():
+    workspace_reset()
+    auth_register('comp1531resetpass@gmail.com', 'password123', 'Max', 'Smith')
+    auth_passwordreset_request('comp2521resetpass@gmail.com')
+
+
+def test_reseting_multiple_passwords():
+    workspace_reset()
+    data = get_store()
+    reg_dict = auth_register('comp1531resetpass@gmail.com', 'password123', 'Max', 'Smith')
+    reg_dict2 = auth_register('comp2521resetpass@gmail.com', 'password123', 'Max', 'Smith')
+    reg_dict3 = auth_register('comp3521resetpass@gmail.com', 'password123', 'Bob', 'Smith')
+    data.users.set_password(reg_dict['u_id'], 'wubbalubba')
+    data.users.set_password(reg_dict2['u_id'], 'poorpassword')
+    data.users.set_password(reg_dict3['u_id'], 'great_password')
+
+    auth_logout(reg_dict['token'])
+    auth_logout(reg_dict2['token'])
+    auth_logout(reg_dict3['token'])
+    auth_login('comp1531resetpass@gmail.com', 'wubbalubba')
+    auth_login('comp2521resetpass@gmail.com', 'poorpassword')
+    auth_login('comp3521resetpass@gmail.com', 'great_password')
