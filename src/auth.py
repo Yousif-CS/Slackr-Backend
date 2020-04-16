@@ -3,11 +3,6 @@ This file contains implementations for
 authentication functions: register, login and logout, token generation
 along with helper functions used in other files as well
 '''
-import os
-from email.message import EmailMessage
-import random
-import uuid
-import smtplib
 import hashlib
 import jwt
 
@@ -39,25 +34,8 @@ def generate_token(u_id):
     '''
     return jwt.encode({"u_id": u_id}, SECRET, algorithm="HS256").decode('utf-8')
 
-def generate_reset_code():
-    '''
-    Generate a reset_code to reset a user's password
-    Input: None
-    Returns: Reset_code
-    '''
-    #String length ranges from 12 to 16 characters
-    str_len = random.randint(12, 16)
-    
-    #Generate a unique and secure reset code
-    reset_code = uuid.uuid4().hex
-    reset_code = reset_code.upper()[0:str_len]
-
-    return reset_code
-
 
 # retrieves token given a user id, returns None if the user is logged out FOR AUTH_LOGOUT
-
-
 def get_token(u_id):
     '''
     Returns the token of a user if he is logged on.
@@ -210,50 +188,35 @@ def auth_passwordreset_request(email):
     data = get_store()
 
     if not data.users.email_used(email):
-        raise InputError(description="Email doesn't correspond to a registered user")
-        
-    code = generate_reset_code()
+        return {}
 
-    sender_email = os.environ.get('EMAIL_ADDR') #'comp1531resetpass@gmail.com'
-    sender_pass = os.environ.get('EMAIL_PASS') #'git_commitment_issues'
-    msg = EmailMessage()
-    msg['From'] = sender_email
-    msg['To'] = email
-    msg.set_content(code)
-
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-        smtp.login(sender_email, sender_pass)
-        smtp.send_message(msg)
-
+    #Generates reset code for user and sends it to their email
     #add reset code to dictionary for user
-    #data.append_code(email, code)
+    data.codes.push(email)
 
-    return code 
-
+    return {}
 
 def auth_passwordreset_reset(reset_code, new_password):
+    '''
+    Given a valid reset code change the user's password
+    to the new password given
+    Input: Reset code and new_password
+    Returns: None
+    '''
     if len(new_password) < 6:
         raise InputError(
             description="Password too short, must be at least 6 characters")
 
     data = get_store()
+
+    # Check if reset_code exists within dictionary and return the email key paired with that code
     data.codes.code_exists(reset_code)
     email = data.codes.find_email(reset_code)
 
-    u_id = data.users.find_u_id(email)
+    #Retrieve user's id and set their new password
+    u_id = data.users.find_u_id(email[0])
     data.users.set_password(u_id, new_password)
+    #Delete reset code from the dictionary
+    data.codes.delete(email[0])        
 
-    data.del_code(email)
-    
-
-if __name__ == '__main__':
-    reg_dict = auth_register('comp1531resetpass@gmail.com', 'wubbalubba', 'Max', 'Smith')
-    data = get_store()
-    data.users.set_password(1, 'password123')
-    auth_logout(reg_dict['token'])
-    auth_login('comp1531resetpass@gmail.com', 'password123')
-    u_id = data.users.find_u_id('comp1531resetpass@gmail.com')
-    print(u_id)
-    data.append_code('comp1531resetpass@gmail.com', 'wubbalubba')
-    #auth_passwordreset_reset(code, 'wubbawubba')
-    
+    return {}
