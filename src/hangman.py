@@ -62,7 +62,7 @@ def guess(letter, channel_id, name_first):
 
     assert letter.isalpha()
 
-    # input invalid #TODO: this isn't working
+    # input invalid
     if len(letter) == 0 or len(letter) > 1 or letter.isalpha() is False:
         data['output'] = "Please try again. Enter only a single letter: "
 
@@ -84,7 +84,8 @@ def guess(letter, channel_id, name_first):
 
         if '?' not in data['user_guess']:
             data['game_end'] = True
-            data['output'] = f"\n Congratulations {name_first}! You win!"
+            data['output'] = f"\n Congratulations {name_first}! You win! \
+                type /hangman to start a new game."
 
     # incorrect guess
     else:
@@ -92,10 +93,10 @@ def guess(letter, channel_id, name_first):
         data['lives_remaining'] -= 1
         data['output'] = f"That's wrong, you have {data['lives_remaining']} lives remaining."
         if data['lives_remaining'] == 0:
-            data['output'] += "\n You lose! :("
+            data['output'] += "\n You lose! :( \nType /hangman to restart."
             data['game_end'] = True
 
-    return data 
+    return data
 
 def end_game(channel_id):
     data = get_store().channels.get_hangman(channel_id)

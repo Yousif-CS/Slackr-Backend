@@ -67,15 +67,19 @@ def message_send(token, channel_id, message):
                 # send new details to database
                 data.channels.edit_hangman(channel_id, new_details)
                 message_send(hbot_token, channel_id, new_details['output'])
+
+                if new_details['game_end']:
+                    hbot_id = data.channels.get_hbot_details(channel_id)[0]
+                    hbot_token = data.channels.get_hbot_details(channel_id)[1]
+                    data.channels.quit_hangman(channel_id)
             except:
                 raise InputError(description="Please enter a letter to guess!")
 
-
-    if message == '/quit': # or data.channels.get_hangman(channel_id)['game_end']:
-        hbot_id = data.channels.get_hbot_details(channel_id)[0]
-        hbot_token = data.channels.get_hbot_details(channel_id)[1]
-        data.channels.quit_hangman(channel_id)
-        message_send(hbot_token, channel_id, "Goodbye!")
+        if message == '/quit':
+            hbot_id = data.channels.get_hbot_details(channel_id)[0]
+            hbot_token = data.channels.get_hbot_details(channel_id)[1]
+            data.channels.quit_hangman(channel_id)
+            message_send(hbot_token, channel_id, "Quitting game. Goodbye!")
 
     return {
         'message_id': new_id
