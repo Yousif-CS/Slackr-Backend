@@ -8,6 +8,7 @@ from time import time, sleep
 from state import get_store, get_tokens
 from auth import verify_token
 from error import InputError, AccessError
+from hangman import start_game, guess
 
 MAX_MSG_LEN = 1000
 
@@ -40,6 +41,44 @@ def message_send(token, channel_id, message):
     # send the message
     details = message, time()
     new_id = data.add_message(u_id, channel_id, details)
+
+    # Facilitation of Hangman Game
+    # detect commands /hangman, /guess <letterName>, /quit
+
+    # obtain the token of the hangman bot for the channel we are currently in
+    hbot_token = data.channels.get_hbot_details(channel_id)[1]
+
+    if message == '/hangman':
+        # idempotency of /hangman command
+        if data.channels.is_hangman_running(channel_id):
+            raise InputError(description="Hangman is already running")
+        # obtain all the base data needed to start a game of hangman
+        hangman_data = start_game(channel_id)
+        # store this data as part of the channel's info
+        data.channels.start_hangman(channel_id, hangman_data)
+        # obtain the message for the bot to send back 
+        hangman_details = data.channels.get_hangman(channel_id)['output']
+        message_send(hbot_token, channel_id, hangman_details)
+
+    if data.channels.is_hangman_running(channel_id):
+        # message needs to start with '/guess' and contain 1 single letter
+        if message.startswith('/guess'):
+            try:
+                letter = message.split(" ", 1)[1].strip()
+                # update the hangman dictionary based on the user's guess
+                new_details = guess(letter, channel_id, data.users.user_details(u_id)['name_first'])
+                data.channels.edit_hangman(channel_id, new_details)
+                message_send(hbot_token, channel_id, new_details['output'])
+
+                if new_details['game_end'] is True:
+                    data.channels.quit_hangman(channel_id)
+            except:
+                raise InputError(description="Please enter a single letter to guess!")
+
+        if message == '/quit':
+            data.channels.quit_hangman(channel_id)
+            message_send(hbot_token, channel_id, "Quitting game. Goodbye!")
+
     return {
         'message_id': new_id
     }

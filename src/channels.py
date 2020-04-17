@@ -2,7 +2,7 @@
 This file contains implementation for channels functions
 '''
 from state import get_store, get_tokens
-from auth import verify_token
+from auth import verify_token, auth_register
 from error import InputError, AccessError
 
 
@@ -73,6 +73,13 @@ def channels_create(token, name, is_public):
     # creating new channel
     details = name, is_public
     new_id = data.add_channel(u_id, details)
+
+    # creating hangman bot
+    h_bot = auth_register('hangman@bot.com', 'botbotbot', 'Hangman', f'Bot{new_id}')
+    data.user_channel.add_link(h_bot['u_id'], new_id, is_owner=True)
+    data.channels.add_hbot_details(new_id, h_bot['u_id'], h_bot['token'])
+    # TODO: give the bot a profile pic
+    
     return {
         'channel_id': new_id
     }

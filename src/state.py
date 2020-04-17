@@ -17,7 +17,7 @@ MSG_BLOCK = 50
 # needed for generating the image_url
 ROUTE = '/imgurl'
 HOST = 'http://127.0.0.1'
-PORT = int(sys.argv[1]) if len(sys.argv) == 2 else 8080
+PORT = 5000
 IMAGE_DIR = './images'
 def is_this_user_reacted(u_id, link_info):
     #updating is_this_user_reacted based on the authorized user
@@ -159,7 +159,20 @@ class Channels():
         self._current_id += 1
         self._channels[self._current_id] = {
             'name': name,
-            'is_public': is_public
+            'is_public': is_public,
+            'hangman': {
+                'bot_id': -1,
+                'bot_token': 'o',
+                'is_running': False,
+                'data': {}
+                # data added here when game begins
+                # target_word
+                # user_guess
+                # letters_to_guess
+                # lives_remaining
+                # game_end
+                # output
+            }
         }
         return self._current_id
 
@@ -182,6 +195,45 @@ class Channels():
     def all(self):
         channels_copy = dict(self._channels)
         return list(map(self.channel_details, channels_copy))
+
+
+# methods relating to hangman game
+    def is_hangman_running(self, channel_id):
+        return bool(self._channels[channel_id]['hangman']['is_running'])
+
+    def add_hbot_details(self, channel_id, bot_id, bot_token):
+        self._channels[channel_id]['hangman']['bot_id'] = bot_id
+        self._channels[channel_id]['hangman']['bot_token'] = bot_token
+
+    def get_hbot_details(self, channel_id):
+        return (
+            self._channels[channel_id]['hangman']['bot_id'], 
+            self._channels[channel_id]['hangman']['bot_token']
+        )
+
+    # changes the state of hangman in specified channel to True,
+    # and pass in details to channel dictionary
+    def start_hangman(self, channel_id, details):
+        self._channels[channel_id]['hangman']['is_running'] = True
+        # initialising variables to start game
+        self._channels[channel_id]['hangman']['data'] = details
+        # TODO: send the message as a bot?
+
+
+    def get_hangman(self, channel_id):
+        return dict(self._channels[channel_id]['hangman']['data'])
+
+    # for each turn during the ongoing game
+    def edit_hangman(self, channel_id, new_details):
+        details = self.get_hangman(channel_id)
+        self._channels[channel_id]['hangman']['data'] = new_details
+        # TODO: what to do with old details
+
+    def quit_hangman(self, channel_id):
+        # clear all data in the hangman dict
+        self._channels[channel_id]['hangman']['data'].clear()
+        self._channels[channel_id]['hangman']['is_running'] = False
+
 
 class Messages():
     def __init__(self):
