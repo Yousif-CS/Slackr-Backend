@@ -19,7 +19,13 @@ ROUTE = '/imgurl'
 HOST = 'http://127.0.0.1'
 PORT = int(sys.argv[1]) if len(sys.argv) == 2 else 8080
 IMAGE_DIR = './images'
+
+
 def is_this_user_reacted(u_id, link_info):
+    '''
+    Updates whether the user has reacted given a link which contains message info
+    Output: a link_info which has been updated with a new key added to one of its dictionaries 
+    '''
     #updating is_this_user_reacted based on the authorized user
     reacts_lists = [msg['reacts'] for msg in link_info]
 
@@ -28,6 +34,10 @@ def is_this_user_reacted(u_id, link_info):
             react['is_this_user_reacted'] = u_id in react['u_ids']
 
 class Users():
+    '''
+    A class that contains and manages user information, excluding the links between those users
+    and the channels and messages related to them.
+    '''
     def __init__(self):
         self._users = dict()
         self._num_users = 0
@@ -58,10 +68,16 @@ class Users():
         return self._current_id
 
     def remove(self, u_id):
+        '''
+        Remove details of a user with u_id from the dictionary
+        '''
         self._users.pop(u_id)
         self._num_users -= 1
 
     def user_details(self, u_id):
+        '''
+        Produce a dictionary with the required keys for detail in 
+        '''
         if not self.user_exists(u_id):
             raise InputError('User does not exist')
 
