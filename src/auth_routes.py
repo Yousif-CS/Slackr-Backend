@@ -3,7 +3,7 @@ This module contains all the routes for auth functionalities
 '''
 from json import dumps
 from flask import request, Blueprint
-from auth import auth_register, auth_login, auth_logout
+from auth import auth_register, auth_login, auth_logout, auth_passwordreset_request, auth_passwordreset_reset
 from error import RequestError
 AUTH = Blueprint('auth', __name__)
 
@@ -46,3 +46,26 @@ def disconnect():
         raise RequestError(description="Missing data in request body")
     successful = auth_logout(payload['token'])
     return dumps(successful)
+
+@AUTH.route('/passwordreset/request', methods=['POST'])
+def send_email():
+    '''
+    A route to send a reset code via email to a user
+    '''
+    payload = request.get_json()
+    if not payload['email']:
+        raise RequestError(description="Missing data in request body")   
+    auth_passwordreset_request(payload['email'])
+    return dumps({})
+
+@AUTH.route('/passwordreset/reset', methods=['POST'])
+def reset_password():
+    '''
+    A route to reset a user's password
+    '''
+    payload = request.get_json()
+    if not payload['reset_code'] or not payload['new_password']:
+        raise RequestError(description="Missing data in request body")
+
+    auth_passwordreset_reset(payload['reset_code'], payload['new_password'])
+    return dumps({})     
