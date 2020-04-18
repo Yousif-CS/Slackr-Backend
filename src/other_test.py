@@ -612,7 +612,8 @@ def test_user_remove_removed_from_channel(reset, create_public_channel, make_use
     user_remove(owner_info['token'], user_info['u_id'])
     #getting the details of the channel
     ch_details = channel_details(owner_info['token'], channel_id['channel_id'])
-    assert len(ch_details['all_members']) == 1
+    #The reason we assume it is 2 is because we have a hangman bot in each channel
+    assert len(ch_details['all_members']) == 2
 
 def test_user_remove_all_details(reset, make_user_ab, make_user_cd):
     '''

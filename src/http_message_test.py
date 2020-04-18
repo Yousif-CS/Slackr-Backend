@@ -28,7 +28,7 @@ def test_message_send_ok(reset):
     channel_id = channels_create(a_token, 'test_public', True)
     message_send(a_token, channel_id, 'test message')
     msg_list = channel_messages(a_token, channel_id, 0)[0]
-    assert len(msg_list) == 1
+    assert len(msg_list) == 2 # hangman bot sends a message as well
     assert msg_list[0]['message'] == 'test message'
     logout(a_token)
 
@@ -68,7 +68,7 @@ def test_message_sendlater_ok(reset):
     channel_id = channels_create(a_token, 'test_public', True)
 
     msg_id = message_sendlater(a_token, channel_id, 'sending later', time.time() + 3)
-    assert msg_id == 1
+    assert msg_id == 2 # hangman sends the first message -> next available id is 2
     logout(a_token)
 
 def test_message_sendlater_badtime():
@@ -91,7 +91,7 @@ def test_message_sendlater_threading(reset):
     message_send(k_token, channel_id, 'test message1')
     time.sleep(2)
     msg_list = channel_messages(k_token, channel_id, 0)[0]
-    assert len(msg_list) == 3
+    assert len(msg_list) == 4 # hangman sends a message as well 
     assert msg_list[0]['message'] == 'sending later'
     logout(k_token)
 
@@ -254,7 +254,7 @@ def test_message_pin_already_pinned():
     # recall from first test, admin already pinned their own message
     a_token = login('admin@gmail.com', 'pass123456')[1]
     with pytest.raises(HTTPError):
-        message_pin(a_token, 1)
+        message_pin(a_token, 2)
     logout(a_token)
 
 def test_message_pin_not_member():
@@ -353,7 +353,7 @@ def test_message_remove_own(reset):
     message_remove(a_token, msg0_id)
     message_send(a_token, channel_id, 'new_test_message')
     msg_list = channel_messages(a_token, channel_id, 0)[0]
-    assert len(msg_list) == 1
+    assert len(msg_list) == 2 # hangman bot sends a message as well..
     assert msg_list[0]['message'] == 'new_test_message'
     logout(a_token)
 
@@ -379,10 +379,10 @@ def test_message_remove_slackr_owner(reset):
 
     message_remove(a_token, msg0_id)
     msg_list = channel_messages(k_token, channel_id, 0)[0]
-    assert len(msg_list) == 1
+    assert len(msg_list) == 2 # hangman bot sends a message at the start
     assert msg_list[0]['message'] == 'test message2 in ken channel'
     # unremoved message (2nd one sent) retains its ID
-    assert msg_list[0]['message_id'] == 2
+    assert msg_list[0]['message_id'] == 3 # hangman bot sends the first msg with id 1
 
     logout(a_token)
     logout(k_token)

@@ -26,7 +26,8 @@ def test_user_profile_own(reset):
         "email": "joshwang@gmail.com",
         "name_first": "Joshua",
         "name_last": "Wang",
-        "handle_str": "joshuawang"
+        "handle_str": "joshuawang",
+        "profile_img_url": ""
     }
     logout(j_token)
 
@@ -55,7 +56,8 @@ def test_user_profile():
         "email": "kenligordon@gmail.com",
         "name_first": "Ken",
         "name_last": "Li",
-        "handle_str": "kenli"
+        "handle_str": "kenli",
+        "profile_img_url": ""
     }
 
     logout(j_token)
@@ -77,7 +79,8 @@ def test_user_profile_logged_out():
         "email": "kenligordon@gmail.com",
         "name_first": "Ken",
         "name_last": "Li",
-        "handle_str": "kenli"
+        "handle_str": "kenli",
+        "profile_img_url": ""
     }
 
     logout(j_token)

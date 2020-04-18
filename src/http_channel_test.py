@@ -110,10 +110,10 @@ def test_channel_details_correct_info(reset):
 
 	assert user_id in members_ids
 	assert owner_id in members_ids 
-	assert len(all_membs) == 2
+	assert len(all_membs) == 3 # we have a hangman bot as well...
 
 	assert owner_id in owners_ids
-	assert len(owner_membs) == 1
+	assert len(owner_membs) == 2 # hangman bot..
 
 	assert name == 'Maxs Channel'
 
@@ -156,7 +156,9 @@ def test_channel_messages_out_of_range(reset):
     channel_id = channels_create(my_token, 'Yousifs Channel', is_public=True)
 
     with pytest.raises(HTTPError):
-        channel_messages(my_token, channel_id, start=1)
+        # the reason we provide 2 as a start is because hangman bot sends a message
+        # at the creation of the channel
+        channel_messages(my_token, channel_id, start=2)
 
 def test_channel_messages_one_message(reset):
     '''
