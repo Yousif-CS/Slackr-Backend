@@ -338,6 +338,39 @@ class Codes():
         return [key for (key,value) in self._codes_dict.items() if value == reset_code]
 
 class Messages():
+    '''
+    A class that contains information about all messages that have been sent into channels,
+        including their id, message string, time created and pinned status
+
+    Attributes:
+    -----------
+    messages : list
+        Contains dictionaries with information regarding each message, each dictionary
+            contains keys message_id, message, time_created and is_pinned
+    num_messages: int
+        Keeps track of the total number of messages currently existing
+    current_id: int
+        Keeps track of the current ID of the latest message sent. ID's increment by 1 and
+            continue to do so even with deletion of previous messages
+
+    Methods:
+    --------
+    def all(self)
+        returns all message dictionaries in a list
+    def add(self, details)
+        appends a new dictionary to messages list and increment num_messages and current_id
+    def edit(self, message_id, message)
+    def pin(self, message_id)
+    def unpin(self, message_id)
+    def message_details(self, message_id)
+    def message_exists(self, message_id)
+    def fetch_messages(self, start)
+    def remove(self, message_id)
+    def find(self, message_id)
+    def search(self, query_string)
+    def next_id(self)
+    '''
+
     def __init__(self):
         self._messages = list()
         self._num_messages = 0
@@ -410,9 +443,38 @@ class Messages():
 
 class UserMessage():
     '''
-    Contains a structure that maintains the relationship
+    A class containing the structure that maintains the relationship
     between users, channels, reacts and messages they sent
+
+    Attributes:
+    -----------
+    user_messages : list
+        Contains tuples with information linking message_id to u_id, as well
+            as channel_id and creates an empty reacts list of that message
+    react_ids: list
+        Stores the currently valid react ID's (currently 1)
+
+    Methods:
+    --------
+    def add_link(self, u_id, channel_id, message_id)
+        adds a tuple containing u_id, channel_id, message_id
+    def fetch_links_by_channel(self, container)
+        returns list of links filtered by specified channel_id(s)
+    def fetch_links_by_user(self, u_id)
+    def remove_link_by_user(self, u_id)
+    def remove_link_by_channel(self, channel_id)
+    def remove_link_by_message(self, message_id)
+    def link_exists(self, message_id)
+    def react(self, u_id, m_id, react_id)
+    def unreact(self, u_id, m_id, react_id)
+    def fetch_link(self, m_id)
+        returns the tuple containing a specified message_id
+    def is_valid_react(self, react_id)
+    def is_sender(self, m_id, u_id)
+    def message_channel(self, message_id)
+        returns the channel the message with message_id is in
     '''
+
     def __init__(self):
         self._user_messages = list()
         self._react_ids = [1]
