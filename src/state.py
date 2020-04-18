@@ -384,7 +384,8 @@ class Codes():
     
     def find_email(self, reset_code):
         '''
-        Returns email within codes dictionary if reset code matches one in the dictionary
+        Returns email within codes dictionary if reset code matches one within dicitonary
+        else return None
         '''
         return [key for (key, value) in self._codes_dict.items() if value == reset_code]
 
