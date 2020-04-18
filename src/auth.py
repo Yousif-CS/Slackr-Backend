@@ -6,11 +6,17 @@ along with helper functions used in other files as well
 import hashlib
 import jwt
 
+
 from state import get_store, get_tokens
 from is_valid_email import is_valid_email
 from error import InputError
 
 SECRET = "Never l3t me g0"
+MAX_NAME_LEN = 50
+MIN_NAME_LEN = 1
+MAX_HANDLE_LEN = 20
+MIN_HANDLE_LEN = 2
+MIN_PASS_LEN = 6
 
 # checks that the token given is in the TOKENS dictionary as described in server.py
 
@@ -33,9 +39,8 @@ def generate_token(u_id):
     '''
     return jwt.encode({"u_id": u_id}, SECRET, algorithm="HS256").decode('utf-8')
 
+
 # retrieves token given a user id, returns None if the user is logged out FOR AUTH_LOGOUT
-
-
 def get_token(u_id):
     '''
     Returns the token of a user if he is logged on.
@@ -93,19 +98,26 @@ def auth_register(email, password, name_first, name_last):
         raise InputError(description="Input is not a valid email")
 
     # InputError if password is too short (less than 6 char)
-    if len(password) < 6:
+    if len(password) < MIN_PASS_LEN:
         raise InputError(
             description="Password too short, must be at least 6 characters")
 
-    # Length of name too long or too short
-    if len(name_first) < 1 or len(name_last) < 1 \
-            or len(name_first) > 50 or len(name_last) > 50:
+    if len(name_first) < MIN_NAME_LEN or len(name_last) < MIN_NAME_LEN \
+            or len(name_first) > MAX_NAME_LEN or len(name_last) > MAX_NAME_LEN:
         raise InputError(description="Names must be between 1 and 50 characters long inclusive, \
             and cannot contain exclusively whitespaces.")
-    # Names are not just spaces
+    
     if name_first.isspace() or name_last.isspace():
         raise InputError(
             description="Names cannot exclusively contain whitespaces.")
+
+    if name_first.lower() == "hangman":
+        raise InputError(
+            description="First name cannot be any case insensitive version of 'Hangman'")
+
+    if name_last.lower() == "b0t":
+        raise InputError(
+            description="Last name cannot be any case insensitive version of 'B0T'")
 
     # hash the password
     encrypted_pass = hashlib.sha256(password.encode()).hexdigest()
@@ -118,7 +130,7 @@ def auth_register(email, password, name_first, name_last):
     # Store the token-u_id pair in the temporary TOKEN dictionary
     get_tokens()[token] = u_id
 
-    # generate and return u_id and token
+    # return u_id and token
     return {
         "u_id": u_id,
         "token": token
@@ -164,7 +176,6 @@ def auth_login(email, password):
     # Store the token-u_id pair in the temporary TOKEN dictionary
 
 
-
 def auth_logout(token):
     '''
     input:valid token
@@ -178,3 +189,46 @@ def auth_logout(token):
     #remove the user's token
     get_tokens().pop(token)
     return {'is_success': True}
+
+def auth_passwordreset_request(email):
+    '''
+    Sends a reset code to a user's email and adds
+    the reset code to a dictionary
+    Input: User's email
+    Returns: None
+    '''
+    data = get_store()
+
+    if not data.users.email_used(email):
+        return {}
+
+    #Generates reset code for user and sends it to their email
+    #add reset code to dictionary for user
+    data.codes.push(email)
+
+    return {}
+
+def auth_passwordreset_reset(reset_code, new_password):
+    '''
+    Given a valid reset code change the user's password
+    to the new password given
+    Input: Reset code and new_password
+    Returns: None
+    '''
+    if len(new_password) < 6:
+        raise InputError(
+            description="Password too short, must be at least 6 characters")
+
+    data = get_store()
+
+    # Check if reset_code exists within dictionary and return the email key paired with that code
+    data.codes.code_exists(reset_code)
+    email = data.codes.find_email(reset_code)
+
+    #Retrieve user's id and set their new password
+    u_id = data.users.find_u_id(email[0])
+    data.users.set_password(u_id, new_password)
+    #Delete reset code from the dictionary
+    data.codes.delete(email[0])        
+
+    return {}
