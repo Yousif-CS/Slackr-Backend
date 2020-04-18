@@ -4,7 +4,7 @@ with the server's data when its launched
 '''
 
 from email.message import EmailMessage
-from threading import Timer, Thread
+import threading
 import pickle
 import random
 import uuid
