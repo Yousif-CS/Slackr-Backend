@@ -4,10 +4,9 @@ The server that handles the routes for slackr
 from json import dumps
 import sys
 import time
-import atexit
 from multiprocessing import Process
-import requests
 import json
+import requests
 from flask import Flask, request
 from flask_cors import CORS
 from error import InputError
@@ -27,15 +26,15 @@ from channel_routes import CHANNEL
 
 
 class CustomFlask(Flask):
+    '''
+    A simple abstraction over Flask that allows to add a callback after
+    the the initialization of the APP
+    '''
     def run(self, host=None, port=None, debug=None, load_dotenv=True, **options):
-        # if not self.debug or os.getenv('WERKZEUG_RUN_MAIN') == 'true':
-        #     with self.app_context():
-        #         do_something()
         try:
             state.initialize_state()
             super(CustomFlask, self).run(host=host, port=port, debug=debug, load_dotenv=load_dotenv, **options)
             UPDATE_PROCESS.daemon = True
-            # atexit.register(state.update_database)
             UPDATE_PROCESS.start()
             UPDATE_PROCESS.join()
         except KeyboardInterrupt:
@@ -85,16 +84,11 @@ def echo():
 # Database update route
 @APP.route("/update", methods=['PUT'])
 def update():
+    '''
+    A regular database updater that is invoked via a seperate process request
+    '''
     state.update_database()
     return json.dumps({})
-
-#DATABASE_UPDATER = state.StateTimer(state.SECONDS_TO_UPDATE, state.update_database)
-
-# def run_updater():
-#     '''
-#     a function that initializes the database updater in parallel
-#     '''
-#     DATABASE_UPDATER.run()
 
 #A timer that sends http requests to update database
 def update_timer():
@@ -109,46 +103,13 @@ def update_timer():
         pass
 
 UPDATE_PROCESS = Process(target=update_timer)
-UPDATE_PROCESS.daemon = True
-
-
-
-
-@APP.route('/ProcessRun', methods=['PUT'])
-def fork_process():
-    print('Forked Process!')
-    state.initialize_state()
-    UPDATE_PROCESS.daemon = True
-    UPDATE_PROCESS.start()
-    UPDATE_PROCESS.join()
-    
-def fork_request():
-    '''
-    Sends a request to the server to initialize the database updater
-    '''
-    try:
-        requests.put(f"{state.HOST}:{state.PORT}/ProcessRun", timeout=0.00000001)
-    except requests.exceptions.ReadTimeout:
-        print('Request timeout')
-        pass
 
 def main():
     print('Server Initiated!')
-    #state.PORT = int(sys.argv[1]) if len(sys.argv) == 2 else 8080
+    state.PORT = int(sys.argv[1]) if len(sys.argv) == 2 else 8080
     APP.run(port=state.PORT)
 
 
-def initialize():
-    try:
-        state.initialize_state()
-        UPDATE_PROCESS.start()
-        UPDATE_PROCESS.join()
-    except KeyboardInterrupt:
-        UPDATE_PROCESS.terminate()
-    finally:
-        state.update_database()
-
-#APP.before_first_request(initialize)
 
 if __name__ == "__main__":
     main()

@@ -5,7 +5,6 @@ with the server's data when its launched
 #pylint: disable=global-statement
 import threading
 import pickle
-import requests
 from error import InputError, AccessError
 
 #a constant to show a user is an admin
@@ -735,38 +734,6 @@ def initialize_state():
 # A constant to update the database every hour
 SECONDS_TO_UPDATE = 3000
 
-
-# class StateTimer(threading.Timer):
-#     '''
-#     A simple abstraction over the timer class to
-#     run a function every n seconds
-#     '''
-#     def run(self):
-#         while not self.finished.wait(self.interval):
-#             self.function(*self.args, **self.kwargs)
-
-# class StableThread(threading.Thread):
-#     '''
-#     A stable thread that stops when the main program closes (Database) before exiting
-#     '''
-
-#     def __init__(self, *args, **kwargs):
-#         super(StableThread, self).__init__(*args, **kwargs)
-#         self._stop_event = threading.Event()
-
-#     def stop(self):
-#         '''
-#         Kills the current thread
-#         '''
-#         self._stop_event.set()
-
-#     def is_stopped(self):
-#         '''
-#         Checks if the thread has been stopped
-#         '''
-#         return self._stop_event.is_set()
-
-
 def update_database():
     '''
     pickle the state database into a file
@@ -778,19 +745,4 @@ def update_database():
     with DATABASE_LOCK:
         with open('database.p', "wb") as database_file:
             pickle.dump(STORE, database_file)
-    print(STORE.users.all())
     print('Updated database!')
-
-# def kill_handler(sig, frame):
-#     '''
-#     A handler for when the server closes ubruptly, saves database and kills threads
-#     '''
-#     global DATABASE_UPDATER
-#     global STOP_FLAG
-#     STOP_FLAG = True
-#     global UPDATE_THREAD
-#     DATABASE_UPDATER.cancel()
-#     global UPDATE_THREAD
-#     UPDATE_THREAD.join()
-#     update_database()
-#     sys.exit(0)
