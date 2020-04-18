@@ -18,7 +18,6 @@ ADMIN = 1
 #a constant to show a user is a regular member
 MEMBER = 2
 #a constant defining the size of a message block
-MSG_BLOCK = 50
 
 # needed for generating the image_url
 ROUTE = '/imgurl'
@@ -172,6 +171,12 @@ class Channels():
         self._current_id = 0
 
     def add(self, details):
+        '''
+        Adds details of a channel to dictionary
+        Input: Channel details
+        Output: Channel
+        '''
+
         name, is_public = details
 
         self._num_channels += 1
@@ -196,12 +201,29 @@ class Channels():
         return self._current_id
 
     def is_private(self, channel_id):
+        '''
+        Checks if channel is private
+        Input: Channel id
+        Returns: False if private
+        '''
         return not self._channels[channel_id]['is_public']
 
     def channel_exists(self, channel_id):
+        '''
+        Checks if channel_exists
+        Input: Channel id
+        Returns: Channel_id or None
+        '''
+
         return channel_id in self._channels
 
     def channel_details(self, channel_id):
+        '''
+        Raise error if channel doesn't exist otherwise
+        return its details
+        Input: Channel id
+        Returns: Name and channel_id of a specified channel
+        '''
         if not self.channel_exists(channel_id):
             raise InputError(description="Channel does not exist")
 
@@ -212,6 +234,9 @@ class Channels():
         }
 
     def all(self):
+        '''
+        Returns list of all channels created displaying their details
+        '''
         channels_copy = dict(self._channels)
         return list(map(self.channel_details, channels_copy))
     
