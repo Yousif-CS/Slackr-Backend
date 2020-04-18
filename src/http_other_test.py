@@ -133,7 +133,8 @@ def test_user_remove_removed_from_channels(reset):
     user_remove(admin_token, u_id)
     #should only contain the admin now
     _, _, all_membs = channel_details(admin_token, channel_id)
-    assert len(all_membs) == 1
+    # 2 members since we have a hangman bot in each channel
+    assert len(all_membs) == 2
 
 def test_user_remove_removed_message(reset):
     '''
@@ -151,7 +152,8 @@ def test_user_remove_removed_message(reset):
     user_remove(admin_token, u_id)
     #their message should be removed from the channel
     messages, _, _ = channel_messages(admin_token, channel_id, start=0)
-    assert len(messages) == 0
+    #the reason we assert 1 is because the hangman sends a message at the start of channel
+    assert len(messages) == 1
 
 def test_user_remove_own(reset):
     '''

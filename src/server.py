@@ -3,6 +3,10 @@ The server that handles the routes for slackr
 '''
 from json import dumps
 import sys
+import time
+from multiprocessing import Process
+import json
+import requests
 from flask import Flask, request
 from flask_cors import CORS
 from error import InputError
@@ -19,7 +23,26 @@ from user_routes import USER
 from channels_routes import CHANNELS
 from channel_routes import CHANNEL
 
-APP = Flask(__name__)
+
+
+class CustomFlask(Flask):
+    '''
+    A simple abstraction over Flask that allows to add a callback after
+    the the initialization of the APP
+    '''
+    def run(self, host=None, port=None, debug=None, load_dotenv=True, **options):
+        try:
+            state.initialize_state()
+            super(CustomFlask, self).run(host=host, port=port, debug=debug, load_dotenv=load_dotenv, **options)
+            UPDATE_PROCESS.daemon = True
+            UPDATE_PROCESS.start()
+            UPDATE_PROCESS.join()
+        except KeyboardInterrupt:
+            state.update_database()
+            UPDATE_PROCESS.terminate()
+            print('Exiting server...')
+
+APP = CustomFlask(__name__)
 CORS(APP)
 
 
@@ -58,9 +81,35 @@ def echo():
         'data': data
     })
 
+# Database update route
+@APP.route("/update", methods=['PUT'])
+def update():
+    '''
+    A regular database updater that is invoked via a seperate process request
+    '''
+    state.update_database()
+    return json.dumps({})
+
+#A timer that sends http requests to update database
+def update_timer():
+    '''
+    An HTTP request to update the database every n seconds
+    '''
+    try:
+        while True:
+            time.sleep(state.SECONDS_TO_UPDATE)
+            requests.put(f"{state.HOST}:{state.PORT}/update")
+    except KeyboardInterrupt:
+        pass
+
+UPDATE_PROCESS = Process(target=update_timer)
+
+def main():
+    print('Server Initiated!')
+    state.PORT = int(sys.argv[1]) if len(sys.argv) == 2 else 8080
+    APP.run(port=state.PORT)
+
+
 
 if __name__ == "__main__":
-    state.initialize_state()
-    state.UPDATE_THREAD.start()
-    print('Server Initiated!')
-    APP.run(port=(int(sys.argv[1]) if len(sys.argv) == 2 else 8080))
+    main()
