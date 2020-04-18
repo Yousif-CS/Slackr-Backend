@@ -100,7 +100,8 @@ def user_profile_setemail(token, email):
         raise InputError(description="Input is not a valid email")
 
     # InputError if email not unique
-    # Allow if the user is simply changing their email to their current email again.
+    # Allow if the user is simply changing their email to their 
+    # email again.
     u_id = get_tokens()[token]
     data = get_store()
 

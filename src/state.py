@@ -2,9 +2,10 @@
 State variables and functions to deal
 with the server's data when its launched
 '''
-from threading import Timer, Thread
+#pylint: disable=global-statement
+import threading
 import pickle
-import sys
+import requests
 from error import InputError, AccessError
 
 #a constant to show a user is an admin
@@ -13,13 +14,14 @@ ADMIN = 1
 MEMBER = 2
 #a constant defining the size of a message block
 MSG_BLOCK = 50
+#A LOCK for concurrently updating the database
+DATABASE_LOCK = threading.Lock()
 
 # needed for generating the image_url
 ROUTE = '/imgurl'
 HOST = 'http://127.0.0.1'
-PORT = int(sys.argv[1]) if len(sys.argv) == 2 else 8080
 IMAGE_DIR = './images'
-
+PORT = 5000
 
 def is_this_user_reacted(u_id, link_info):
     '''
@@ -82,6 +84,7 @@ class Users():
             raise InputError('User does not exist')
 
         details = self._users[u_id]
+        global PORT
         return {
             'u_id': u_id,
             'email': details['email'],
@@ -128,7 +131,7 @@ class Users():
         self._users[u_id]['email'] = email
 
     def set_image(self, u_id):
-        self._users[u_id]['img_path'] = f"{self._img_dir}{u_id}.jpg"
+        self._users[u_id]['img_path'] = f"{self._img_dir}/{u_id}.jpg"
 
     def validate_login(self, email, password):
         try:
@@ -665,7 +668,7 @@ class Database():
             raise AccessError(description='You do not have access to pin message')
 
         self.messages.unpin(message_id)
-    
+
 STORE = Database()
 # this dictionary contains the session tokens that
 # won't need to be stored in the Store data dictionary for pickling
@@ -730,38 +733,64 @@ def initialize_state():
 
 
 # A constant to update the database every hour
-SECONDS_TO_UPDATE = 2
+SECONDS_TO_UPDATE = 3000
 
 
-class StateTimer(Timer):
-    '''
-    An simple abstraction over the timer class to
-    run a function every n seconds
-    '''
+# class StateTimer(threading.Timer):
+#     '''
+#     A simple abstraction over the timer class to
+#     run a function every n seconds
+#     '''
+#     def run(self):
+#         while not self.finished.wait(self.interval):
+#             self.function(*self.args, **self.kwargs)
 
-    def run(self):
-        while not self.finished.wait(self.interval):
-            self.function(*self.args, **self.kwargs)
+# class StableThread(threading.Thread):
+#     '''
+#     A stable thread that stops when the main program closes (Database) before exiting
+#     '''
+
+#     def __init__(self, *args, **kwargs):
+#         super(StableThread, self).__init__(*args, **kwargs)
+#         self._stop_event = threading.Event()
+
+#     def stop(self):
+#         '''
+#         Kills the current thread
+#         '''
+#         self._stop_event.set()
+
+#     def is_stopped(self):
+#         '''
+#         Checks if the thread has been stopped
+#         '''
+#         return self._stop_event.is_set()
 
 
 def update_database():
     '''
     pickle the state database into a file
     '''
-    global STORE # pylint: disable=global-statement
-    with open('database.p', "wb") as database_file:
-        pickle.dump(STORE, database_file)
+    # pylint: disable=global-statement
 
-# a Timer to update the database every hour
-DATABASE_UPDATER = StateTimer(SECONDS_TO_UPDATE, update_database)
+    global STORE
 
-def run_updater():
-    '''
-    a function that initializes the database updater in parallel
-    '''
-    DATABASE_UPDATER.run()
-# the thread that parallelizes the work
-UPDATE_THREAD = Thread(target=run_updater)
+    with DATABASE_LOCK:
+        with open('database.p', "wb") as database_file:
+            pickle.dump(STORE, database_file)
+    print(STORE.users.all())
+    print('Updated database!')
 
-# initialize state when imported
-initialize_state()
+# def kill_handler(sig, frame):
+#     '''
+#     A handler for when the server closes ubruptly, saves database and kills threads
+#     '''
+#     global DATABASE_UPDATER
+#     global STOP_FLAG
+#     STOP_FLAG = True
+#     global UPDATE_THREAD
+#     DATABASE_UPDATER.cancel()
+#     global UPDATE_THREAD
+#     UPDATE_THREAD.join()
+#     update_database()
+#     sys.exit(0)
