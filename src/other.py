@@ -8,6 +8,7 @@ from standup import get_standup, get_lock
 from state import get_store, get_tokens
 from auth import verify_token, get_token
 from error import InputError, AccessError
+from user import user_profile
 
 SLACKR_OWNER = 1
 SLACKR_MEMBER = 2
@@ -39,7 +40,7 @@ def userpermission_change(token, u_id, permission_id):
         raise AccessError(
             description="You do not have permission to change permissions")
 
-    # verify the admin cannot demote himself
+    # the admin cannot demote himself
     if u_id_invoker == u_id and permission_id == SLACKR_MEMBER:
         raise InputError(description='Cannot demote current user')
 
@@ -77,6 +78,10 @@ def user_remove(token, u_id):
     # verify the admin is not removing himself 
     if u_id == u_id_invoker:
         raise InputError(description='Cannot remove current user')
+
+    # cannot remove the hangman bot
+    if user_profile(token, u_id)['user']['name_first'] == 'Hangman':
+        raise InputError(description='Cannot remove Hangman B0T')
 
     # removing his user details
     data.users.remove(u_id)

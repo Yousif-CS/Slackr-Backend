@@ -1,9 +1,14 @@
 '''
 This file contains implementation for channels functions
 '''
+import hashlib
+import jwt
 from state import get_store, get_tokens
-from auth import verify_token, auth_register
+from auth import verify_token, generate_token, create_handle
 from error import InputError, AccessError
+from message import message_send
+from user import profile_uploadphoto
+from hangman import create_hbot
 
 
 def channels_list(token):
@@ -74,11 +79,12 @@ def channels_create(token, name, is_public):
     details = name, is_public
     new_id = data.add_channel(u_id, details)
 
-    # creating hangman bot
-    h_bot = auth_register('hangman@bot.com', 'botbotbot', 'Hangman', f'Bot{new_id}')
-    data.user_channel.add_link(h_bot['u_id'], new_id, is_owner=True)
-    data.channels.add_hbot_details(new_id, h_bot['u_id'], h_bot['token'])
-    # TODO: give the bot a profile pic
+    # CREATING HANGMAN BOT
+    hbot = create_hbot(new_id)
+
+    # Inform the first user of option to disable hangman game
+    message_send(hbot['token'], new_id, "For owners and admins: \
+        \nType '/disable game' to disable the hangman game. \nType '/enable game' to re-enable it.")
     
     return {
         'channel_id': new_id

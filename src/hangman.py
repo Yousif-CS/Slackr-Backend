@@ -4,13 +4,17 @@ which should be able to run within each channel of the slackr
 '''
 import random
 import string
-from state import get_store
+import hashlib
+from state import get_store, get_tokens
+from error import InputError, AccessError
+from auth import generate_token, create_handle
+
 
 word_file = "/usr/share/dict/words"
 with open(word_file) as FILE:   
     WORDS = FILE.read().splitlines()
 
-MAX_LIVES = 7
+MAX_LIVES = 9
 MAX_WORD_LEN = 10
 
 def generate_word():
@@ -23,6 +27,32 @@ def generate_word():
         word = random.choice(WORDS)
     
     return list(word.upper())
+
+def create_hbot(ch_id):
+    data = get_store()
+
+    email = f'hangman{ch_id}@bot.com'
+    password = 'botbotbot'
+    name_first = 'Hangman'
+    name_last = 'B0T'
+    
+    # hash the password
+    encrypted_pass = hashlib.sha256(password.encode()).hexdigest()
+
+    #Adds all user's details to the Database
+    details = email, encrypted_pass, name_first, name_last, create_handle(name_first, name_last)
+    hbot_id = data.add_user(details)
+    hbot_token = generate_token(hbot_id)
+    get_tokens()[hbot_token] = hbot_id
+
+    # Add the Hangman Bot to the channel just created
+    data.user_channel.add_link(hbot_id, ch_id, is_owner=True)
+    data.channels.add_hbot_details(ch_id, hbot_id, hbot_token)
+
+    return {
+        'id': hbot_id,
+        'token': hbot_token
+    }
 
 def start_game(channel_id):
     '''
@@ -116,3 +146,65 @@ def guess(letter, channel_id, name_first):
             data['output'] += '\n\n' + ' '.join(data['user_guess'])
 
     return data
+
+# detect commands /hangman, /guess <letterName>, /quit
+def hangman(message, channel_id, u_id):
+    data = get_store()
+
+    hbot_output = None
+
+    if message == '/hangman' and data.channels.is_hangman_enabled(channel_id):
+        # idempotency of /hangman command
+        if data.channels.is_hangman_running(channel_id):
+            raise InputError(description="Hangman is already running")
+        # obtain all the base data needed to start a game of hangman
+        hangman_data = start_game(channel_id)
+        # store this data as part of the channel's info
+        data.channels.start_hangman(channel_id, hangman_data)
+        # obtain the message for the bot to send back 
+        hbot_output = data.channels.get_hangman(channel_id)['output']
+
+    elif data.channels.is_hangman_running(channel_id):
+        # message needs to start with '/guess' and contain 1 single letter
+        if message.startswith('/guess'):
+            try:
+                letter = message.split(" ", 1)[1].strip()
+                # update the hangman dictionary based on the user's guess
+                new_details = guess(letter, channel_id, data.users.user_details(u_id)['name_first'])
+                data.channels.edit_hangman(channel_id, new_details)
+                hbot_output = new_details['output']
+
+                if new_details['game_end'] is True:
+                    data.channels.quit_hangman(channel_id)
+            except:
+                raise InputError(description="Please enter a single letter to guess!")
+
+        elif message == '/quit':
+            data.channels.quit_hangman(channel_id)
+            hbot_output = "Quitting game. Goodbye!"
+
+        elif message == '/disable game':
+            if data.admins.is_admin(u_id) or data.user_channel.is_owner(u_id, channel_id):
+                data.channels.quit_hangman(channel_id)
+                hbot_output = "Quitting game. Goodbye! \
+                    \nHangman disabled. Type '/enable game' to re-enable the game."
+            else:
+                raise AccessError(
+                    description="You do not have permission to change game settings in this channel")
+    else:
+        if message == '/disable game':
+            if data.admins.is_admin(u_id) or data.user_channel.is_owner(u_id, channel_id):
+                data.channels.disable_hangman(channel_id)
+                hbot_output = "Hangman disabled. \nType '/enable game' to re-enable the game."
+            else:
+                raise AccessError(
+                    description="You do not have permission to change game settings in this channel")
+        elif message == '/enable game':
+            if data.admins.is_admin(u_id) or data.user_channel.is_owner(u_id, channel_id):
+                data.channels.enable_hangman(channel_id)
+                hbot_output = "Hangman enabled. \nType '/disable game' to disable the game."
+            else:
+                raise AccessError(
+                    description="You do not have permission to change game settings in this channel")
+    
+    return hbot_output
