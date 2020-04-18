@@ -1,5 +1,13 @@
 '''
-Implementations of message functionalities
+File contains implementations of functions:
+- message_send
+- message_sendlater
+- message_pin
+- message_unpin
+- message_remove
+- message_edit
+- message_react
+- message_unreact
 '''
 
 import sched
@@ -17,9 +25,23 @@ MY_SCHEDULER = sched.scheduler(time, sleep)
 
 def message_send(token, channel_id, message):
     '''
-    input: valid token, channel_id to send message into, actual message string
-    output: a globally unique message_id in dictionary
+    Sends a message into channel with ID channel_id
+
+    Parameters:
+        valid token (str): of authorised user
+        channel_id (int): the channel into which the message is to be sent
+        message (str): the message to be sent by the authorised user into channel
+
+    Returns: dictionary containing:
+        message_id (int): ID assigned to the new message
+
+    Raises:
+        InputError: if message length is greater than 1000 strings or message is empty,
+            or channel_id is invalid
+        AccessError: if token is invalid, or the authorised user is not part of
+            the channel with ID channel_id
     '''
+
     # verify the user
     if verify_token(token) is False:
         raise AccessError(description='Invalid token')
@@ -44,7 +66,7 @@ def message_send(token, channel_id, message):
 
     # Facilitation of Hangman Game
     hbot_output = hangman(message, channel_id, u_id)
-    if hbot_output != None:
+    if hbot_output is not None:
         # obtain the token of the hangman bot for the channel we are currently in
         hbot_token = data.channels.get_hbot_details(channel_id)[1]
         message_send(hbot_token, channel_id, hbot_output)
@@ -54,19 +76,37 @@ def message_send(token, channel_id, message):
     }
 
 
-# set up scheduler wrapper function
 def run_scheduler(target, time_sent, args):
     '''
-    Wrapper for scheduler
+    A helper function to run the scheduler wrapper function to execute message_sendlater
+
+    Parameters:
+        target function: name of the function to be run by run_scheduler
+        time_sent (float): the unix timestamp for time to execute the action
+        arguments (tuple): a collection of arguments to pass into the target
     '''
+
     MY_SCHEDULER.enterabs(time_sent, 1, action=target, argument=args)
     MY_SCHEDULER.run()
 
 def message_sendlater(token, channel_id, message, time_sent):
     '''
-    input: valid token, channel_id, message and time in the future
-    output: {message_id};
-    Sends message from user to channel (specified by id) at specific time, automatically
+    Sends a message into channel with ID channel_id at a specified time in the future
+
+    Parameters:
+        valid token (str): of authorised user
+        channel_id (int): the channel into which the message is to be sent
+        message (str): the message to be sent by the authorised user into channel
+        time_sent (float): unix timestamp of a time in the future for message to be sent
+
+    Returns: dictionary containing:
+        message_id (int): ID assigned to the new message
+
+    Raises:
+        InputError: if message length is greater than 1000 strings or message is empty,
+            or channel_id is invalid, or time_sent is not a correctly formatted future timestamp
+        AccessError: if token is invalid, or the authorised user is not part of
+            the channel with ID channel_id
     '''
     # verify the user
     if verify_token(token) is False:
@@ -104,10 +144,20 @@ def message_sendlater(token, channel_id, message, time_sent):
 
 def message_pin(token, message_id):
     '''
-    input: token, message_id
-    output: {}
-    Given message within a channel, mark it as 'pinned'
+    Pins the message with ID message_id in the channel that it is in
+    Parameters:
+        valid token (str): of authorised user
+        message_id (int): ID of the message to be pinned
+
+    Returns: empty dictionary
+
+    Raises:
+        InputError: if message with ID message_id is not a valid message, or
+            message is already pinned
+        AccessError: if token is invalid, or if authorised user is not a slackr
+            owner nor an admin of the channel in which the message is
     '''
+
     # verify the user
     if verify_token(token) is False:
         raise AccessError(description='Invalid token')
@@ -123,10 +173,20 @@ def message_pin(token, message_id):
 
 def message_unpin(token, message_id):
     '''
-    input: token, message_id
-    output: {}
-    Given message within a channel, remove its pinned status
+    Unpins the message with ID message_id in the channel that it is in
+    Parameters:
+        valid token (str): of authorised user
+        message_id (int): ID of the message to be unpinned
+
+    Returns: empty dictionary
+
+    Raises:
+        InputError: if message with ID message_id is not a valid message, or
+            message is currently unpinned
+        AccessError: if token is invalid, or if authorised user is not a slackr
+            owner nor an admin of the channel in which the message is
     '''
+
     # verify the user
     if verify_token(token) is False:
         raise AccessError(description='Invalid token')
@@ -142,13 +202,20 @@ def message_unpin(token, message_id):
 
 def message_remove(token, message_id):
     '''
-    input: valid token, message_id of message to be removed
-    output: {}; just removes message from the channel
-    errors: InputError when message no longer exists (i.e. message_id not exist)
-    AccessError: none of:
-        message with message_id sent by user making the request
-        authorised user is admin or owner of this channel or slackr
+    Removes the message with ID message_id from the channel that it is currently in
+    Parameters:
+        valid token (str): of authorised user
+        message_id (int): ID of the message to be removed
+
+    Returns: empty dictionary
+
+    Raises:
+        InputError: if message with ID message_id is not a valid message or does not exist
+        AccessError: if token is invalid, or if authorised user is not a slackr
+            owner nor an admin of the channel in which the message is, and is not the user who
+            sent the original message
     '''
+
     # verify the user
     if verify_token(token) is False:
         raise AccessError(description='Invalid token')
@@ -158,10 +225,12 @@ def message_remove(token, message_id):
     # getting id of the user
     u_id = get_tokens()[token]
 
+    # check whether the message exists
     if not data.messages.message_exists(message_id):
         raise InputError(
             description='Invalid message ID')
 
+    # check if the user has permissions to remove the message
     channel_id = data.user_message.message_channel(message_id)
     if not (data.user_channel.is_owner(u_id, channel_id) or data.admins.is_admin(u_id) \
         or data.user_message.is_sender(message_id, u_id)):
@@ -174,8 +243,16 @@ def message_remove(token, message_id):
 
 def has_message_edit_permission(auth_u_id, message_id):
     '''
-    Check if user is the sender, or an admin or an owner of the channel
+    A helper function  for message_edit which determines whether a user has edit permissions
+
+    Parameters:
+        user ID (int): of the user invoking message_edit
+        message_id (int): of the message to be edited
+
+    Returns:
+        True / False (bool): whether the user has permission to edit the message
     '''
+
     data = get_store()
 
     # check if auth user is a slackr owner
@@ -190,18 +267,22 @@ def has_message_edit_permission(auth_u_id, message_id):
     # find the message
     # find the channel it belongs to
     ch_id = data.user_message.message_channel(message_id)
-    if data.user_channel.is_owner(auth_u_id, ch_id):
-        return True
-    else:
-        return False
+    return data.user_channel.is_owner(auth_u_id, ch_id)
+
 
 def message_edit(token, message_id, message):
     '''
-    Given a message, update it's text with new text. If the new message
-    is an empty string, the message is deleted.
-    Empty message string: delete message.
-    AccessError if request is not made by: authorised user OR
-    (admin or owner) of (channel or slacker).
+    Edits the message with ID message_id in the channel that it is in
+    Parameters:
+        valid token (str): of authorised user
+        message_id (int): ID of the message to be edited
+        new message (str): to replace the old message
+
+    Raises:
+        InputError: if message with ID message_id is not a valid message or does not exist
+        AccessError: if token is invalid, or if authorised user is not a slackr
+            owner nor an admin of the channel in which the message is, and is not the user who
+            sent the original message
     '''
 
     # verify the validity of the token
@@ -227,13 +308,20 @@ def message_edit(token, message_id, message):
 
 def message_react(token, message_id, react_id):
     '''
-    input: valid token, message_id, react_id
-    output: {}
-    Errors: InputError:
-        message_id not valid message within channel that user has joined
-        react_id not valid (only valid react ID is 1)
-        message with message_id as id already has a react with ID react_id
+    Adds a 'react' to a specified message within a channel from the user
+    Parameters:
+        valid token (str): of authorised user
+        message_id (int): ID of the message to be given a react
+        react_id (int): a valid react ID to give to the message
+
+    Raises:
+        InputError: if message with ID message_id is not a valid message or does not exist, or
+            if react_id is not a valid react, or message already has an existing react of react_id
+            given by the current user
+        AccessError: if token is invalid, or if the user is not part of the channel in which the
+            message is
     '''
+
     # verify the user
     if verify_token(token) is False:
         raise AccessError(description='Invalid token')
@@ -258,13 +346,20 @@ def message_react(token, message_id, react_id):
 
 def message_unreact(token, message_id, react_id):
     '''
-    input: valid token, message_id, react_id
-    output: {}
-    Errors: InputError:
-        message_id not valid message within channel that user has joined
-        react_id not valid (only valid react ID is 1)
-        message with message_id as id already has a react with ID react_id
+    Removes a certain 'react' from a specified message within a channel
+    Parameters:
+        valid token (str): of authorised user
+        message_id (int): ID of the message to be given a react
+        react_id (int): a valid react ID to be removed from the message
+
+    Raises:
+        InputError: if message with ID message_id is not a valid message or does not exist, or
+            if react_id is not a valid react, or message already has no current react of react_id
+            from the current user
+        AccessError: if token is invalid, or if the user is not part of the channel in which the
+            message exists
     '''
+
     # verify the user
     if verify_token(token) is False:
         raise AccessError(description='Invalid token')
