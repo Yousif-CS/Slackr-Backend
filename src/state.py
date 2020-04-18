@@ -23,7 +23,7 @@ MSG_BLOCK = 50
 # needed for generating the image_url
 ROUTE = '/imgurl'
 HOST = 'http://127.0.0.1'
-PORT = 5000
+PORT = int(sys.argv[1]) if len(sys.argv) == 2 else 8080
 IMAGE_DIR = './images'
 def is_this_user_reacted(u_id, link_info):
     #updating is_this_user_reacted based on the authorized user
