@@ -165,6 +165,12 @@ class Admins():
         return p_id in self._valid_permissions
 
 class Channels():
+    '''
+    A class to add newly created channels to the database
+    and also gather information about specified channels.
+    Also store information about the hangman game within
+    each channel
+    '''
     def __init__(self):
         self._channels = dict()
         self._num_channels = 0
@@ -176,7 +182,6 @@ class Channels():
         Input: Channel details
         Output: Channel
         '''
-
         name, is_public = details
 
         self._num_channels += 1
@@ -236,7 +241,7 @@ class Channels():
 
     def all(self):
         '''
-        Returns list of all channels created displaying their details
+        Returns a list of all channels created, displaying their details
         '''
         channels_copy = dict(self._channels)
         return list(map(self.channel_details, channels_copy))
@@ -244,51 +249,81 @@ class Channels():
 
 # methods relating to hangman game
     def is_hangman_enabled(self, channel_id):
+        '''
+        Check if hangman game is enabled
+        '''
         return bool(self._channels[channel_id]['hangman']['is_enabled'])
 
     def enable_hangman(self, channel_id):
+        '''
+        Enables hangman game within channel
+        '''
+
         self._channels[channel_id]['hangman']['is_enabled'] = True
 
     def disable_hangman(self, channel_id):
+        '''
+        Disable hangman game within channel
+        '''
         self._channels[channel_id]['hangman']['is_enabled'] = False
 
     def is_hangman_running(self, channel_id):
+        '''
+        Check if hangman game is running in channel
+        '''
+
         return bool(self._channels[channel_id]['hangman']['is_running'])
 
     def add_hbot_details(self, channel_id, bot_id, bot_token):
+        '''
+        Given bot id and token add the details to the channel dictionary
+        '''
         self._channels[channel_id]['hangman']['bot_id'] = bot_id
         self._channels[channel_id]['hangman']['bot_token'] = bot_token
 
     def get_hbot_details(self, channel_id):
+        '''
+        Given a channel id return details about hangman game bot
+        '''
         return (
-            self._channels[channel_id]['hangman']['bot_id'], 
+            self._channels[channel_id]['hangman']['bot_id'],
             self._channels[channel_id]['hangman']['bot_token']
         )
-
-    # changes the state of hangman in specified channel to True,
-    # and pass in details to channel dictionary
     def start_hangman(self, channel_id, details):
+        '''
+        Changes the state of hangman in specified channel to True
+        And passes in details to dicitonary
+        '''
         self._channels[channel_id]['hangman']['is_running'] = True
         # initialising variables to start game
         self._channels[channel_id]['hangman']['data'] = details
         # TODO: send the message as a bot?
 
-
     def get_hangman(self, channel_id):
+        '''
+        Return dictionary of the details of the current hangman game
+        '''
         return dict(self._channels[channel_id]['hangman']['data'])
 
     # for each turn during the ongoing game
     def edit_hangman(self, channel_id, new_details):
+        
         details = self.get_hangman(channel_id)
         self._channels[channel_id]['hangman']['data'] = new_details
         # TODO: what to do with old details
 
     def quit_hangman(self, channel_id):
-        # clear all data in the hangman dict
+        '''
+        Clear all data in the hangman dict
+        '''
         self._channels[channel_id]['hangman']['data'].clear()
         self._channels[channel_id]['hangman']['is_running'] = False
 
 class Codes():
+    '''
+    A class to store reset codes in a dictionary with a user's email
+    as the key to allow users to reset their passwords
+    '''
     def __init__(self):
         self._codes_dict = dict()
         self._num_codes = 0
@@ -305,9 +340,8 @@ class Codes():
         #Generate a unique and secure reset code
         reset_code = uuid.uuid4().hex
         reset_code = reset_code.upper()[0:str_len]
-        
         return reset_code
-    
+
     def _send_email(self, email):
         sender_email = 'comp1531resetpass@gmail.com'
         sender_pass = 'git_commitment_issues'
@@ -321,28 +355,38 @@ class Codes():
             smtp.send_message(msg)
 
     def push(self, email):
+        '''
+        Append reset_code to dictionary
+        '''
         if email in self._codes_dict:
             self.delete(email)
-        
+
         reset_code = self._generate_reset_code()
-        
         self._codes_dict[email] = reset_code
         self._num_codes += 1
         self._send_email(email)
     
     def delete(self, email):
+        '''
+        Delete reset code from dicitonary
+        '''
         del self._codes_dict[email]
         self._num_codes -= 1
 
     def code_exists(self, reset_code):
+        '''
+        Check if given reset code exists within dictionary else raise an error
+        '''
         for values in self._codes_dict.values():
             if reset_code in values:
                 return True
-        
         raise InputError(description="Reset code is not valid")
     
     def find_email(self, reset_code):
-        return [key for (key,value) in self._codes_dict.items() if value == reset_code]
+        '''
+        Returns email within codes dictionary if reset code matches one in the dictionary
+        '''
+        return [key for (key, value) in self._codes_dict.items() if value == reset_code]
 
 class Messages():
     def __init__(self):
