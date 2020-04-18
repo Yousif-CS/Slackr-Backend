@@ -245,6 +245,6 @@ def test_standup_send_non_blocking(reset):
     message_send(my_token, channel_id, 'should be first message sent')
     time.sleep(3.1)
     messages = channel_messages(my_token, channel_id, start=0)[0]
-    assert len(messages) == 2
+    assert len(messages) == 3 #hangman bot sends a message at the creation of the channel
     assert messages[0]['message'] == \
         'should be last message sent pt1\nshould be last message sent pt2'

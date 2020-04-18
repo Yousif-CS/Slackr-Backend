@@ -10,7 +10,7 @@ import pytest #pylint: disable=import-error
 from error import InputError, AccessError
 from user import user_profile, user_profile_setname, user_profile_setemail, user_profile_sethandle
 from auth import auth_register, auth_logout
-from other import workspace_reset
+from other import workspace_reset 
 
 
 # creates users jwang and kli, and login
@@ -33,7 +33,8 @@ def test_access_own_profile(get_users):
             "email": "joshua@gmail.com",
             "name_first": "Joshua",
             "name_last": "Wang",
-            "handle_str": "joshuawang"
+            "handle_str": "joshuawang",
+            "profile_img_url": ""
         }
     }
 
