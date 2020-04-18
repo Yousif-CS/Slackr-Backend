@@ -18,7 +18,7 @@ ADMIN = 1
 #a constant to show a user is a regular member
 MEMBER = 2
 #a constant defining the size of a message block
-
+MSG_BLOCK = 50
 # needed for generating the image_url
 ROUTE = '/imgurl'
 HOST = 'http://127.0.0.1'
