@@ -507,8 +507,32 @@ class UserMessage():
 
 class UserChannel():
     '''
-    Contains a structure that maintains the relationship
-    between users and the channels they have joined
+    A class that maintains the relationship between users and the channels they have joined.
+
+    Attributes:
+    -----------
+    user_channels : list
+        Contains tuples linking u_id's to channel_id's, as well as
+        whether the user with u_id is an owner of that channel
+    
+    Methods:
+    --------
+    add_link(u_id, channel_id, is_owner)
+        links a u_id to a channel_id, adding whether the user is an owner of that channel
+    remove_link_by_user(u_id)
+        removes a link between a u_id and a channel_id
+    remove_link_by_channel(channel_id)
+    remove_user(u_id, channel_id)
+    add_owner(u_id, channel_id)
+    remove_owner(u_id, channel_id)
+    join_channel(u_id, channel_id)
+    leave_channel(u_id, channel_id)
+    link_exists(self, u_id, channel_id)
+    is_member(self, u_id, channel_id)
+    is_owner(self, u_id, channel_id)
+    members(self, channel_id)
+    owners(self, channel_id)
+    user_channels(self, given_u_id)
     '''
     def __init__(self):
         self._user_channels = list()
