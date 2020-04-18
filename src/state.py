@@ -23,7 +23,7 @@ MSG_BLOCK = 50
 # needed for generating the image_url
 ROUTE = '/imgurl'
 HOST = 'http://127.0.0.1'
-PORT = 5000
+PORT = int(sys.argv[1]) if len(sys.argv) == 2 else 8080
 IMAGE_DIR = './images'
 def is_this_user_reacted(u_id, link_info):
     #updating is_this_user_reacted based on the authorized user
@@ -182,6 +182,7 @@ class Channels():
             'hangman': {
                 'bot_id': -1,
                 'bot_token': 'o',
+                'is_enabled': True,
                 'is_running': False,
                 'data': {}
                 # data added here when game begins
@@ -214,8 +215,18 @@ class Channels():
     def all(self):
         channels_copy = dict(self._channels)
         return list(map(self.channel_details, channels_copy))
-    
-    # methods relating to hangman game
+
+
+# methods relating to hangman game
+    def is_hangman_enabled(self, channel_id):
+        return bool(self._channels[channel_id]['hangman']['is_enabled'])
+
+    def enable_hangman(self, channel_id):
+        self._channels[channel_id]['hangman']['is_enabled'] = True
+
+    def disable_hangman(self, channel_id):
+        self._channels[channel_id]['hangman']['is_enabled'] = False
+
     def is_hangman_running(self, channel_id):
         return bool(self._channels[channel_id]['hangman']['is_running'])
 
