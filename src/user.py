@@ -25,9 +25,10 @@ MAX_NAME_LEN = 50
 MIN_HANDLE_LEN = 2
 MAX_HANDLE_LEN = 20
 
+
 def user_profile(token, u_id):
     '''
-    Returns profile information about the specified user; specifically, 
+    Returns profile information about the specified user; specifically,
     u_id, email, name_first, name_last, handle_str, profile_img_url
 
     Args:
@@ -46,7 +47,8 @@ def user_profile(token, u_id):
     if verify_token(token) is False:
         raise AccessError(description="Invalid token")
 
-    # check that the u_id of the user whose information the authorised user wants to access is valid
+    # check that the u_id of the user whose information the authorised user
+    # wants to access is valid
     data = get_store()
     return {'user': data.users.user_details(u_id)}
 
@@ -72,7 +74,8 @@ def user_profile_setname(token, name_first, name_last):
     # verify that changes to name are allowed
     if len(name_first) < MIN_NAME_LEN or len(name_last) < MIN_NAME_LEN \
             or len(name_first) > MAX_NAME_LEN or len(name_last) > MAX_NAME_LEN:
-        raise InputError(description="Names must be between 1 and 50 characters long inclusive.")
+        raise InputError(
+            description="Names must be between 1 and 50 characters long inclusive.")
     # another verification that names are not just spaces
     if name_first.isspace() or name_last.isspace():
         raise InputError(
@@ -112,11 +115,14 @@ def user_profile_setemail(token, email):
     data = get_store()
 
     # InputError if email not unique
-    # Allow if the user is simply changing their email to their current email again.
+    # Allow if the user is simply changing their email to their current email
+    # again.
     if data.users.email_used(email):
-        raise InputError(description="this email is already being used by another user")
+        raise InputError(
+            description="this email is already being used by another user")
 
-    # Change the user's email in the STORE databas if the above hurdles are passed
+    # Change the user's email in the STORE databas if the above hurdles are
+    # passed
     data.users.set_email(u_id, email)
 
 
@@ -151,12 +157,15 @@ def user_profile_sethandle(token, handle_str):
     data = get_store()
 
     # verify the new handle_str is unique
-    # allow the "change" if the authorised user's new handle_str is identical to their old one.
-    if data.users.get_handle(u_id) != handle_str and not data.users.handle_unique(handle_str):
+    # allow the "change" if the authorised user's new handle_str is identical
+    # to their old one.
+    if data.users.get_handle(
+            u_id) != handle_str and not data.users.handle_unique(handle_str):
         raise InputError(description="new handle_str not unique to this user")
 
     # change the handle_str in the database
     data.users.set_handle(u_id, handle_str)
+
 
 def profile_uploadphoto(token, url, box):
     '''

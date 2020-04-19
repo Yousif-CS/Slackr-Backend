@@ -6,7 +6,7 @@ Integration tests for hangman
 #pylint: disable=redefined-outer-name
 #pylint: disable=trailing-whitespace
 
-import pytest #pylint: disable=import-error
+import pytest  # pylint: disable=import-error
 from error import InputError, AccessError
 from hangman import generate_word, start_game, guess
 from message import message_send
@@ -15,9 +15,11 @@ from channel import channel_messages
 from auth import auth_register, auth_logout
 from other import workspace_reset
 
+
 @pytest.fixture
 def reset():
     workspace_reset()
+
 
 def test_generate_word(reset):
     assert len(generate_word()) <= 10
@@ -32,18 +34,28 @@ def test_generate_word(reset):
     assert len(generate_word()) <= 10
     assert len(generate_word()) <= 10
 
+
 def test_start_game(reset):
-    owner = auth_register("help@email.com", "quarantine driving me crazy", "bot", "aksd")
+    owner = auth_register(
+        "help@email.com",
+        "quarantine driving me crazy",
+        "bot",
+        "aksd")
     new_ch = channels_create(owner['token'], 'Channel1', is_public=True)
     data = start_game(new_ch['channel_id'])
-    message_send(owner['token'], new_ch['channel_id'], '/hangman') 
+    message_send(owner['token'], new_ch['channel_id'], '/hangman')
     message_send(owner['token'], new_ch['channel_id'], '/guess q')
-    message_send(owner['token'], new_ch['channel_id'], '/guess z') 
-    message_send(owner['token'], new_ch['channel_id'], '/guess v')  
-    assert channel_messages(owner['token'], new_ch['channel_id'], 0)== ''
+    message_send(owner['token'], new_ch['channel_id'], '/guess z')
+    message_send(owner['token'], new_ch['channel_id'], '/guess v')
+    assert channel_messages(owner['token'], new_ch['channel_id'], 0) == ''
+
 
 def test_hangman(reset):
-    owner = auth_register("help@email.com", "quarantine driving me crazy", "bot", "aksd")
+    owner = auth_register(
+        "help@email.com",
+        "quarantine driving me crazy",
+        "bot",
+        "aksd")
     new_ch = channels_create(owner['token'], 'Channel1', is_public=True)
     msg1 = message_send(owner['token'], new_ch['channel_id'], "/hangman")
 

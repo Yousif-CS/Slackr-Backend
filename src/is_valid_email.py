@@ -1,4 +1,4 @@
-""" Checks whether an email is valid. Code sourced entirely from 
+""" Checks whether an email is valid. Code sourced entirely from
 https://www.geeksforgeeks.org/check-if-email-address-valid-or-not-in-python/
 with minor modifications."""
 import re

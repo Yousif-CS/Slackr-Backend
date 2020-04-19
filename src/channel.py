@@ -25,12 +25,14 @@ def channel_invite(token, channel_id, u_id):
     # check that channel_id corresponds to a valid channel
     data = get_store()
     if not data.channels.channel_exists(channel_id):
-        raise InputError(description="Channel with this channel ID does not exist")
+        raise InputError(
+            description="Channel with this channel ID does not exist")
 
     # check that the authorised user belongs to this valid channel
     auth_u_id = get_tokens()[token]
     if not data.user_channel.is_member(auth_u_id, channel_id):
-        raise AccessError(description="The authorised user is not a member of channel with this channel ID")
+        raise AccessError(
+            description="The authorised user is not a member of channel with this channel ID")
 
     # check that u_id corresponds to a valid user
     if not data.users.user_exists(u_id):
@@ -38,8 +40,9 @@ def channel_invite(token, channel_id, u_id):
 
     # add the user with u_id into the channel
     # update the database by adding a link between the user and the channel
-    #checks if user is already apart of the channel
+    # checks if user is already apart of the channel
     data.user_channel.join_channel(u_id, channel_id)
+
 
 def channel_details(token, channel_id):
     '''
@@ -64,7 +67,7 @@ def channel_details(token, channel_id):
         raise AccessError(
             description="The authorised user is not a member of channel with this channel ID")
 
-    #Create two lists and append details about owner members of the channel and all its members
+    # Create two lists and append details about owner members of the channel and all its members
     # return the dictionary containing details of the channel
     return {
         "name": data.channels.channel_details(channel_id)['name'],
@@ -101,7 +104,7 @@ def channel_messages(token, channel_id, start):
     return {"messages": messages,
             "start": start,
             "end": -1 if not more else start + MESSAGE_BLOCK
-           }
+            }
 
 
 def channel_leave(token, channel_id):
@@ -130,6 +133,7 @@ def channel_leave(token, channel_id):
     data.user_channel.leave_channel(u_id, channel_id)
     return {}
 
+
 def channel_join(token, channel_id):
     '''
     input: a token and a channel_id
@@ -154,13 +158,15 @@ def channel_join(token, channel_id):
 
     # verify the channel is public unless user is a slackr owner
     if not data.admins.is_admin(u_id) and data.channels.is_private(channel_id):
-        raise AccessError(description="Cannot join channel: channel is private")
+        raise AccessError(
+            description="Cannot join channel: channel is private")
 
-    #... joining channel: if admin
+    # ... joining channel: if admin
     if data.admins.is_admin(u_id):
         data.user_channel.add_owner(u_id, channel_id)
     else:
         data.user_channel.join_channel(u_id, channel_id)
+
 
 def channel_addowner(token, channel_id, u_id):
     '''
@@ -187,6 +193,7 @@ def channel_addowner(token, channel_id, u_id):
             description="You do not have privileges to add owners")
 
     data.user_channel.add_owner(u_id, channel_id)
+
 
 def channel_removeowner(token, channel_id, u_id):
     '''

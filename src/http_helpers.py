@@ -96,8 +96,8 @@ def message_sendlater(token, channel_id, message, time_sent):
         'message': message,
         'time_sent': time_sent,
     }).encode()
-    request = urllib.request.Request(urls.SENDLATER_URL, data=data, \
-        method='POST', headers={'Content-Type':'application/json'})
+    request = urllib.request.Request(urls.SENDLATER_URL, data=data,
+                                     method='POST', headers={'Content-Type': 'application/json'})
     msg_details = json.load(urllib.request.urlopen(request))
     return msg_details['message_id']
 
@@ -130,6 +130,7 @@ def message_edit(token, message_id, message):
 
     urllib.request.urlopen(request)
 
+
 def message_react(token, message_id, react_id):
     '''
     HTTP request to react to a given message
@@ -142,6 +143,7 @@ def message_react(token, message_id, react_id):
     request = urllib.request.Request(urls.REACT_URL, data=data,
                                      method='POST', headers={'Content-Type': 'application/json'})
     urllib.request.urlopen(request)
+
 
 def message_unreact(token, message_id, react_id):
     '''
@@ -156,6 +158,7 @@ def message_unreact(token, message_id, react_id):
                                      method='POST', headers={'Content-Type': 'application/json'})
     urllib.request.urlopen(request)
 
+
 def message_pin(token, message_id):
     '''
     HTTP request to pin a message
@@ -167,6 +170,7 @@ def message_pin(token, message_id):
     request = urllib.request.Request(urls.PIN_URL, data=data,
                                      method='POST', headers={'Content-Type': 'application/json'})
     urllib.request.urlopen(request)
+
 
 def message_unpin(token, message_id):
     '''
@@ -218,29 +222,32 @@ def channels_listall(token):
         'token': token
     })
 
-    all_list = json.load(urllib.request.urlopen(f"{BASE_URL}/channels/listall?{query}"))
+    all_list = json.load(urllib.request.urlopen(
+        f"{BASE_URL}/channels/listall?{query}"))
     return all_list['channels']
 
 
 # --------------------------channel--------------------------
 
 
-def channel_invite(token, channel_id, user_id): 
+def channel_invite(token, channel_id, user_id):
     '''
     HTTP request to invite user to a channel
     '''
     data = json.dumps({
         'token': token,
         'channel_id': channel_id,
-        'u_id' : user_id
+        'u_id': user_id
     }).encode()
 
-    request = urllib.request.Request(urls.INVITE_URL, data=data, method='POST', headers={'Content-Type': 'application/json'})
+    request = urllib.request.Request(
+        urls.INVITE_URL, data=data, method='POST', headers={
+            'Content-Type': 'application/json'})
     urllib.request.urlopen(request)
 
 
 def channel_details(token, channel_id):
-    ''' 
+    '''
     HTTP request to gather details of a channel user is part of
     '''
     query = urllib.parse.urlencode({
@@ -250,7 +257,6 @@ def channel_details(token, channel_id):
     details = json.load(urllib.request.urlopen(
         f"{urls.CHANNEL_DETAILS_URL}?{query}"))
     return details['name'], details['owner_members'], details['all_members']
- 
 
 
 def channel_messages(token, channel_id, start):
@@ -449,6 +455,7 @@ def userpermission_change(token, u_id, permission_id):
 
     urllib.request.urlopen(request)
 
+
 def user_remove(token, u_id):
     '''
     HTTP request to change user permissions
@@ -458,8 +465,11 @@ def user_remove(token, u_id):
         'u_id': u_id
     })
 
-    request = urllib.request.Request(f"{urls.USER_REMOVE_URL}?{data}", method='DELETE')
+    request = urllib.request.Request(
+        f"{urls.USER_REMOVE_URL}?{data}",
+        method='DELETE')
     urllib.request.urlopen(request)
+
 
 def users_all(token):
     '''
