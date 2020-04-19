@@ -2,12 +2,12 @@
 Tests for channels functionalities
 '''
 
+import pytest
 from channel import channel_invite, channel_details
 from auth import auth_register
 from channels import channels_list, channels_listall, channels_create
 from error import InputError, AccessError
 from other import workspace_reset
-import pytest #pylint: disable=import-error
 
 
 #------------------testing channels_list--------------------
@@ -190,7 +190,7 @@ def test_channels_create_correct_details(): #pylint: disable=missing-function-do
     workspace_reset()
     # creating and registering user
     user_kli = auth_register("ken@gmail.com", "new_pass", "Ken", "L")
-    user_bwang = auth_register("bobw@gmail.com", "password123", "Bob", "Wang")
+    user_bwang = auth_register("bobw@gmail.com", "password123", "Bob", "Wag")
     # creating a public channel
     new_channel_id = channels_create(
         user_kli['token'], "some_channel_name", True)
@@ -200,11 +200,9 @@ def test_channels_create_correct_details(): #pylint: disable=missing-function-do
     print_details = channel_details(
         user_kli['token'], new_channel_id['channel_id'])
     assert print_details['name'] == "some_channel_name"
-    assert print_details['all_members'] == \
-        [
-            {'u_id': user_kli['u_id'], 'name_first': 'Ken', 'name_last': 'L'},
-            {'u_id': user_bwang['u_id'], 'name_first': 'Bob', 'name_last': 'Wang'}
-        ]
+    assert print_details['all_members'][0] == {
+        'u_id': user_kli['u_id'], 'name_first': 'Ken', 'name_last': 'L', 'profile_img_url': ''
+    }
 
 
 def test_channels_create_invalid_status(): #pylint: disable=missing-function-docstring

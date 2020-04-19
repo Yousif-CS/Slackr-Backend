@@ -124,11 +124,12 @@ def test_message_send_msg_good(make_users):
     message_send(
         user_ab['token'], new_public_channel['channel_id'], "awf;l#5)(*#&  #W*%(hi")
     message_send(user_ab['token'],
-                 new_public_channel['channel_id'], "m" * 1000)
+                new_public_channel['channel_id'], "m" * 1000)
     msgs_view = channel_messages(
         user_ab['token'], new_public_channel['channel_id'], 0)
     # checking that all the above messages sent successfully
-    assert len(msgs_view['messages']) == 2
+    # note the first message of channel was sent by hangman bot
+    assert len(msgs_view['messages']) == 3
 
 
 # testing for InputError when message length exceeds 1000 characters
@@ -273,7 +274,7 @@ def test_message_remove_owner_remove_own(make_users):
     msgs_view = channel_messages(
         user_ab['token'], new_public_channel['channel_id'], 0)
 
-    assert len(msgs_view['messages']) == 1
+    assert len(msgs_view['messages']) == 2
     assert msgs_view['messages'][0]['message_id'] == msg1['message_id']
 
 # testing that a member of channel added by the owner is able to remove their own message
@@ -300,7 +301,7 @@ def test_message_remove_user_remove_own(make_users):
         user_ab['token'], new_private_channel['channel_id'], 0)['messages']
     msg_id_list = [msg['message_id'] for msg in msgs_view]
 
-    assert len(msg_id_list) == 2
+    assert len(msg_id_list) == 3
 
 
 # testing that owner of channel can remove message of other users
@@ -325,7 +326,7 @@ def test_message_remove_owner_remove_user_msg(make_users):
         user_ab['token'], new_public_channel['channel_id'], 0)['messages']
     msg_id_list = [msg['message_id'] for msg in msgs_view]
 
-    assert len(msg_id_list) == 3
+    assert len(msg_id_list) == 4
     assert msg4['message_id'] not in msg_id_list
 
 
@@ -718,7 +719,7 @@ def test_message_unpin_owners_own_msg(make_users):
 
     message_unpin(user_ab["token"], msg_id)
     assert not channel_messages(user_ab["token"], new_ch["channel_id"], 0)[
-        "messages"][0]["is_pinned"]
+        "messages"][1]["is_pinned"]
 
 # Owner can unpin other message
 
@@ -813,6 +814,7 @@ def test_message_unpin_not_owner(make_users):
     msg_id0 = message_send(owner_ab["token"], new_ch["channel_id"], "Random msg")[
         "message_id"]
     message_pin(owner_ab["token"], msg_id0)
+    # note that channel messages returns most recent messages first in list
     assert channel_messages(owner_ab["token"], new_ch["channel_id"], 0)[
         "messages"][0]["is_pinned"]
 
@@ -854,7 +856,7 @@ def test_message_unpin_auth_user_not_owner(make_users):
         "message_id"]
     message_pin(owner_ab["token"], new_ch["channel_id"])
     assert channel_messages(user_cd["token"], new_ch["channel_id"], 0)[
-        "messages"][0]["is_pinned"]
+        "messages"][1]["is_pinned"]
 
     with pytest.raises(AccessError):
         message_unpin(user_cd["token"], msg_id0)
