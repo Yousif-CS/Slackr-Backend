@@ -107,7 +107,8 @@ def test_channel_invite_valid(reset, create_user1, create_public_channel):
         'all_members']
     u_ids = [member['u_id'] for member in all_membs]
     assert user_info['u_id'] in u_ids
-    assert len(all_membs) == 2
+    # note that the hangman bot is the first member of a channel
+    assert len(all_membs) == 3
 
 
 def test_channel_user_invite(
@@ -198,7 +199,7 @@ def test_channel_invite_nonexistent_channel(
 ''' -------------------Testing channel_details -----------------'''
 
 
-def test_channel_details__owners_valid(
+def test_channel_details_owners_valid(
         reset, create_public_channel, create_user1, create_user2):
     '''
     Test channel_details gives correct info about owners
@@ -219,7 +220,7 @@ def test_channel_details__owners_valid(
     owners_ids = [owner['u_id'] for owner in owners]
 
     assert owner_info['u_id'] in owners_ids
-    assert len(owners) == 1
+    assert len(owners) == 2
 
 
 def test_channel_details_members_valid(
@@ -246,7 +247,7 @@ def test_channel_details_members_valid(
     assert user_info['u_id'] in members_ids
     assert user2_info['u_id'] in members_ids
     assert owner_info['u_id'] in members_ids
-    assert len(all_membs) == 3
+    assert len(all_membs) == 4
 
 
 def test_channel_details_name_valid(reset, create_public_channel):
@@ -328,13 +329,13 @@ def test_channel_messages_good(reset, create_public_channel):
     retrieved_msgs_ids = sorted([message['message_id']
                                  for message in msgs['messages']])
     # assertions
-    for user in u_ids:
-        assert user == owner_info['u_id']
+    for item in range(5):
+        assert u_ids[item] == owner_info['u_id']
     # testing if the returned ids of the messages are the same as the sent ids
     # of the messages
-    for sent_msg, ret_msg in zip(sent_msgs_ids, retrieved_msgs_ids):
-        assert sent_msg == ret_msg
-    assert len(msgs['messages']) == 5
+    for item in range(1, 6):
+        assert sent_msgs_ids[item - 1] == retrieved_msgs_ids[item]
+    assert len(msgs['messages']) == 6
     assert msgs['start'] == 0
     assert msgs['end'] == -1
 
@@ -351,7 +352,8 @@ def test_channel_messages_more_than_fifty(reset, create_public_channel):
     channel_id, owner_info = create_public_channel
     sent_msgs_ids = []
     # for loop to send messages
-    for i in range(51):
+    # the first message of the channel was sent by hangman bot
+    for i in range(50):
         sent_msgs_ids.append(message_send(
             owner_info['token'], channel_id['channel_id'], "message " + str(i)))
 
@@ -425,7 +427,7 @@ def test_channel_messages_invalid_index(reset, create_public_channel):
     message_send(owner_info['token'],
                  channel_id['channel_id'], "Third Message!")
     with pytest.raises(InputError):
-        channel_messages(owner_info['token'], channel_id['channel_id'], 4)
+        channel_messages(owner_info['token'], channel_id['channel_id'], 5)
 
 
 def test_channel_messages_public_non_member(
@@ -515,7 +517,7 @@ def test_channel_leave_correct_details(
 
     # asserting user is in the channel
     assert user_info['u_id'] in u_ids
-    assert len(all_membs) == 2
+    assert len(all_membs) == 3
 
     channel_leave(user_info["token"], new_ch["channel_id"])
 
@@ -524,7 +526,7 @@ def test_channel_leave_correct_details(
         'all_members']
     u_ids = [member['u_id'] for member in all_membs]
     assert user_info['u_id'] not in u_ids
-    assert len(all_membs) == 1
+    assert len(all_membs) == 2
 
 
 def test_channel_leave_non_member(reset, create_public_channel, create_user1):
@@ -796,7 +798,7 @@ def test_channel_removeowner_good(reset, create_public_channel, create_user1):
     message_remove(user_info['token'], msg_id2['message_id'])
     messages = channel_messages(
         owner_info['token'], channel_id['channel_id'], 0)
-    assert len(messages['messages']) == 1
+    assert len(messages['messages']) == 2
     # removing user from being an owner
     channel_removeowner(owner_info['token'],
                         channel_id['channel_id'], user_info['u_id'])
