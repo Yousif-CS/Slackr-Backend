@@ -171,12 +171,23 @@ class Admins():
         self._valid_permissions = [ADMIN, MEMBER]
     
     def add(self, u_id):
+        '''
+        Input: u_id: int
+        Returns: Nothing
+        Purpose: add the u_id into the admins list
+        '''
         if not self.is_admin(u_id):
             self._admins.append(u_id)
 
     def remove(self, u_id):
+        '''
+        Input: u_id: int
+        Returns: Nothing
+        Purpose: remove the u_id from the admins list
+        '''
         if self.is_admin(u_id):
             self._admins.remove(u_id)
+#A timer that sends http requests to update database
 
     def is_admin(self, u_id):
         return u_id in self._admins
