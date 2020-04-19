@@ -49,7 +49,8 @@ def test_access_other_profiles(get_users):
             "email": "joshua@gmail.com",
             "name_first": "Joshua",
             "name_last": "Wang",
-            "handle_str": "joshuawang"
+            "handle_str": "joshuawang",
+            "profile_img_url": ""
         }
     }
 
@@ -59,7 +60,8 @@ def test_access_other_profiles(get_users):
             "email": "ken@gmail.com",
             "name_first": "Ken",
             "name_last": "Li",
-            "handle_str": "kenli"
+            "handle_str": "kenli",
+            "profile_img_url": ""
         }
     }
 
@@ -74,7 +76,8 @@ def test_access_other_logged_out_profiles(get_users):
             "email": "joshua@gmail.com",
             "name_first": "Joshua",
             "name_last": "Wang",
-            "handle_str": "joshuawang"
+            "handle_str": "joshuawang",
+            "profile_img_url": ""
         }
     }
 
@@ -86,7 +89,8 @@ def test_access_other_logged_out_profiles(get_users):
             "email": "ken@gmail.com",
             "name_first": "Ken",
             "name_last": "Li",
-            "handle_str": "kenli"
+            "handle_str": "kenli",
+            "profile_img_url": ""
         }
     }
 
