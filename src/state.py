@@ -1048,7 +1048,7 @@ class Database():
         Remove all messages associated with a user
         '''
         relevant_msg_links = self.user_message.fetch_links_by_user(u_id)
-        for link in relevant_Outputmsg_links:
+        for link in relevant_msg_links:
             self.remove_message(link['message_id'])
 
         self.user_message.remove_link_by_user(u_id)
