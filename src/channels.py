@@ -24,7 +24,8 @@ def channels_list(token):
     # get database
     data = get_store()
     # getting id of the user
-    # get_tokens() should return a dictionary where token key corresponds to that user's id
+    # get_tokens() should return a dictionary where token key corresponds to
+    # that user's id
     u_id = get_tokens()[token]
 
     # return details about all channels the user is part of
@@ -85,7 +86,7 @@ def channels_create(token, name, is_public):
     # Inform the first user of option to disable hangman game
     message_send(hbot['token'], new_id, "For owners and admins: \
         \nType '/disable game' to disable the hangman game. \nType '/enable game' to re-enable it.")
-    
+
     return {
         'channel_id': new_id
     }

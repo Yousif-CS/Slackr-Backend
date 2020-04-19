@@ -24,6 +24,7 @@ def serve_img(img):
     img_io.seek(0)
     return send_file(img_io, mimetype='image/jpeg')
 
+
 @OTHER.route('/admin/userpermission/change', methods=['POST'])
 def u_per_change():
     '''
@@ -51,6 +52,7 @@ def user_remove():
 
     other.user_remove(token, int(u_id))
     return json.dumps({})
+
 
 @OTHER.route('/users/all', methods=['GET'])
 def users_all():
@@ -89,6 +91,7 @@ def reset():
     other.workspace_reset()
     return json.dumps({})
 
+
 @OTHER.route('/imgurl', methods=['GET'])
 def fetch_image():
     '''
@@ -98,4 +101,3 @@ def fetch_image():
     print('THE PATH IS: ', path)
     img = Image.open(path, 'r')
     return serve_img(img)
-    

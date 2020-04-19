@@ -25,7 +25,7 @@ def userpermission_change(token, u_id, permission_id):
         permission_id (int): 1 for owner, 2 for member
 
     Raises:
-        AccessError: 
+        AccessError:
             if token is invalid
             if the user invoking this action is not an owner/admin of the slackr
             if the owner/admin attempts to demote themselves to a normal member
@@ -48,7 +48,7 @@ def userpermission_change(token, u_id, permission_id):
     # verify permission_id is valid (1 or 2)
     if not data.admins.is_valid_permission(permission_id):
         raise InputError(description="Invalid permission id")
-    
+
     # verify the invoker is an admin
     if not data.admins.is_admin(u_id_invoker):
         raise AccessError(
@@ -63,6 +63,7 @@ def userpermission_change(token, u_id, permission_id):
         data.admins.add(u_id)
     else:
         data.admins.remove(u_id)
+
 
 def user_remove(token, u_id):
     '''
@@ -89,7 +90,7 @@ def user_remove(token, u_id):
     if not data.users.user_exists(u_id):
         raise InputError(description="Invalid user id")
 
-    # verify the admin is not removing himself 
+    # verify the admin is not removing himself
     if u_id == u_id_invoker:
         raise InputError(description='Cannot remove current user')
 
@@ -108,7 +109,7 @@ def user_remove(token, u_id):
     if token is not None:
         get_tokens().pop(token)
 
-    
+
 def users_all(token):
     '''
     Lists all users on the slackr
@@ -124,7 +125,7 @@ def users_all(token):
 
     # return a dictionary which contains one key, "users", which is itself a list of dictionaries
     # containing types u_id, email, name_first, name_last, handle_str
-    data = get_store() 
+    data = get_store()
 
     return {"users": data.users.all()}
 
@@ -142,7 +143,7 @@ def search(token, query_str):
         InputError: if query_str is over 1000 char long
 
     Returns:
-        Dictionary: containing a list of message dictionaries containing 
+        Dictionary: containing a list of message dictionaries containing
             information of each message that contains the query_str -
             {message_id, u_id, message, time_created, reacts, is_pinned}
     '''
@@ -154,7 +155,8 @@ def search(token, query_str):
     auth_u_id = get_tokens()[token]
 
     if len(query_str) > 1000:
-        raise InputError(description="query_str over 1000 characaters; too long")
+        raise InputError(
+            description="query_str over 1000 characaters; too long")
 
     # empty query_str returns an empty list
     if query_str == "":
@@ -162,7 +164,8 @@ def search(token, query_str):
             'messages': []
         }
 
-    # find all the channels the user is a part of and search for query_str in the messages
+    # find all the channels the user is a part of and search for query_str in
+    # the messages
     return {
         'messages': data.message_search(auth_u_id, query_str)
     }

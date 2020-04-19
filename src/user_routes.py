@@ -67,6 +67,7 @@ def profile_sethandle():
     user.user_profile_sethandle(payload["token"], payload["handle_str"])
     return json.dumps({})
 
+
 @USER.route('/profile/uploadphoto', methods=['POST'])
 def profile_uploadphoto():
     '''

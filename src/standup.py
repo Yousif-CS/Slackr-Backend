@@ -45,22 +45,27 @@ MY_SCHEDULER = sched.scheduler(time.time, time.sleep)
 
 def flush_standup(channel_id):
     '''
-    Helper function to concat messages in a standup and send them
+    Input: channel_id (int)
+    Returns: Nothing
+    Purpose: Helper function to concat messages in a standup and send them
     at once
     '''
     with STANDUP_LOCK:
         standups = get_standup()
         try:
-            [to_flush] = list(filter(lambda x: x['channel_id'] == channel_id, standups))
+            [to_flush] = list(
+                filter(
+                    lambda x: x['channel_id'] == channel_id,
+                    standups))
             to_send = '\n'.join(to_flush['messages'])
-            #message is empty.. do not bother
+            # message is empty.. do not bother
             if not to_send:
                 standups.remove(to_flush)
                 return
-            #get the token given u_id
+            # get the token given u_id
             user_token = get_token(to_flush['u_id'])
             if user_token is None:
-                #generate a temporary token
+                # generate a temporary token
                 user_token = generate_token(to_flush['u_id'])
                 get_tokens()[user_token] = to_flush['u_id']
                 message_send(user_token, channel_id, to_send)
@@ -82,6 +87,9 @@ def run_scheduler(target, running_time, args):
 
 def standup_start(token, channel_id, length):
     '''
+    Input: channel_id: int, length: int
+    Returns: a dictionary containing the finish time of the standup
+    Raises: InputError, AccessError
     Start a standup in a given channel
     '''
     # verify the user
@@ -129,7 +137,8 @@ def standup_start(token, channel_id, length):
 def standup_active(token, channel_id):
     '''
     Input: A token and a channel id
-    Output: a dictionary containing keys is_active and time_finish of a certain channel standup
+    Returns: a dictionary containing keys is_active and time_finish of a certain channel standup
+    Purpose: check whether a standup is active in the database
     '''
     # verify the user
     if verify_token(token) is False:
@@ -153,7 +162,8 @@ def standup_active(token, channel_id):
 def standup_send(token, channel_id, message):
     '''
     Input: A token, a channel id and a message
-    Output: an empty dictionary if a successful message send to the standup in channel occurred
+    Returns: an empty dictionary if a successful message send to the standup in channel occurred
+    Purpose: buffer a message in the standup to be sent later
     '''
     # verify the user
     if verify_token(token) is False:
@@ -182,7 +192,10 @@ def standup_send(token, channel_id, message):
     standups = get_standup()
     with STANDUP_LOCK:
         try:
-            [standup] = list(filter(lambda x: x['channel_id'] == channel_id, standups))
+            [standup] = list(
+                filter(
+                    lambda x: x['channel_id'] == channel_id,
+                    standups))
             standup['messages'].append(message)
         except ValueError:
             raise InputError(description="No active standup in this channel")

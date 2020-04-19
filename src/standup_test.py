@@ -362,7 +362,8 @@ def test_standup_send_invalid_token(create_public_channel):
             owner_info['token'] + str(1), channel_id['channel_id'], "Aaaahhh!")
 
 
-def test_standup_send_starter_is_logged_out(create_public_channel, create_user1):
+def test_standup_send_starter_is_logged_out(
+        create_public_channel, create_user1):
     '''
     Testing to see if a standup is resolved even if the invoker is logged out
     '''

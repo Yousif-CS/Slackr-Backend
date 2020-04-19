@@ -37,7 +37,8 @@ def generate_token(u_id):
     Args: u_id (int)
     Return: token (str)
     '''
-    return jwt.encode({"u_id": u_id}, SECRET, algorithm="HS256").decode('utf-8')
+    return jwt.encode({"u_id": u_id}, SECRET,
+                      algorithm="HS256").decode('utf-8')
 
 def get_token(u_id):
     '''
@@ -117,7 +118,7 @@ def auth_register(email, password, name_first, name_last):
             or len(name_first) > MAX_NAME_LEN or len(name_last) > MAX_NAME_LEN:
         raise InputError(description="Names must be between 1 and 50 characters long inclusive, \
             and cannot contain exclusively whitespaces.")
-    
+
     if name_first.isspace() or name_last.isspace():
         raise InputError(
             description="Names cannot exclusively contain whitespaces.")
@@ -133,8 +134,9 @@ def auth_register(email, password, name_first, name_last):
     # hash the password
     encrypted_pass = hashlib.sha256(password.encode()).hexdigest()
 
-    #Adds all user's details to the Database
-    details = email, encrypted_pass, name_first, name_last, create_handle(name_first, name_last)
+    # Adds all user's details to the Database
+    details = email, encrypted_pass, name_first, name_last, create_handle(
+        name_first, name_last)
     u_id = data.add_user(details)
 
     token = generate_token(u_id)
@@ -174,7 +176,7 @@ def auth_login(email, password):
     encrypted_pass = hashlib.sha256(password.encode()).hexdigest()
     u_id = data.users.validate_login(email, encrypted_pass)
 
-    #check if the user is not already logged in
+    # check if the user is not already logged in
     token = get_token(u_id)
     if token is not None:
         raise InputError(description='User is already logged on')
@@ -197,9 +199,10 @@ def auth_logout(token):
     if verify_token(token) is False:
         return {'is_success': False}
 
-    #remove the user's token
+    # remove the user's token
     get_tokens().pop(token)
     return {'is_success': True}
+
 
 def auth_passwordreset_request(email):
     '''
@@ -213,11 +216,12 @@ def auth_passwordreset_request(email):
     if not data.users.email_used(email):
         return {}
 
-    #Generates reset code for user and sends it to their email
-    #add reset code to dictionary for user
+    # Generates reset code for user and sends it to their email
+    # add reset code to dictionary for user
     data.codes.push(email)
 
     return {}
+
 
 def auth_passwordreset_reset(reset_code, new_password):
     '''
@@ -232,14 +236,15 @@ def auth_passwordreset_reset(reset_code, new_password):
 
     data = get_store()
 
-    # Check if reset_code exists within dictionary and return the email key paired with that code
+    # Check if reset_code exists within dictionary and return the email key
+    # paired with that code
     data.codes.code_exists(reset_code)
     email = data.codes.find_email(reset_code)
 
-    #Retrieve user's id and set their new password
+    # Retrieve user's id and set their new password
     u_id = data.users.find_u_id(email[0])
     data.users.set_password(u_id, new_password)
-    #Delete reset code from the dictionary
-    data.codes.delete(email[0])        
+    # Delete reset code from the dictionary
+    data.codes.delete(email[0])
 
     return {}
