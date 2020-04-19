@@ -1,6 +1,7 @@
 '''
 This file contains all the implementations and data relevant to channel functions
 '''
+#pylint: disable=trailing-whitespace
 
 from state import get_store, get_tokens
 from auth import verify_token
@@ -15,7 +16,9 @@ def channel_invite(token, channel_id, u_id):
     '''
     Invites a user (with user id u_id) to join a channel with ID channel_id.
     Once invited the user is added to the channel immediately.
-    InputError: channel ID does not correspond to a valid channel; user ID does not refer to a valid user.
+    Args: token (str), channel_id (int), u_id (int)
+    InputError: channel ID does not correspond to a valid channel; 
+    user ID does not refer to a valid user.
     AccessError: authorised user is not already a member of channel with channel ID.
     '''
     # verify the validity of the authorised user's token
@@ -30,7 +33,7 @@ def channel_invite(token, channel_id, u_id):
     # check that the authorised user belongs to this valid channel
     auth_u_id = get_tokens()[token]
     if not data.user_channel.is_member(auth_u_id, channel_id):
-        raise AccessError(description="The authorised user is not a member of channel with this channel ID")
+        raise AccessError(description="The authorised user is not a member of this channel")
 
     # check that u_id corresponds to a valid user
     if not data.users.user_exists(u_id):
@@ -43,7 +46,9 @@ def channel_invite(token, channel_id, u_id):
 
 def channel_details(token, channel_id):
     '''
-    Given a Channel with ID channel_id that the authorised user is part of, provide basic details about the channel.
+    Given a Channel with ID channel_id that the authorised user is part of, 
+    provide basic details about the channel.
+    Args: token (str), channel_id (int)
     InputError: channel_id is not a valid channel
     AccessError: authorised user is not part of the channel with channel_id
     Output: (channel) name, owner_members, all_members
@@ -75,10 +80,19 @@ def channel_details(token, channel_id):
 
 def channel_messages(token, channel_id, start):
     '''
-    input: a token, channel_id and the starting index
-    output: Return a list of 50 messages from channel with channel_id
-            starting from index 'start', if we reached the end of the list
-            we set the 'end' index to -1
+    Lists up to 50 messages within 'channel_id', beginning from the message indexed 'start'.
+    Args: 
+        token (str): of the user authorising this action 
+        channel_id (int): of the channel whose messages require displaying 
+        start (int): index of the first message to display
+    Raises:
+        AccessError:
+            if token invalid
+            if authorised user does not hav permission to view the channel's messages
+        InputError:
+            if channel_id does not correspond to a valid channel
+    Return: List of 50 messages from channel with channel_id
+        starting from index 'start', if we reached the end of the list we set the 'end' index to -1
     '''
     # verify the user
     if verify_token(token) is False:
@@ -106,8 +120,16 @@ def channel_messages(token, channel_id, start):
 
 def channel_leave(token, channel_id):
     '''
-    input: a token and a channel id
-    output: an empty dictionary, and removes user from the channel
+    Allows a user with 'token' to leave the channel with 'channel_id'
+
+    Args: token (str), channel_id (int)
+    Raises:
+        AccessError:
+            if token invalid
+            if user with u_id was not a member of the channel in the first place
+        InputError:
+            if channel_id does not correspond to a valid channel
+    Return: an empty dictionary
     '''
     # verify the user
     if verify_token(token) is False:
@@ -132,8 +154,17 @@ def channel_leave(token, channel_id):
 
 def channel_join(token, channel_id):
     '''
-    input: a token and a channel_id
-    output: an empty dictionary, and adding the user to the channel with channel_id
+    Allows a user with a valid 'token' to join a public channel with 'channel_id'
+
+    Args: token (str), channel_id (int)
+    Raises:
+        AccessError:
+            if token invalid
+            if the channel is private
+        InputError:
+            if channel_id does not correspond to an existing channel
+            if user with u_id is already a member of the channel
+    Return: an empty dictionary
     '''
     # verify the user
     if verify_token(token) is False:
@@ -164,8 +195,18 @@ def channel_join(token, channel_id):
 
 def channel_addowner(token, channel_id, u_id):
     '''
-    input: a token,  a channel_id, and a u_id
-    output: add user with u_id as an owner to channel_id
+    Promotes user with 'u_id' to an owner of channel with 'channel_id'
+
+    Args:
+        token (str): of the user authorising this action
+        channel_id (int): of the channel to which to promote the user to owner
+        u_id (int): of the user to be promoted
+    Raises:
+        AccessError:
+            if token invalid
+            if token does not belong to a user with permission to promote
+        InputError:
+            if channel_id does not correspond to a valid channel
     '''
     # verify the user
     if verify_token(token) is False:
@@ -190,8 +231,19 @@ def channel_addowner(token, channel_id, u_id):
 
 def channel_removeowner(token, channel_id, u_id):
     '''
-    input: a token,  a channel_id, and a u_id
-    output: user with u_id removed from being an owner to channel_id
+    Demote user with 'u_id' from an owner to normal member of channel with 'channel_id'
+
+    Args:
+        token (str): of the user authorising this action
+        channel_id (int): of the channel to which to demote the user to normal member
+        u_id (int): of the user to be demoted
+    Raises:
+        AccessError:
+            if token invalid
+            if token does not belong to a user with permission to demote
+            if attempting to demote an admin of the slackr
+        InputError:
+            if channel_id does not correspond to a valid channel
     '''
     # verify the user
     if verify_token(token) is False:
