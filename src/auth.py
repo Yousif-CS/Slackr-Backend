@@ -42,6 +42,8 @@ def generate_token(u_id):
 def get_token(u_id):
     '''
     Retrieves token given a user id, returns None if the user is logged out FOR AUTH_LOGOUT
+    Args: u_id (int)
+    Return: token (str, None)
     '''
     tokens = get_tokens()
     for token, logged_uid in tokens.items():
@@ -53,7 +55,9 @@ def get_token(u_id):
 def create_handle(name_first, name_last):
     '''
     Creates a handle using the first and last name of a user.
-    Makes sure handles are unique
+    Makes sure handles are unique.
+    Args: name_first (str), name_last (str)
+    Return: handle_str (str)
     '''
     count = 0
     handle_str = name_first.lower() + name_last.lower()
@@ -68,7 +72,9 @@ def create_handle(name_first, name_last):
 
 def is_handle_unique(handle_str):
     '''
-    Returns true if no other person has the handle
+    Determines whether handle_str is unique in the slackr
+    Args: handle_str (str)
+    Return: unique (bool)
     '''
     data = get_store()
     unique = data.users.handle_unique(handle_str)
@@ -78,15 +84,23 @@ def is_handle_unique(handle_str):
 def auth_register(email, password, name_first, name_last):
     '''
     Given a user's first and last name, email address, and password,
-    create a new account for them and return a new token for authentication in their session.
-    A handle is generated that is the concatentation of a lowercase-only first name and last name.
-    If the concatenation is longer than 20 characters, it is cutoff at 20 characters.
-    If the handle is already taken, you may modify the handle in any way you see fit
-    to make it unique.
+    creates a new account for them and returns a new token for authentication in their session.
+    name_first and name_last must be between 1 and 50 char inclusive.
+    A unique handle is generated based on the lower_case concatentation of name_first and name_last.
 
-    Output: {u_id, token}
-    InputError: invalid email, non-unique email,
-    password less than 6 char long, first or last name not [1,50] char long
+    Args: email (str), password (str), name_first (str), name_last(str)
+
+    Raises:
+        InputError:
+            if email is not a valid email
+            if password is less than 6 char long
+            if name_first or name_last is not between 1 and 50 char inclusive
+            if name_first or name_last contains exclusively whitespaces
+            if name_first is 'hangman' (case insensitive)
+            if name_last is 'B0T' (case insensitive)
+
+    Return:
+        Dicionary: u_id (int), token (str)
     '''
     data = get_store()
 
@@ -136,7 +150,7 @@ def auth_register(email, password, name_first, name_last):
 
 def find_u_id(email):
     '''
-    Returns back the user id given the email. If the email does
+    Returns the user id given the email. If the email does
     not correspond to an existing user in the database => returns None
     '''
     data = get_store()
@@ -147,9 +161,12 @@ def auth_login(email, password):
     '''
     Given a registered users' email and password and generates
     a valid token for the user to remain authenticated.
-    InputError: email entered not valid, email does not
-    belong to a user, password is incorrect
-    Output: u_id, token
+
+    Args: email (str), password (str)
+    Raise:
+        InputError: email entered not valid, email does not belong to a user, password is incorrect
+    Return: 
+        Dictionary: u_id (int), token (str)
     '''
     data = get_store()
 
@@ -169,15 +186,12 @@ def auth_login(email, password):
         "token": token
     }
 
-
-    # Store the token-u_id pair in the temporary TOKEN dictionary
-
-
 def auth_logout(token):
     '''
-    input:valid token
-    output: is_success (True / False)
-    Must invalidate token to log user out.
+    Invalidates the user's token and logs them out.
+
+    Args: token (str)
+    Return: is_success (bool)
     '''
     # verify the user
     if verify_token(token) is False:
@@ -191,8 +205,8 @@ def auth_passwordreset_request(email):
     '''
     Sends a reset code to a user's email and adds
     the reset code to a dictionary
-    Input: User's email
-    Returns: None
+
+    Args: email (str)
     '''
     data = get_store()
 
@@ -209,7 +223,7 @@ def auth_passwordreset_reset(reset_code, new_password):
     '''
     Given a valid reset code change the user's password
     to the new password given
-    Input: Reset code and new_password
+    Args: reset_code (str), new_password (str)
     Returns: None
     '''
     if len(new_password) < 6:
