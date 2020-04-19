@@ -118,7 +118,7 @@ def channel_messages(token, channel_id, start):
     return {"messages": messages,
             "start": start,
             "end": -1 if not more else start + MESSAGE_BLOCK
-            }
+           }
 
 
 def channel_leave(token, channel_id):

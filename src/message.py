@@ -48,7 +48,7 @@ def message_send(token, channel_id, message):
 
     # checking message string is valid
     if not isinstance(message, str) or len(
-            message) > MAX_MSG_LEN or len(message) == 0:
+            message) > MAX_MSG_LEN or not message:
         raise InputError(description='Invalid message')
 
     # get database
@@ -116,7 +116,7 @@ def message_sendlater(token, channel_id, message, time_sent):
         raise AccessError(description='Invalid token')
     # checking message string is valid
     if not isinstance(message, str) or len(
-            message) > MAX_MSG_LEN or len(message) == 0:
+            message) > MAX_MSG_LEN or not message:
         raise InputError(description='Invalid message')
 
     # get database

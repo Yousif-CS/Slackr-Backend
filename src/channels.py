@@ -1,13 +1,10 @@
 '''
 This file contains implementation for channels functions
 '''
-import hashlib
-import jwt
 from state import get_store, get_tokens
-from auth import verify_token, generate_token, create_handle
+from auth import verify_token
 from error import InputError, AccessError
 from message import message_send
-from user import profile_uploadphoto
 from hangman import create_hbot
 
 

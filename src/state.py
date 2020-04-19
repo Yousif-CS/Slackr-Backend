@@ -43,6 +43,20 @@ def is_this_user_reacted(u_id, link_info):
             react['is_this_user_reacted'] = u_id in react['u_ids']
 
 
+def generate_reset_code():
+    '''
+    Generate a reset_code to reset a user's password
+    Input: None
+    Returns: Reset_code
+    '''
+    # String length ranges from 8 to 10 characters
+    str_len = random.randint(8, 10)
+
+    # Generate a unique and secure reset code
+    reset_code = uuid.uuid4().hex
+    reset_code = reset_code.upper()[0:str_len]
+    return reset_code
+
 class Users():
     '''
     A class that contains and manages user information, excluding the links between those users
@@ -115,7 +129,7 @@ class Users():
             'name_last': details['name_last'],
             'handle_str': details['handle_str'],
             'profile_img_url': f"{HOST}:{PORT}{ROUTE}?path={details['img_path']}"
-            if details['img_path'] else ""
+                               if details['img_path'] else ""
         }
 
     def all(self):
@@ -465,20 +479,6 @@ class Codes():
         self._codes_dict = dict()
         self._num_codes = 0
 
-    def _generate_reset_code(self):
-        '''
-        Generate a reset_code to reset a user's password
-        Input: None
-        Returns: Reset_code
-        '''
-        # String length ranges from 8 to 10 characters
-        str_len = random.randint(8, 10)
-
-        # Generate a unique and secure reset code
-        reset_code = uuid.uuid4().hex
-        reset_code = reset_code.upper()[0:str_len]
-        return reset_code
-
     def _send_email(self, email):
         sender_email = 'comp1531resetpass@gmail.com'
         sender_pass = 'git_commitment_issues'
@@ -498,7 +498,7 @@ class Codes():
         if email in self._codes_dict:
             self.delete(email)
 
-        reset_code = self._generate_reset_code()
+        reset_code = generate_reset_code()
         self._codes_dict[email] = reset_code
         self._num_codes += 1
         self._send_email(email)
