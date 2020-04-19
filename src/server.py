@@ -80,16 +80,6 @@ def defaultHandler(err):  # pylint: disable=missing-function-docstring
 APP.config['TRAP_HTTP_EXCEPTIONS'] = True
 APP.register_error_handler(Exception, defaultHandler)
 
-# Example
-@APP.route("/echo", methods=['GET'])
-def echo():
-    data = request.args.get('data')
-    if data == 'echo':
-        raise InputError(description='Cannot echo "echo"')
-    return dumps({
-        'data': data
-    })
-
 # Database update route
 @APP.route("/update", methods=['PUT'])
 def update():
