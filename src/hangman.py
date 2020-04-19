@@ -1,7 +1,16 @@
 '''
 This file contains the functions necessary for the implementation of the hangman game,
-which should be able to run within each channel of the slackr
+which should be able to run within each channel of the slackr.
+
+A 'hangman bot' is registered for each new channel and cannot be removed from the slackr.
+It informs users of the games progress through pre-programmed responses.
+
+Admins and owners of each channel are able to enable and disable the game.
 '''
+
+# pylint: disable=trailing-whitespace
+# pylint: disable=too-many-branches
+
 import random
 import string
 import hashlib
@@ -9,9 +18,9 @@ from state import get_store, get_tokens
 from error import InputError, AccessError
 from auth import generate_token, create_handle
 
-
-word_file = "/usr/share/dict/words"
-with open(word_file) as FILE:   
+# file from which words are drawn
+WORD_FILE = "/usr/share/dict/words"
+with open(WORD_FILE) as FILE:   
     WORDS = FILE.read().splitlines()
 
 MAX_LIVES = 9
@@ -29,6 +38,13 @@ def generate_word():
     return list(word.upper())
 
 def create_hbot(ch_id):
+    '''
+    Helper function called in channels_create to create a hangman bot with a unique email
+    based on the ID of the channel it belongs to.
+
+    Returns:
+        Dictionary: containing the u_id and token of the bot.
+    '''
     data = get_store()
 
     email = f'hangman{ch_id}@bot.com'
@@ -56,11 +72,22 @@ def create_hbot(ch_id):
 
 def start_game(channel_id):
     '''
-    Input: channel_id
-    Output: temporary database in which to store the word to guess,
-    and the letters of the alphabet as well as whether each letter has been guessed.
-    Unique to each channel; assuming only one game per channel at a time.
-    Turns on hangman mode in state.py
+    Lets the channel know that a hangman game is in session and returns all the data
+    necessary to facilitate a game.
+
+    Args: 
+        channel_id (str)
+
+    Return: 
+        data (dictionary):
+            target_word (str): the word the users are attempting to guess
+            user_guess (list): the letters the users have guessed so far, '?' if not yet guessed 
+            ltrs_guessed (dictionary): all the upper case letters with Boolean values of whether
+                they have been guessed.
+            lives (int): lives remaining
+            game_end (bool): whether the game has ended
+            output (str): information to be sent to the user as a message
+
     '''
     data = get_store().channels.get_hangman(channel_id)
     target_word = generate_word()
@@ -68,8 +95,8 @@ def start_game(channel_id):
         "target_word": target_word,
         "user_guess": ['?' for letter in target_word],
         # dictionary with alphabet letters as keys and values default to False
-        "letters_guessed": dict.fromkeys(string.ascii_uppercase, False), 
-        "lives_remaining": MAX_LIVES,
+        "ltrs_guessed": dict.fromkeys(string.ascii_uppercase, False), 
+        "lives": MAX_LIVES,
         "game_end": False,
         "output": ""
     }
@@ -77,7 +104,7 @@ def start_game(channel_id):
     data['output'] += "Let's play Hangman!"
     data['output'] += "\nType /guess X to guess letter X."
     data['output'] += "\nType /quit to end the game."
-    data['output'] += f"\nYou have {data['lives_remaining']} lives remaining."
+    data['output'] += f"\nYou have {data['lives']} lives remaining."
     data['output'] += "\nThe word to guess is:"
     data['output'] += '\n' + ' '.join(data['user_guess'])
 
@@ -85,28 +112,40 @@ def start_game(channel_id):
 
 def guess(letter, channel_id, name_first):
     '''
-    Inputs: letter guessed by the user, channel_id, first name of user
-    Output: hangman data dictionary with updates to user_guess, letters_guessed, lives_remaining, game_end and output
+    Updates the backend data as well as what the next message sent to the user should be 
     based on the user's guess.
+    Ends the game if either the users win by guessing the correct word, or
+    the users lose by running out of lives.
 
-    When the user guesses whether a letter is in the word,
-    inform the user that:
-    a. the guess is correct
-    b. the guess is incorrect
-    c. the guess is invalid (not alpha or not single char)
+    Args:
+        letter (str): user's guess
+        channel_id (int): current channel's ID
+        name_first (str): first name of the user making the guess
+
+    Returns:
+        data (dictionary):
+            target_word (str): the word the users are attempting to guess
+            user_guess (list): the letters the users have guessed so far, '?' if not yet guessed 
+            ltrs_guessed (dictionary): all the upper case letters with Boolean values of whether
+                they have been guessed.
+            lives (int): lives remaining
+            game_end (bool): whether the game has ended
+            output (str): information to be sent to the user as a message
+    
     '''
     data = get_store().channels.get_hangman(channel_id)
 
     # letter already guessed
-    if data['letters_guessed'][letter.upper()] is True:
-        guessed = ', '.join([ltr for ltr in list(data['letters_guessed'].keys()) if data['letters_guessed'][ltr]])
+    if data['ltrs_guessed'][letter.upper()] is True:
+        guessed = ', '.join([ltr for ltr in data['ltrs_guessed'] if data['ltrs_guessed'][ltr]])
         data['output'] = f"Letters guessed so far are: {guessed}."
-        data['output'] += "\nThis letter has already been guessed, please enter another letter."
+        data['output'] += f"\nThe letter {letter.upper()} has already been guessed,\
+             please enter another letter."
         data['output'] += '\n\n' + ' '.join(data['user_guess'])
 
     # correct guess
     elif letter.upper() in data['target_word']:
-        data['letters_guessed'][letter.upper()] = True
+        data['ltrs_guessed'][letter.upper()] = True
 
         # udpate the user_guess to reveal all letters correctly guessed so far
         i = 0
@@ -117,40 +156,52 @@ def guess(letter, channel_id, name_first):
 
         data['output'] = "That's right! "
         
+        # user wins the game with this guess and ends the game
         if '?' not in data['user_guess']:
-            # user wins the game with this guess
             data['game_end'] = True
             data['output'] += 'The word was ' + ''.join(data['user_guess'])
             data['output'] += f"\nCongratulations {name_first}! You win! \
                 \nType /hangman to start a new game."
         else:
-            guessed = ', '.join([ltr for ltr in list(data['letters_guessed'].keys()) if data['letters_guessed'][ltr]])
+            guessed = ', '.join([ltr for ltr in data['ltrs_guessed'] if data['ltrs_guessed'][ltr]])
             data['output'] += f"\nLetters guessed so far are: {guessed}."
             data['output'] += '\n\n' + ' '.join(data['user_guess'])
 
     # incorrect guess
     else:
-        data['letters_guessed'][letter.upper()] = True
-        data['lives_remaining'] -= 1
+        data['ltrs_guessed'][letter.upper()] = True
+        data['lives'] -= 1
         
-        if data['lives_remaining'] == 0:
-            # User runs out of lives, loses, game ends.
+        # User runs out of lives, ending game.
+        if data['lives'] == 0:
             data['game_end'] = True
             data['output'] = f"\nYou lose! It was all {name_first}'s fault :("
             data['output'] += "\nDidn't you know the word was " + ''.join(data['target_word']) + "?"
             data['output'] += "\nType /hangman to restart."
         else:
-            data['output'] = f"That's wrong, you have {data['lives_remaining']} lives remaining."
-            guessed = ', '.join([ltr for ltr in list(data['letters_guessed'].keys()) if data['letters_guessed'][ltr]])
+            if data['lives'] > 1:
+                data['output'] = f"That's wrong, you have {data['lives']} lives remaining."
+            else:
+                data['output'] = f"That's wrong, you have 1 life remaining."
+            guessed = ', '.join([ltr for ltr in list(data['ltrs_guessed'].keys()) if data['ltrs_guessed'][ltr]]) # pylint: disable=line-too-long
             data['output'] += f"\nLetters guessed so far are: {guessed}."
             data['output'] += '\n\n' + ' '.join(data['user_guess'])
 
     return data
 
-# detect commands /hangman, /guess <letterName>, /quit
 def hangman(message, channel_id, u_id):
+    '''
+    Helper function in message_send to detect the commands
+    '/hangman', '/guess', '/quit', '/enable game', '/disable game'.
+
+    Args:
+        message (str): obtained from message_send to scan for commands
+        channel_id (int): of the current channel
+        u_id (int): of the user sending the message
+    '''
     data = get_store()
 
+    # variable to keep track of message to send back to user
     hbot_output = None
 
     if message == '/hangman' and data.channels.is_hangman_enabled(channel_id):
@@ -165,7 +216,6 @@ def hangman(message, channel_id, u_id):
         hbot_output = data.channels.get_hangman(channel_id)['output']
 
     elif data.channels.is_hangman_running(channel_id):
-        # message needs to start with '/guess' and contain 1 single letter
         if message.startswith('/guess'):
             try:
                 letter = message.split(" ", 1)[1].strip()
@@ -184,27 +234,30 @@ def hangman(message, channel_id, u_id):
             hbot_output = "Quitting game. Goodbye!"
 
         elif message == '/disable game':
+            # command should only work for admins and channel owners
             if data.admins.is_admin(u_id) or data.user_channel.is_owner(u_id, channel_id):
                 data.channels.quit_hangman(channel_id)
                 hbot_output = "Quitting game. Goodbye! \
                     \nHangman disabled. Type '/enable game' to re-enable the game."
             else:
                 raise AccessError(
-                    description="You do not have permission to change game settings in this channel")
+                    description="You do not have permission to change game settings in this channel") #pylint: disable=line-too-long
     else:
         if message == '/disable game':
+            # command should only work for admins and channel owners
             if data.admins.is_admin(u_id) or data.user_channel.is_owner(u_id, channel_id):
                 data.channels.disable_hangman(channel_id)
                 hbot_output = "Hangman disabled. \nType '/enable game' to re-enable the game."
             else:
                 raise AccessError(
-                    description="You do not have permission to change game settings in this channel")
+                    description="You do not have permission to change game settings in this channel") #pylint: disable=line-too-long
         elif message == '/enable game':
+            # command should only work for admins and channel owners
             if data.admins.is_admin(u_id) or data.user_channel.is_owner(u_id, channel_id):
                 data.channels.enable_hangman(channel_id)
                 hbot_output = "Hangman enabled. \nType '/disable game' to disable the game."
             else:
                 raise AccessError(
-                    description="You do not have permission to change game settings in this channel")
+                    description="You do not have permission to change game settings in this channel") #pylint: disable=line-too-long
     
     return hbot_output
