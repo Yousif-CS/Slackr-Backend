@@ -82,7 +82,8 @@ def create_private_channel(create_owner):
 ''' -------------------------testing channel_invite -------------------------------- '''
 
 
-def test_channel_invite_invalid_token(reset, create_user1, create_public_channel):
+def test_channel_invite_invalid_token(
+        reset, create_user1, create_public_channel):
     '''
     testing inputting an invalid token
     '''
@@ -94,7 +95,7 @@ def test_channel_invite_invalid_token(reset, create_user1, create_public_channel
 
 
 def test_channel_invite_valid(reset, create_user1, create_public_channel):
-    ''' 
+    '''
     testing owner of a channel can invite a registered user
     '''
     user_info = create_user1
@@ -109,9 +110,10 @@ def test_channel_invite_valid(reset, create_user1, create_public_channel):
     assert len(all_membs) == 2
 
 
-def test_channel_user_invite(reset, create_user1, create_user2, create_public_channel):
-    ''' 
-    testing if user can invite another user to a channel they belong to 
+def test_channel_user_invite(
+        reset, create_user1, create_user2, create_public_channel):
+    '''
+    testing if user can invite another user to a channel they belong to
     '''
 
     # creating channel and users
@@ -147,10 +149,10 @@ def test_channel_invite_non_user(reset, create_public_channel):
                        channel_id['channel_id'], rand_user_id)
 
 
-def test_channel_invite_user_as_non_member(reset, create_user1, create_user2, 
+def test_channel_invite_user_as_non_member(reset, create_user1, create_user2,
                                            create_public_channel):
     '''
-    Produces an input error when a user invites another 
+    Produces an input error when a user invites another
     registered user to a channel they don't belong to
     '''
     user_info = create_user1
@@ -180,7 +182,8 @@ def test_channel_double_invite(reset, create_user1, create_public_channel):
                        channel_id['channel_id'], user_info['u_id'])
 
 
-def test_channel_invite_nonexistent_channel(reset, create_public_channel, create_user1):
+def test_channel_invite_nonexistent_channel(
+        reset, create_public_channel, create_user1):
     '''
     Inviting a user to a non-existent channel
     '''
@@ -195,7 +198,8 @@ def test_channel_invite_nonexistent_channel(reset, create_public_channel, create
 ''' -------------------Testing channel_details -----------------'''
 
 
-def test_channel_details__owners_valid(reset, create_public_channel, create_user1, create_user2):
+def test_channel_details__owners_valid(
+        reset, create_public_channel, create_user1, create_user2):
     '''
     Test channel_details gives correct info about owners
     '''
@@ -218,7 +222,8 @@ def test_channel_details__owners_valid(reset, create_public_channel, create_user
     assert len(owners) == 1
 
 
-def test_channel_details_members_valid(reset, create_public_channel, create_user1, create_user2):
+def test_channel_details_members_valid(
+        reset, create_public_channel, create_user1, create_user2):
     '''
     Test channel_details gives correct info about members
     '''
@@ -271,10 +276,11 @@ def test_channel_details_no_id(reset, create_private_channel):
         channel_details(owner_info['token'], non_channel_id)
 
 
-def test_channel_details_non_member(reset, create_user1, create_public_channel):
-    ''' 
-    Access Error occurs when a user that does not 
-    belong to a channel attempts to retrieve its details 
+def test_channel_details_non_member(
+        reset, create_user1, create_public_channel):
+    '''
+    Access Error occurs when a user that does not
+    belong to a channel attempts to retrieve its details
     '''
     channel_id = create_public_channel[0]
     user_info = create_user1
@@ -283,7 +289,8 @@ def test_channel_details_non_member(reset, create_user1, create_public_channel):
         channel_details(user_info['token'], channel_id['channel_id'])
 
 
-def test_channel_details_invalid_token(reset, create_public_channel, create_user1):
+def test_channel_details_invalid_token(
+        reset, create_public_channel, create_user1):
     '''
     Access Error occurs when an unauthorized  user invokes the function
     '''
@@ -299,7 +306,8 @@ def test_channel_messages_good(reset, create_public_channel):
     '''
     General test to add 5 messages and checking returned dictionary
     '''
-    # create a public channel using fixture and return its details and the owner's
+    # create a public channel using fixture and return its details and the
+    # owner's
     channel_id, owner_info = create_public_channel
     # sending messages
     sent_msgs_ids = []
@@ -322,7 +330,8 @@ def test_channel_messages_good(reset, create_public_channel):
     # assertions
     for user in u_ids:
         assert user == owner_info['u_id']
-    # testing if the returned ids of the messages are the same as the sent ids of the messages
+    # testing if the returned ids of the messages are the same as the sent ids
+    # of the messages
     for sent_msg, ret_msg in zip(sent_msgs_ids, retrieved_msgs_ids):
         assert sent_msg == ret_msg
     assert len(msgs['messages']) == 5
@@ -332,12 +341,13 @@ def test_channel_messages_good(reset, create_public_channel):
 
 def test_channel_messages_more_than_fifty(reset, create_public_channel):
     '''
-    Testing sending more than 50 messages 
+    Testing sending more than 50 messages
     and checking the function returns only the first 50 (pagination)
     Unfortunately, we have to use a for loop
     '''
 
-    # create a public channel using fixture and return its details and the owner's
+    # create a public channel using fixture and return its details and the
+    # owner's
     channel_id, owner_info = create_public_channel
     sent_msgs_ids = []
     # for loop to send messages
@@ -359,18 +369,21 @@ def test_channel_messages_more_than_fifty(reset, create_public_channel):
     assert msgs['start'] == 1
     assert msgs['end'] == -1
 
+
 def test_channel_messages_empty_public_bad(reset, create_public_channel):
     '''
     testing whether it raises an exception given a start index > number of channel_messages
     '''
 
-    # create a public channel using fixture and return its details and the owner's
+    # create a public channel using fixture and return its details and the
+    # owner's
     channel_id, owner_info = create_public_channel
     with pytest.raises(InputError):
         channel_messages(owner_info['token'], channel_id['channel_id'], 10)
 
 
-def test_channel_messages_private_non_member(reset, create_private_channel, create_user1):
+def test_channel_messages_private_non_member(
+        reset, create_private_channel, create_user1):
     '''
     testing accessing channel_messages as an non-member of the channel
     '''
@@ -415,7 +428,8 @@ def test_channel_messages_invalid_index(reset, create_public_channel):
         channel_messages(owner_info['token'], channel_id['channel_id'], 4)
 
 
-def test_channel_messages_public_non_member(reset, create_public_channel, create_user1):
+def test_channel_messages_public_non_member(
+        reset, create_public_channel, create_user1):
     '''
     Testing a non-member access to channel_messages
     '''
@@ -432,7 +446,8 @@ def test_channel_messages_public_non_member(reset, create_public_channel, create
         channel_messages(user_info['token'], channel_id['channel_id'], 0)
 
 
-def test_channel_messages_public_member(reset, create_public_channel, create_user1):
+def test_channel_messages_public_member(
+        reset, create_public_channel, create_user1):
     '''
     Testing member access to channel_messages
     '''
@@ -443,8 +458,8 @@ def test_channel_messages_public_member(reset, create_public_channel, create_use
     message_send(user_info['token'],
                  channel_id['channel_id'], "First Message!")
 
-    assert channel_messages(user_info["token"], 
-                            channel_id["channel_id"], 
+    assert channel_messages(user_info["token"],
+                            channel_id["channel_id"],
                             0)["messages"][0]["message"] == \
         "First Message!"
 
@@ -479,7 +494,8 @@ def test_channel_leave_owner_good(reset, create_public_channel):
         channel_details(owner_info['token'], channel_id['channel_id'])
 
 
-def test_channel_leave_correct_details(reset, create_private_channel, create_user1):
+def test_channel_leave_correct_details(
+        reset, create_private_channel, create_user1):
     '''
     Testing channel is actually updated if user leaves by using channel_details
     '''
@@ -527,7 +543,7 @@ def test_channel_leave_non_member(reset, create_public_channel, create_user1):
 
 def test_channel_leave_invalid_channel_id(reset, create_owner):
     '''
-    Assuming 1321231 is not a valid channel id 
+    Assuming 1321231 is not a valid channel id
     '''
 
     owner_info = create_owner
@@ -535,7 +551,8 @@ def test_channel_leave_invalid_channel_id(reset, create_owner):
         channel_leave(owner_info['token'], 1321231)
 
 
-def test_channel_leave_general_member(reset, create_private_channel, create_user1):
+def test_channel_leave_general_member(
+        reset, create_private_channel, create_user1):
     '''
     Testing leaving a channel as a general member and trying to access its details
     '''
@@ -600,7 +617,8 @@ def test_channel_join_invalid_channel(reset, create_owner):
         channel_join(owner_info['token'], 1231212)
 
 
-def test_channel_join_private_member(reset, create_private_channel, create_user1):
+def test_channel_join_private_member(
+        reset, create_private_channel, create_user1):
     '''
     joining a private channel as a general user(not an admin)
     '''
@@ -618,7 +636,8 @@ def test_channel_join_private_member(reset, create_private_channel, create_user1
 #    pass
 
 
-def test_channel_join_already_joined(reset, create_public_channel, create_user1):
+def test_channel_join_already_joined(
+        reset, create_public_channel, create_user1):
     '''
     Testing double joining a channel
     '''
@@ -701,7 +720,8 @@ def test_channel_addowner_again(reset, create_public_channel, create_user1):
                          channel_id['channel_id'], user_info['u_id'])
 
 
-def test_channel_addowner_as_non_owner(reset, create_public_channel, create_user1, create_user2):
+def test_channel_addowner_as_non_owner(
+        reset, create_public_channel, create_user1, create_user2):
     '''
     being a general member, trying to add a user as an owner
     '''
@@ -718,7 +738,8 @@ def test_channel_addowner_as_non_owner(reset, create_public_channel, create_user
             another_user['token'], channel_id['channel_id'], user_info['u_id'])
 
 
-def test_channel_addowner_as_non_member(reset, create_public_channel, create_user1, create_user2):
+def test_channel_addowner_as_non_member(
+        reset, create_public_channel, create_user1, create_user2):
     '''
     Testing adding a user as an owner as a non-member
     '''
@@ -734,7 +755,8 @@ def test_channel_addowner_as_non_member(reset, create_public_channel, create_use
             another_user['token'], channel_id['channel_id'], user_info['u_id'])
 
 
-def test_channel_addowner_invalid_token(reset, create_public_channel, create_user1):
+def test_channel_addowner_invalid_token(
+        reset, create_public_channel, create_user1):
     '''
     Unauthorized user trying to add a member as an owner
     '''
@@ -783,7 +805,8 @@ def test_channel_removeowner_good(reset, create_public_channel, create_user1):
         message_remove(user_info['token'], msg_id['message_id'])
 
 
-def test_channel_removeowner_invalid_channel(reset, create_public_channel, create_user1):
+def test_channel_removeowner_invalid_channel(
+        reset, create_public_channel, create_user1):
     '''
     Assuming 22222 is an invalid channel id
     '''
@@ -799,7 +822,8 @@ def test_channel_removeowner_invalid_channel(reset, create_public_channel, creat
         channel_removeowner(owner_info['token'], 22222, user_info['u_id'])
 
 
-def test_channel_removeowner_no_owner(reset, create_public_channel, create_user1):
+def test_channel_removeowner_no_owner(
+        reset, create_public_channel, create_user1):
     '''
     trying to remove ownership from a user who is not an owner
     '''
@@ -815,7 +839,8 @@ def test_channel_removeowner_no_owner(reset, create_public_channel, create_user1
             owner_info['token'], channel_id['channel_id'], user_info['u_id'])
 
 
-def test_channel_removeowner_as_non_owner(reset, create_public_channel, create_user1):
+def test_channel_removeowner_as_non_owner(
+        reset, create_public_channel, create_user1):
     '''
     Removing an owner who happens to be a slackr owner as a general member
     '''
@@ -823,7 +848,8 @@ def test_channel_removeowner_as_non_owner(reset, create_public_channel, create_u
     channel_id, owner_info = create_public_channel
     # creating normal users
     user_info = create_user1
-    # joining as a general member and trying to removing another user as an owner
+    # joining as a general member and trying to removing another user as an
+    # owner
     channel_join(user_info['token'], channel_id['channel_id'])
     with pytest.raises(AccessError):
         channel_removeowner(
@@ -840,7 +866,8 @@ def test_channel_removeowner_as_non_owner_not_admin(reset, create_public_channel
     # creating normal users
     user_info = create_user1
     another_user = create_user2
-    # joining as a general member and trying to removing another user as an owner
+    # joining as a general member and trying to removing another user as an
+    # owner
     channel_addowner(owner_info['token'],
                      channel_id['channel_id'], user_info['u_id'])
     with pytest.raises(AccessError):
@@ -848,7 +875,8 @@ def test_channel_removeowner_as_non_owner_not_admin(reset, create_public_channel
             another_user['token'], channel_id['channel_id'], user_info['u_id'])
 
 
-def test_channel_removeowner_as_non_member(reset, create_public_channel, create_user1):
+def test_channel_removeowner_as_non_member(
+        reset, create_public_channel, create_user1):
     '''
     Removing an owner without a member of the channel
     '''
