@@ -184,7 +184,7 @@ def standup_send(token, channel_id, message):
             description="You do not have permission to send a standup message")
 
     # verify message is not more than 1000 characters or not less than 1
-    if len(message) > MAX_LENGTH or len(message) == 0:
+    if len(message) > MAX_LENGTH or not message:
         raise InputError(description="Invalid message")
 
     # verify there is an active standup

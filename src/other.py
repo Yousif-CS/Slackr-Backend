@@ -5,11 +5,11 @@ that do not belong to a specific category
 #pylint: disable=trailing-whitespace
 
 import pickle
+from user import user_profile
 from standup import get_standup, get_lock
 from state import get_store, get_tokens
 from auth import verify_token, get_token
 from error import InputError, AccessError
-from user import user_profile
 
 SLACKR_OWNER = 1
 SLACKR_MEMBER = 2

@@ -20,6 +20,7 @@ MAX_HANDLE_LEN = 20
 MIN_HANDLE_LEN = 2
 MIN_PASS_LEN = 6
 
+
 def verify_token(token):
     '''
     Checks that the token given is in the TOKENS dictionary as described in server.py
@@ -31,6 +32,7 @@ def verify_token(token):
         return False
     return True
 
+
 def generate_token(u_id):
     '''
     Uses jwt to generate a token
@@ -39,6 +41,7 @@ def generate_token(u_id):
     '''
     return jwt.encode({"u_id": u_id}, SECRET,
                       algorithm="HS256").decode('utf-8')
+
 
 def get_token(u_id):
     '''
@@ -167,7 +170,7 @@ def auth_login(email, password):
     Args: email (str), password (str)
     Raise:
         InputError: email entered not valid, email does not belong to a user, password is incorrect
-    Return: 
+    Return:
         Dictionary: u_id (int), token (str)
     '''
     data = get_store()
@@ -187,6 +190,7 @@ def auth_login(email, password):
         "u_id": u_id,
         "token": token
     }
+
 
 def auth_logout(token):
     '''

@@ -17,7 +17,7 @@ def channel_invite(token, channel_id, u_id):
     Invites a user (with user id u_id) to join a channel with ID channel_id.
     Once invited the user is added to the channel immediately.
     Args: token (str), channel_id (int), u_id (int)
-    InputError: channel ID does not correspond to a valid channel; 
+    InputError: channel ID does not correspond to a valid channel;
     user ID does not refer to a valid user.
     AccessError: authorised user is not already a member of channel with channel ID.
     '''
@@ -34,7 +34,8 @@ def channel_invite(token, channel_id, u_id):
     # check that the authorised user belongs to this valid channel
     auth_u_id = get_tokens()[token]
     if not data.user_channel.is_member(auth_u_id, channel_id):
-        raise AccessError(description="The authorised user is not a member of this channel")
+        raise AccessError(
+            description="The authorised user is not a member of this channel")
 
     # check that u_id corresponds to a valid user
     if not data.users.user_exists(u_id):
@@ -48,7 +49,7 @@ def channel_invite(token, channel_id, u_id):
 
 def channel_details(token, channel_id):
     '''
-    Given a Channel with ID channel_id that the authorised user is part of, 
+    Given a Channel with ID channel_id that the authorised user is part of,
     provide basic details about the channel.
     Args: token (str), channel_id (int)
     InputError: channel_id is not a valid channel
@@ -83,9 +84,9 @@ def channel_details(token, channel_id):
 def channel_messages(token, channel_id, start):
     '''
     Lists up to 50 messages within 'channel_id', beginning from the message indexed 'start'.
-    Args: 
-        token (str): of the user authorising this action 
-        channel_id (int): of the channel whose messages require displaying 
+    Args:
+        token (str): of the user authorising this action
+        channel_id (int): of the channel whose messages require displaying
         start (int): index of the first message to display
     Raises:
         AccessError:
@@ -117,7 +118,7 @@ def channel_messages(token, channel_id, start):
     return {"messages": messages,
             "start": start,
             "end": -1 if not more else start + MESSAGE_BLOCK
-            }
+           }
 
 
 def channel_leave(token, channel_id):

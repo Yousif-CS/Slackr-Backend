@@ -43,6 +43,20 @@ def is_this_user_reacted(u_id, link_info):
             react['is_this_user_reacted'] = u_id in react['u_ids']
 
 
+def generate_reset_code():
+    '''
+    Generate a reset_code to reset a user's password
+    Input: None
+    Returns: Reset_code
+    '''
+    # String length ranges from 8 to 10 characters
+    str_len = random.randint(8, 10)
+
+    # Generate a unique and secure reset code
+    reset_code = uuid.uuid4().hex
+    reset_code = reset_code.upper()[0:str_len]
+    return reset_code
+
 class Users():
     '''
     A class that contains and manages user information, excluding the links between those users
@@ -107,15 +121,15 @@ class Users():
             raise InputError('User does not exist')
 
         details = self._users[u_id]
-        global PORT #pylint: disable=global-statement
+        global PORT  # pylint: disable=global-statement
         return {
             'u_id': u_id,
             'email': details['email'],
             'name_first': details['name_first'],
             'name_last': details['name_last'],
             'handle_str': details['handle_str'],
-            'profile_img_url': f"{HOST}:{PORT}{ROUTE}?path={details['img_path']}" \
-                if details['img_path'] else ""
+            'profile_img_url': f"{HOST}:{PORT}{ROUTE}?path={details['img_path']}"
+                               if details['img_path'] else ""
         }
 
     def all(self):
@@ -282,7 +296,7 @@ class Admins():
 
     def is_valid_permission(self, p_id):
         '''
-        Input: 
+        Input:
             p_id (int): a permission ID
         Return:
             wehther the permission_id is valid (bool)
@@ -328,7 +342,7 @@ class Channels():
                     # lives_remaining
                     # game_end
                     # output
-                }    
+                }
             }
         }
         return self._current_id
@@ -375,6 +389,7 @@ class Channels():
 
 
 # methods relating to hangman game
+
 
     def is_hangman_enabled(self, channel_id):
         '''
@@ -464,20 +479,6 @@ class Codes():
         self._codes_dict = dict()
         self._num_codes = 0
 
-    def _generate_reset_code(self):
-        '''
-        Generate a reset_code to reset a user's password
-        Input: None
-        Returns: Reset_code
-        '''
-        # String length ranges from 8 to 10 characters
-        str_len = random.randint(8, 10)
-
-        # Generate a unique and secure reset code
-        reset_code = uuid.uuid4().hex
-        reset_code = reset_code.upper()[0:str_len]
-        return reset_code
-
     def _send_email(self, email):
         sender_email = 'comp1531resetpass@gmail.com'
         sender_pass = 'git_commitment_issues'
@@ -497,7 +498,7 @@ class Codes():
         if email in self._codes_dict:
             self.delete(email)
 
-        reset_code = self._generate_reset_code()
+        reset_code = generate_reset_code()
         self._codes_dict[email] = reset_code
         self._num_codes += 1
         self._send_email(email)
@@ -525,7 +526,6 @@ class Codes():
         '''
         return [key for (key, value) in self._codes_dict.items()
                 if value == reset_code]
-
 
 
 class Messages():
@@ -632,7 +632,8 @@ class Messages():
         '''
         Returns whether message with message_id exists
         '''
-        return message_id in [message['message_id'] for message in self._messages]
+        return message_id in [message['message_id']
+                              for message in self._messages]
 
     def fetch_messages(self, start):
         '''
@@ -761,7 +762,10 @@ class UserMessage():
         '''
         Removes all tuples from list of links containing u_id
         '''
-        self._user_messages = list(filter(lambda x: x['u_id'] != u_id, self._user_messages))
+        self._user_messages = list(
+            filter(
+                lambda x: x['u_id'] != u_id,
+                self._user_messages))
 
     def remove_link_by_channel(self, channel_id):
         '''
@@ -781,7 +785,8 @@ class UserMessage():
         '''
         Checks whether a tuple with message_id exists in user_messages
         '''
-        return message_id in [link['message_id'] for link in self._user_messages]
+        return message_id in [link['message_id']
+                              for link in self._user_messages]
 
     def react(self, u_id, m_id, react_id):
         '''
@@ -855,7 +860,8 @@ class UserMessage():
         '''
         Checks whether the user with ID u_id sent the message with m_id
         '''
-        return u_id in [link['u_id'] for link in self._user_messages if link['message_id'] == m_id]
+        return u_id in [link['u_id']
+                        for link in self._user_messages if link['message_id'] == m_id]
 
     def message_channel(self, message_id):
         '''
@@ -1073,7 +1079,7 @@ class Database():
     user_channels(u_id)
         Returns details of all the channels user is in
     add_channel(u_id, details)
-        Adds a channel to the database, 
+        Adds a channel to the database,
         rendering the user who created it its owner
     channel_members(channel_id)
         Returns information on all normal members in a channel
@@ -1096,6 +1102,7 @@ class Database():
         Unmarks a message for special treatment in the frontend
 
     '''
+
     def __init__(self):
         self.users = Users()
         self.admins = Admins()
@@ -1113,7 +1120,7 @@ class Database():
         '''
         Adds a user with 'details' to the database
 
-        Args: 
+        Args:
             details (tuple): containing email (str), encrypted password (str),
                 name_first (str), name_last (str), handle (str)
         Return: u_id (int)
@@ -1139,10 +1146,10 @@ class Database():
 
     def add_channel(self, u_id, details):
         '''
-        Adds a channel to the database, 
+        Adds a channel to the database,
         rendering the user who created it its owner
-        
-        Args: 
+
+        Args:
             u_id (int)
             details (tuple): name of channel (str), is_public (bool)
         Return:
@@ -1194,7 +1201,7 @@ class Database():
             u_id (int): of the user invoking this action
             details (tuple):
                 channel_id (int)
-                start (int): starting index 
+                start (int): starting index
         Return:
             List of up to 50 dictionaries each containing:
                 message_id (int)
