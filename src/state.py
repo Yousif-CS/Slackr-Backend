@@ -518,15 +518,21 @@ class UserChannel():
     Methods:
     --------
     add_link(u_id, channel_id, is_owner)
-        links a u_id to a channel_id, adding whether the user is an owner of that channel
+        links a 'u_id' to a 'channel_id', adding whether the user is an owner of that channel
     remove_link_by_user(u_id)
-        removes a link between a u_id and a channel_id
+        removes a link between a 'u_id' and a 'channel_id' by accessing the u_id
     remove_link_by_channel(channel_id)
+        removes a link between a 'u_id' and a 'channel_id' by accessing the channel_id
     remove_user(u_id, channel_id)
+        removes user with 'u_id' from channel with 'channel_id'
     add_owner(u_id, channel_id)
+        adds user with 'u_id' to the list of owners for channel with 'channel_id'
     remove_owner(u_id, channel_id)
+        removes user with 'u_id' from the list of owners for channel with 'channel_id'
     join_channel(u_id, channel_id)
+        adds user with 'u_id' to channel with 'channel_id' as a normal member
     leave_channel(u_id, channel_id)
+        
     link_exists(self, u_id, channel_id)
     is_member(self, u_id, channel_id)
     is_owner(self, u_id, channel_id)
