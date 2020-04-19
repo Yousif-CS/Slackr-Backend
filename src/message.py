@@ -47,7 +47,8 @@ def message_send(token, channel_id, message):
         raise AccessError(description='Invalid token')
 
     # checking message string is valid
-    if not isinstance(message, str) or len(message) > MAX_MSG_LEN or len(message) == 0:
+    if not isinstance(message, str) or len(
+            message) > MAX_MSG_LEN or len(message) == 0:
         raise InputError(description='Invalid message')
 
     # get database
@@ -67,7 +68,8 @@ def message_send(token, channel_id, message):
     # Facilitation of Hangman Game
     hbot_output = hangman(message, channel_id, u_id)
     if hbot_output is not None:
-        # obtain the token of the hangman bot for the channel we are currently in
+        # obtain the token of the hangman bot for the channel we are currently
+        # in
         hbot_token = data.channels.get_hbot_details(channel_id)[1]
         message_send(hbot_token, channel_id, hbot_output)
 
@@ -88,6 +90,7 @@ def run_scheduler(target, time_sent, args):
 
     MY_SCHEDULER.enterabs(time_sent, 1, action=target, argument=args)
     MY_SCHEDULER.run()
+
 
 def message_sendlater(token, channel_id, message, time_sent):
     '''
@@ -112,7 +115,8 @@ def message_sendlater(token, channel_id, message, time_sent):
     if verify_token(token) is False:
         raise AccessError(description='Invalid token')
     # checking message string is valid
-    if not isinstance(message, str) or len(message) > MAX_MSG_LEN or len(message) == 0:
+    if not isinstance(message, str) or len(
+            message) > MAX_MSG_LEN or len(message) == 0:
         raise InputError(description='Invalid message')
 
     # get database
@@ -232,8 +236,8 @@ def message_remove(token, message_id):
 
     # check if the user has permissions to remove the message
     channel_id = data.user_message.message_channel(message_id)
-    if not (data.user_channel.is_owner(u_id, channel_id) or data.admins.is_admin(u_id) \
-        or data.user_message.is_sender(message_id, u_id)):
+    if not (data.user_channel.is_owner(u_id, channel_id) or data.admins.is_admin(u_id)
+            or data.user_message.is_sender(message_id, u_id)):
         raise AccessError(
             description='You do not have access to delete this message')
 
@@ -289,7 +293,8 @@ def message_edit(token, message_id, message):
     if verify_token(token) is False:
         raise AccessError(description="Invalid token")
 
-    # check that the request is being made by a user with the correct permissions
+    # check that the request is being made by a user with the correct
+    # permissions
     auth_u_id = get_tokens()[token]
     data = get_store()
 

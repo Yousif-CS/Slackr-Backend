@@ -254,7 +254,10 @@ def test_users_all_invalid_token_error():
 
 def test_search_empty_string(reset, create_public_channel):
     new_public_channel, user_ab = create_public_channel
-    message_send(user_ab['token'], new_public_channel['channel_id'], "Hello world!")
+    message_send(
+        user_ab['token'],
+        new_public_channel['channel_id'],
+        "Hello world!")
 
     assert search(user_ab['token'], "")['messages'] == []
 
@@ -312,7 +315,10 @@ def test_search_exact_string(reset, create_public_channel):
     new_public_channel, user_ab = create_public_channel
     message_send(user_ab['token'], new_public_channel['channel_id'],
                  "This is a very generic message")
-    message_send(user_ab['token'], new_public_channel['channel_id'], "generic message")
+    message_send(
+        user_ab['token'],
+        new_public_channel['channel_id'],
+        "generic message")
     # search string matches a message exactly
     result_list = search(user_ab['token'], "This is a very generic message")[
         'messages']
@@ -338,7 +344,8 @@ def test_search_string_too_long(reset, create_public_channel):
 
 # Cross-channel tests
 # multiple matching messages in different channels a user is in
-def test_search_string_in_multiple_channels(reset, create_public_channel, make_user_cd):
+def test_search_string_in_multiple_channels(
+        reset, create_public_channel, make_user_cd):
     # user_ab creates public channel and sends a message to it
     new_public_channel, user_ab = create_public_channel
     message_send(
@@ -359,8 +366,8 @@ def test_search_string_in_multiple_channels(reset, create_public_channel, make_u
     # u_ids = [message['u_id'] for message in result_list]
 
     # asserting the u_ids relate to the messages
-    assert user_cd['u_id'] in [1,3]
-    assert user_ab['u_id'] in [1,3]
+    assert user_cd['u_id'] in [1, 3]
+    assert user_ab['u_id'] in [1, 3]
 
     # asserting the messages are in the results
     assert "ab's public channel message" in messages
@@ -368,7 +375,8 @@ def test_search_string_in_multiple_channels(reset, create_public_channel, make_u
 
 
 # matching messages in unjoined channel shold not show up
-def test_search_string_in_unjoined_channel(reset, create_public_channel, make_user_cd):
+def test_search_string_in_unjoined_channel(
+        reset, create_public_channel, make_user_cd):
     new_public_channel, user_ab = create_public_channel
     user_cd = make_user_cd
     message_send(
@@ -403,7 +411,8 @@ def test_search_invalid_token(reset, create_public_channel):
 '''Testing userpermission_change'''
 
 
-def test_userpermission_change_invalid_token(reset, create_public_channel, make_user_ab):
+def test_userpermission_change_invalid_token(
+        reset, create_public_channel, make_user_ab):
     '''
     Testing using an invalid token
     '''
@@ -416,7 +425,8 @@ def test_userpermission_change_invalid_token(reset, create_public_channel, make_
             owner_info['token'] + 'a', user1['u_id'], SLACKR_OWNER)
 
 
-def test_userpermission_change_invalid_u_id(reset, create_public_channel, make_user_ab):
+def test_userpermission_change_invalid_u_id(
+        reset, create_public_channel, make_user_ab):
     '''
     Changing permissions of a non-existent user
     '''
@@ -431,13 +441,14 @@ def test_userpermission_change_invalid_u_id(reset, create_public_channel, make_u
         userpermission_change(
             owner_info['token'], owner_info['u_id'] + 2, SLACKR_OWNER)
 
+
 def test_userpermission_change_permission_denied(reset, create_public_channel,
                                                  make_user_ab, make_user_cd):
     '''
     Trying to change another user's permissions as a non-slackr-owner
     '''
     # creating a public channel
-    create_public_channel #pylint: disable=pointless-statement
+    create_public_channel  # pylint: disable=pointless-statement
     # since owner is the first user who signs up in this
     # test, he should be a slackr owner
 
@@ -450,7 +461,8 @@ def test_userpermission_change_permission_denied(reset, create_public_channel,
             user_cd_info['token'], user_ab_info['u_id'], SLACKR_OWNER)
 
 
-def test_userpermission_change_invalid_permission(reset, create_public_channel, make_user_ab):
+def test_userpermission_change_invalid_permission(
+        reset, create_public_channel, make_user_ab):
     '''
     Testing changing a user's permissions to an invalid one
     '''
@@ -467,7 +479,8 @@ def test_userpermission_change_invalid_permission(reset, create_public_channel, 
             owner_info['token'], user_info['u_id'], INVALID_PERMISSION)
 
 
-def test_userpermission_change_invalid_permission_type(reset, create_public_channel, make_user_ab):
+def test_userpermission_change_invalid_permission_type(
+        reset, create_public_channel, make_user_ab):
     '''
     Testing changing a user's permissions to an invalid one
     '''
@@ -484,7 +497,8 @@ def test_userpermission_change_invalid_permission_type(reset, create_public_chan
             owner_info['token'], user_info['u_id'], "You should complain")
 
 
-def test_userpermission_change_promote(reset, create_private_channel, make_user_ab, make_user_cd):
+def test_userpermission_change_promote(
+        reset, create_private_channel, make_user_ab, make_user_cd):
     '''
     Testing promoting a user allows him to join private channels
     '''
@@ -509,7 +523,8 @@ def test_userpermission_change_promote(reset, create_private_channel, make_user_
             assert False
 
 
-def test_userpermission_change_demote(reset, create_private_channel, make_user_cd, make_user_ef):
+def test_userpermission_change_demote(
+        reset, create_private_channel, make_user_cd, make_user_ef):
     '''
     Testing demoting a user restricts him to join private channels
     '''
@@ -520,7 +535,7 @@ def test_userpermission_change_demote(reset, create_private_channel, make_user_c
 
     # create new user
     user_info = make_user_cd
- 
+
     # promoting user
     userpermission_change(owner_info['token'], user_info['u_id'], SLACKR_OWNER)
 
@@ -539,6 +554,7 @@ def test_userpermission_change_demote(reset, create_private_channel, make_user_c
     with pytest.raises(AccessError):
         channel_join(user_info['token'], channel_id['channel_id'])
 
+
 def test_userpermission_change_demote_own(reset, make_user_ab):
     '''
     Testing we cannot demote ones ownself
@@ -546,7 +562,11 @@ def test_userpermission_change_demote_own(reset, make_user_ab):
     # creating admin
     admin_info = make_user_ab
     with pytest.raises(InputError):
-        userpermission_change(admin_info['token'], admin_info['u_id'], SLACKR_MEMBER)
+        userpermission_change(
+            admin_info['token'],
+            admin_info['u_id'],
+            SLACKR_MEMBER)
+
 
 def test_user_remove_no_user(reset, create_public_channel, make_user_ab):
     '''
@@ -556,6 +576,7 @@ def test_user_remove_no_user(reset, create_public_channel, make_user_ab):
     _, owner_info = create_public_channel
     with pytest.raises(InputError):
         user_remove(owner_info['token'], owner_info['u_id'] + 1)
+
 
 def test_user_remove_invalid_token(reset, create_public_channel, make_user_ab):
     '''
@@ -569,7 +590,9 @@ def test_user_remove_invalid_token(reset, create_public_channel, make_user_ab):
     with pytest.raises(AccessError):
         user_remove(owner_info['token'] + 'a', user_info['u_id'])
 
-def test_user_remove_not_admin(reset, make_user_ab, make_user_cd, make_user_ef):
+
+def test_user_remove_not_admin(
+        reset, make_user_ab, make_user_cd, make_user_ef):
     '''
     A reguler member tries to remove user
     '''
@@ -580,7 +603,9 @@ def test_user_remove_not_admin(reset, make_user_ab, make_user_cd, make_user_ef):
     with pytest.raises(AccessError):
         user_remove(user1_info['token'], user2_info['u_id'])
 
-def test_user_remove_messages_removed(reset, create_public_channel, make_user_cd):
+
+def test_user_remove_messages_removed(
+        reset, create_public_channel, make_user_cd):
     '''
     Testing if the users messages are removed
     '''
@@ -589,16 +614,24 @@ def test_user_remove_messages_removed(reset, create_public_channel, make_user_cd
 
     # creating user
     user_info = make_user_cd
-    #joining and sending a message
+    # joining and sending a message
     channel_join(user_info['token'], channel_id['channel_id'])
     message_send(user_info['token'], channel_id['channel_id'], 'HelloWorld')
-    print(channel_messages(owner_info['token'], channel_id['channel_id'], start=0))
+    print(
+        channel_messages(
+            owner_info['token'],
+            channel_id['channel_id'],
+            start=0))
 
-    #removing user
+    # removing user
     user_remove(owner_info['token'], user_info['u_id'])
-    #should be empty
-    messages = channel_messages(owner_info['token'], channel_id['channel_id'], start=0)
+    # should be empty
+    messages = channel_messages(
+        owner_info['token'],
+        channel_id['channel_id'],
+        start=0)
     assert len(messages['messages']) == 1
+
 
 def test_user_remove_own_self(reset, make_user_ab):
     '''
@@ -609,7 +642,9 @@ def test_user_remove_own_self(reset, make_user_ab):
     with pytest.raises(InputError):
         user_remove(admin_info['token'], admin_info['u_id'])
 
-def test_user_remove_removed_from_channel(reset, create_public_channel, make_user_cd):
+
+def test_user_remove_removed_from_channel(
+        reset, create_public_channel, make_user_cd):
     '''
     Checking if user is actually removed from all subscribed channels
     '''
@@ -618,14 +653,16 @@ def test_user_remove_removed_from_channel(reset, create_public_channel, make_use
 
     # creating user
     user_info = make_user_cd
-    #joining
+    # joining
     channel_join(user_info['token'], channel_id['channel_id'])
-    #removing user
+    # removing user
     user_remove(owner_info['token'], user_info['u_id'])
-    #getting the details of the channel
+    # getting the details of the channel
     ch_details = channel_details(owner_info['token'], channel_id['channel_id'])
-    #The reason we assume it is 2 is because we have a hangman bot in each channel
+    # The reason we assume it is 2 is because we have a hangman bot in each
+    # channel
     assert len(ch_details['all_members']) == 2
+
 
 def test_user_remove_all_details(reset, make_user_ab, make_user_cd):
     '''

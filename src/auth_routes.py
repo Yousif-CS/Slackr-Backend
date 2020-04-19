@@ -47,6 +47,7 @@ def disconnect():
     successful = auth_logout(payload['token'])
     return dumps(successful)
 
+
 @AUTH.route('/passwordreset/request', methods=['POST'])
 def send_email():
     '''
@@ -54,9 +55,10 @@ def send_email():
     '''
     payload = request.get_json()
     if not payload['email']:
-        raise RequestError(description="Missing data in request body")   
+        raise RequestError(description="Missing data in request body")
     auth_passwordreset_request(payload['email'])
     return dumps({})
+
 
 @AUTH.route('/passwordreset/reset', methods=['POST'])
 def reset_password():
@@ -68,4 +70,4 @@ def reset_password():
         raise RequestError(description="Missing data in request body")
 
     auth_passwordreset_reset(payload['reset_code'], payload['new_password'])
-    return dumps({})     
+    return dumps({})

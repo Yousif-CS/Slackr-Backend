@@ -48,7 +48,10 @@ def react():
     if not data['token'] or not data['message_id'] or not data['react_id']:
         raise RequestError(description="Missing data in request body")
 
-    message.message_react(data['token'], int(data['message_id']), int(data['react_id']))
+    message.message_react(
+        data['token'], int(
+            data['message_id']), int(
+            data['react_id']))
     return dumps({})
 
 
@@ -117,8 +120,10 @@ def edit():
     data = request.get_json()
 
     if not data["token"] or not data["message_id"] \
-        or (not data["message"] and not data["message"] == ""):
+            or (not data["message"] and not data["message"] == ""):
         raise RequestError(description="Missing data in request body")
 
-    message.message_edit(data["token"], int(data["message_id"]), data["message"])
+    message.message_edit(
+        data["token"], int(
+            data["message_id"]), data["message"])
     return dumps({})
