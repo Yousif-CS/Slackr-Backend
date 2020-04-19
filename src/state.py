@@ -511,6 +511,7 @@ class Codes():
                 if value == reset_code]
 
 
+
 class Messages():
     '''
     A class that contains information about all messages that have been sent into channels,
@@ -530,9 +531,7 @@ class Messages():
     Methods:
     --------
     def all(self)
-        returns all message dictionaries in a list
     def add(self, details)
-        appends a new dictionary to messages list and increment num_messages and current_id
     def edit(self, message_id, message)
     def pin(self, message_id)
     def unpin(self, message_id)
@@ -551,9 +550,16 @@ class Messages():
         self._current_id = 0
 
     def all(self):
+        '''
+        Returns all message dictionaries in a list
+        '''
         return list(self._messages)
 
     def add(self, details):
+        '''
+        Appends to the list of messages a new dictionary
+        containing the following details
+        '''
         message, time_created = details
         self._num_messages += 1
         self._current_id += 1
@@ -566,23 +572,37 @@ class Messages():
         return self._current_id
 
     def edit(self, message_id, message):
+        '''
+        Replaces the contents of message with message_id
+        with the message string
+        '''
         for msg in self._messages:
             if msg['message_id'] == message_id:
                 msg['message'] = message
 
     def pin(self, message_id):
+        '''
+        Pins the message with message_id
+        '''
         if self.message_details(message_id)['is_pinned']:
             raise InputError(description='Message already pinned')
         ids = [msg['message_id'] for msg in self._messages]
         self._messages[ids.index(message_id)]['is_pinned'] = True
 
     def unpin(self, message_id):
+        '''
+        Unpins the message with message_id
+        '''
         if not self.message_details(message_id)['is_pinned']:
             raise InputError(description='Message already unpinned')
         ids = [msg['message_id'] for msg in self._messages]
         self._messages[ids.index(message_id)]['is_pinned'] = False
 
     def message_details(self, message_id):
+        '''
+        Returns details of message with message_id
+        in the form of a dictionary
+        '''
         try:
             [message] = list(
                 filter(
@@ -593,10 +613,16 @@ class Messages():
             return None
 
     def message_exists(self, message_id):
-        return message_id in [message['message_id']
-                              for message in self._messages]
+        '''
+        Returns whether message with message_id exists
+        '''
+        return message_id in [message['message_id'] for message in self._messages]
 
     def fetch_messages(self, start):
+        '''
+        Returns a list of message details starting
+        with the specified start index
+        '''
         if start < 0 or start > self._num_messages:
             raise InputError(description='Invalid Start index')
         if start + MSG_BLOCK >= self._num_messages:
@@ -604,6 +630,9 @@ class Messages():
         return list(self._messages[start: start + MSG_BLOCK])
 
     def remove(self, message_id):
+        '''
+        Removes a message with message_id
+        '''
         if not self.message_exists(message_id):
             raise InputError(description='Message does not exist')
         self._messages[:] = list(
@@ -613,13 +642,22 @@ class Messages():
         self._num_messages -= 1
 
     def find(self, message_id):
+        '''
+        Returns the message_id of message
+        '''
         return self._messages[message_id]
 
     def search(self, query_string):
+        '''
+        Returns list of messages that contain the query_string
+        '''
         return list(
             [msg for msg in self._messages if query_string in msg['message']])
 
     def next_id(self):
+        '''
+        Returns the next message ID
+        '''
         return int(self._current_id + 1)
 
 
@@ -639,7 +677,6 @@ class UserMessage():
     Methods:
     --------
     def add_link(self, u_id, channel_id, message_id)
-        adds a tuple containing u_id, channel_id, message_id
     def fetch_links_by_channel(self, container)
         returns list of links filtered by specified channel_id(s)
     def fetch_links_by_user(self, u_id)
@@ -662,6 +699,9 @@ class UserMessage():
         self._react_ids = [1]
 
     def add_link(self, u_id, channel_id, message_id):
+        '''
+        Adds a tuple containing u_id, channel_id, message_id
+        '''
         if self.link_exists(message_id):
             raise InputError(description='Message already exists')
         self._user_messages.append({
@@ -676,7 +716,7 @@ class UserMessage():
 
     def fetch_links_by_channel(self, container):
         '''
-        fetches all links by channel_id/multiple channel_ids
+        Fetches all links by channel_id/multiple channel_ids
         '''
         if (isinstance(container, list)):
             channel_msgs = list(
@@ -693,7 +733,7 @@ class UserMessage():
 
     def fetch_links_by_user(self, u_id):
         '''
-        fetches all message links that the user has sent
+        Fetches all message links that the user has sent
         '''
         filtered = list(
             filter(
@@ -702,24 +742,35 @@ class UserMessage():
         return list(filtered)
 
     def remove_link_by_user(self, u_id):
-        self._user_messages = list(
-            filter(
-                lambda x: x['u_id'] != u_id,
-                self._user_messages))
+        '''
+        Removes all tuples from list of links containing u_id
+        '''
+        self._user_messages = list(filter(lambda x: x['u_id'] != u_id, self._user_messages))
 
     def remove_link_by_channel(self, channel_id):
+        '''
+        Removes all tuples from list of links containing channel_id
+        '''
         self._user_messages = list(
             filter(lambda x: x['channel_id'] != channel_id, self._user_messages))
 
     def remove_link_by_message(self, message_id):
+        '''
+        Removes all tuples from list of links containing channel_id
+        '''
         self._user_messages = list(
             filter(lambda x: x['message_id'] != message_id, self._user_messages))
 
     def link_exists(self, message_id):
-        return message_id in [link['message_id']
-                              for link in self._user_messages]
+        '''
+        Checks whether a tuple with message_id exists in user_messages
+        '''
+        return message_id in [link['message_id'] for link in self._user_messages]
 
     def react(self, u_id, m_id, react_id):
+        '''
+        Adds react details to the link with u_id, m_id
+        '''
         if not self.link_exists(m_id):
             raise InputError(description='Message does not exist')
 
@@ -746,6 +797,9 @@ class UserMessage():
             })
 
     def unreact(self, u_id, m_id, react_id):
+        '''
+        Removes the react_id from active reacts in the specified link
+        '''
         if not self.link_exists(m_id):
             raise InputError(description='Message does not exist')
 
@@ -763,6 +817,9 @@ class UserMessage():
             raise InputError(description='user does not have an active react')
 
     def fetch_link(self, m_id):
+        '''
+        Returns the link tuple containing message ID of m_id
+        '''
         try:
             [info] = list(
                 filter(
@@ -773,13 +830,21 @@ class UserMessage():
             return None
 
     def is_valid_react(self, react_id):
+        '''
+        Checks whether the react_id is valid
+        '''
         return react_id in self._react_ids
 
     def is_sender(self, m_id, u_id):
-        return u_id in [link['u_id']
-                        for link in self._user_messages if link['message_id'] == m_id]
+        '''
+        Checks whether the user with ID u_id sent the message with m_id
+        '''
+        return u_id in [link['u_id'] for link in self._user_messages if link['message_id'] == m_id]
 
     def message_channel(self, message_id):
+        '''
+        Returns the channel ID of the message
+        '''
         link = self.fetch_link(message_id)
         return link['channel_id']
 
