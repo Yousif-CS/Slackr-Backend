@@ -11,7 +11,6 @@ import random
 import uuid
 import smtplib
 import hashlib
-import sys
 from error import InputError, AccessError
 
 #a constant to show a user is an admin
@@ -45,6 +44,19 @@ class Users():
     '''
     A class that contains and manages user information, excluding the links between those users
     and the channels and messages related to them.
+    
+    Attributes:
+    -----------
+    _users : list
+        Contains dictionaries with information regarding each user, each dictionary
+            contains keys for email, first and last names, pswrd, handle and img_path
+    _num_users: int
+        Keeps track of the total number of users currently existing
+    current_id: int
+        Keeps track of the current ID of the latest user. ID's increment by 1 and
+            continue to do so even with deletion of previous messages
+
+
     '''
     def __init__(self):
         self._users = dict()
@@ -102,20 +114,38 @@ class Users():
         }
 
     def all(self):
+        '''
+        Returns a list of all users in the specified dictionary format
+        '''
         all_users = dict(self._users)
         return list(map(self.user_details, all_users))
 
     def user_exists(self, u_id):
+        '''
+        Input: u_id: int
+        Returns: Bool
+        Checks whether the user with u_id exists
+        '''
         if u_id in self._users:
             return True
         return False
 
     def email_used(self, email):
+        '''
+        Input: email: string
+        Returns: Bool
+        Checks whether the email is registered in the database
+        '''
         if email in [user['email'] for user in self._users.values()]:
             return True
         return False
     
     def find_u_id(self, email):
+        '''
+        Input: email: string
+        Returns: u_id: int, None if not found
+        Returns the user id given the email if it exists
+        '''
         u_id = 1
         for user in self._users.values():
             if email == user['email']:
@@ -125,34 +155,79 @@ class Users():
         return None
 
     def handle_unique(self, handle):
+        '''
+        Input: handle: string
+        Returns: Bool
+        Checks if the handle is not already used by another user
+        '''
         if handle in [user['handle_str'] for user in self._users.values()]:
             return False
 
         return True
     
     def set_first_name(self, u_id, name):
+        '''
+        Input: u_id: int, name: string
+        Returns: nothing
+        Resets the first name of user with u_id
+        '''
         self._users[u_id]['name_first'] = name
 
     def set_last_name(self, u_id, name):
+        '''
+        Input: u_id: int, name: string
+        Returns: nothing
+        Resets the last name of user with u_id
+        '''
         self._users[u_id]['name_last'] = name
     
     def get_handle(self, u_id):
+        '''
+        Input: u_id: int
+        Returns: handle: string
+        Gives back the handle of the user with u_id
+        '''
         return self._users[u_id]['handle_str']
 
     def set_handle(self, u_id, handle_str):
+        '''
+        Input: u_id: int, handle_str: string
+        Returns: nothing
+        Resets the handle of user u_id with handle_str
+        '''
         self._users[u_id]['handle_str'] = handle_str
 
     def set_email(self, u_id, email):
+        '''
+        Input: u_id: int, email: string
+        Returns: nothing
+        Resets the email of user u_id with new email
+        '''
         self._users[u_id]['email'] = email
     
     def set_password(self, u_id, password):
+        '''
+        Input: u_id: int, password: string
+        Returns: nothing
+        Resets the password of user u_id with an encrypted `password` 
+        '''
         encrypt_pass = hashlib.sha256(password.encode()).hexdigest()
         self._users[u_id]['password'] = encrypt_pass
 
     def set_image(self, u_id):
+        '''
+        Input: u_id: int
+        Returns: nothing
+        Creates an img path using u_id and saves it into the user's details
+        '''
         self._users[u_id]['img_path'] = f"{self._img_dir}/{u_id}.jpg"
 
     def validate_login(self, email, password):
+        '''
+        Input: email: string, password: string
+        Returns: u_id of the validated user
+        Makes sure the email exist and the given password is correct
+        '''
         try:
             [u_id] = [key for key, value in self._users.items() if value['email'] == email]
         except ValueError:
@@ -973,7 +1048,7 @@ class Database():
         Remove all messages associated with a user
         '''
         relevant_msg_links = self.user_message.fetch_links_by_user(u_id)
-        for link in relevant_msg_links:
+        for link in relevant_Outputmsg_links:
             self.remove_message(link['message_id'])
 
         self.user_message.remove_link_by_user(u_id)
