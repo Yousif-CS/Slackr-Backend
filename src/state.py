@@ -2,6 +2,7 @@
 State variables and functions to deal
 with the server's data when its launched
 '''
+#pylint: disable=trailing-whitespace
 
 from email.message import EmailMessage
 import threading
@@ -658,32 +659,99 @@ class UserMessage():
 
 class UserChannel():
     '''
-    Contains a structure that maintains the relationship
-    between users and the channels they have joined
+    A class that maintains the relationship between users and the channels they have joined.
+
+    Attributes:
+    -----------
+    user_channels : list
+        Contains tuples linking u_id's to channel_id's, as well as
+        whether the user with u_id is an owner of that channel
+    
+    Methods:
+    --------
+    add_link(u_id, channel_id, is_owner)
+        links a 'u_id' to a 'channel_id', adding whether the user is an owner of that channel
+    remove_link_by_user(u_id)
+        removes all links between channels and user with 'u_id'
+    remove_link_by_channel(channel_id)
+        removes all links between users and channel with 'channel_id'
+    remove_user(u_id, channel_id)
+        removes user with 'u_id' from channel with 'channel_id'
+    add_owner(u_id, channel_id)
+        adds user with 'u_id' to the list of owners for channel with 'channel_id'
+    remove_owner(u_id, channel_id)
+        removes user with 'u_id' from the list of owners for channel with 'channel_id'
+    join_channel(u_id, channel_id)
+        adds user with 'u_id' to channel with 'channel_id' as a normal member
+    leave_channel(u_id, channel_id)
+        removes user with 'u_id' from channel with 'channel_id' entirely
+    link_exists(self, u_id, channel_id)
+        returns whether user with 'u_id' is part of channel with 'channel_id'
+    is_member(self, u_id, channel_id)
+        returns whether user with 'u_id' is a normal member of channel with 'channel_id'
+    is_owner(self, u_id, channel_id)
+        returns whether user with 'u_id' is an owner of channelw ith 'channel_id'
+    members(self, channel_id)
+        returns a list of all members part of channel with 'channel_id'
+    owners(self, channel_id)
+        returns a list of all owner members in channel with 'channel_id'
+    user_channels(self, given_u_id)
+        returns a list of channels which user with 'given_u_id' is part of
     '''
     def __init__(self):
         self._user_channels = list()
 
     def add_link(self, u_id, channel_id, is_owner):
+        '''
+        Forms a link between a user and a channel, making a note of 
+        whether the user is an owner of that channel.
+
+        Params: u_id (int), channel_id (int), is_owner (bool)
+        Raises: InputError if user is already in the channel
+        '''
         if self.link_exists(u_id, channel_id):
             raise InputError(description='user already in channel')
 
         self._user_channels.append((u_id, channel_id, is_owner))
 
     def remove_link_by_user(self, u_id):
+        '''
+        Removes a link made between a user with 'u_id' and all chanenels this user is part of
+
+        Params: u_id (int)
+        '''
         self._user_channels = list(filter(lambda x: x[0] != u_id, self._user_channels))
 
     def remove_link_by_channel(self, channel_id):
+        '''
+        Removes a link made between a channel with 'channel_id' and all users part of this channel
+
+        Params: channel_id (int)
+        '''
         self._user_channels = list(filter(lambda x: x[1] != channel_id, self._user_channels))
 
     def remove_user(self, u_id, channel_id):
+        '''
+        Removes user with 'u_id' from channel with 'channel_id'
+
+        Params: u_id (int), channel_id (int)
+        Raises: ValueError if either 'u_id' or 'channel_id' invalid or user not part of channel
+        '''
         try:
             [to_remove] = list(
                 filter(lambda x: x[0] == u_id and x[1] == channel_id, self._user_channels))
             self._user_channels.remove(to_remove)
         except ValueError:
             pass
+
+    
     def add_owner(self, u_id, channel_id):
+        '''
+        Adds user with 'u_id' to the list of owners for channel with 'channel_id'
+
+        Params: u_id (int), channel_id (int)
+        Raises: InputError if user is already an owner of the channel
+        '''
         if self.is_owner(u_id, channel_id):
             raise InputError(description='user is already an owner')
         #tuples cannot allow modification; therefore delete then add
@@ -691,37 +759,77 @@ class UserChannel():
         self.add_link(u_id, channel_id, is_owner=True)
 
     def remove_owner(self, u_id, channel_id):
+        '''
+        Removes user with 'u_id' from the list of owners for channel with 'channel_id'
+        
+        Params: u_id (int), channel_id (int)
+        Raises: InputError if user is not an owner of the channel in the first place
+        '''
         if not self.is_owner(u_id, channel_id):
             raise InputError(description='user is not an owner')
 
-        #tuples are immutable; so we delete him then add him as a member
+        # tuples are immutable; so we delete him then add him as a member
         self.remove_user(u_id, channel_id)
         self.add_link(u_id, channel_id, is_owner=False)
 
     def join_channel(self, u_id, channel_id):
+        '''
+        Adds user with 'u_id' to channel with 'channel_id' as a normal member
+
+        Params: u_id (int), channel_id (int)
+        '''
         self.add_link(u_id, channel_id, is_owner=False)
 
     def leave_channel(self, u_id, channel_id):
+        '''
+        Removes user with 'u_id' from channel with 'channel_id' entirely
+
+        Params: u_id (int), channel_id (int)
+        '''
         self.remove_user(u_id, channel_id)
 
     def link_exists(self, u_id, channel_id):
+        '''
+        Params: u_id (int), channel_id (int)
+        Returns: if user is part of channel (bool)
+        '''
         return u_id in \
             [u_id for u_id, ch_id, _ in self._user_channels if ch_id == channel_id]
 
     def is_member(self, u_id, channel_id):
+        '''
+        Params: u_id (int), channel_id (int)
+        Returns: if user is normal member of channel (bool)
+        '''
         return u_id in self.members(channel_id)
 
     def is_owner(self, u_id, channel_id):
+        '''
+        Params: u_id (int), channel_id (int)
+        Returns: if user is owner member of channel (bool)
+        '''
         return u_id in self.owners(channel_id)
 
     def members(self, channel_id):
+        '''
+        Params: channel_id (int)
+        Returns: all users who are normal members of channel with 'channel_id' (List)
+        '''
         return [u_id for u_id, ch_id, _ in self._user_channels if channel_id == ch_id]
 
     def owners(self, channel_id):
+        '''
+        Params: channel_id (int)
+        Returns: all users who are owner members of channel with 'channel_id' (List)
+        '''
         return  [u_id for u_id, ch_id, is_owner in self._user_channels if \
                 ch_id == channel_id and is_owner]
 
     def user_channels(self, given_u_id):
+        '''
+        Params: given_u_id (int)
+        Returns: all channels which user with 'given_u_id' is part of (List)
+        '''
         return list([ch_id for u_id, ch_id, _ in self._user_channels if u_id == given_u_id])
 
 
