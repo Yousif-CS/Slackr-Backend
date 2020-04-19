@@ -95,6 +95,7 @@ def test_users_all_one_user():
             'email': 'edward@gmail.com',
             'name_first': 'Edward',
             'name_last': 'Frankenstein',
+            'profile_img_url': '',
             'handle_str': 'edwardfrankenstein'
         }
     ]
@@ -115,6 +116,7 @@ def test_users_all_access_three_users_at_once_in_order():
             'email': 'gregory@gmail.com',
             'name_first': 'Gregory',
             'name_last': 'Heidelberg',
+            'profile_img_url': '',
             'handle_str': 'gregoryheidelberg'
         },
         {
@@ -122,6 +124,7 @@ def test_users_all_access_three_users_at_once_in_order():
             'email': 'edward@gmail.com',
             'name_first': 'Edward',
             'name_last': 'Frankenstein',
+            'profile_img_url': '',
             'handle_str': 'edwardfrankenstein'
         },
         {
@@ -129,6 +132,7 @@ def test_users_all_access_three_users_at_once_in_order():
             'email': 'ian@hotmail.com',
             'name_first': 'Ian',
             'name_last': 'Jacobs',
+            'profile_img_url': '',
             'handle_str': 'ianjacobs'
         }
     ]
@@ -149,6 +153,7 @@ def test_users_all_register_and_call_function_one_at_a_time():
             'email': 'gregory@gmail.com',
             'name_first': 'Gregory',
             'name_last': 'Heidelberg',
+            'profile_img_url': '',
             'handle_str': 'gregoryheidelberg'
         },
         {
@@ -156,6 +161,7 @@ def test_users_all_register_and_call_function_one_at_a_time():
             'email': 'edward@gmail.com',
             'name_first': 'Edward',
             'name_last': 'Frankenstein',
+            'profile_img_url': '',
             'handle_str': 'edwardfrankenstein'
         }
     ]
@@ -168,6 +174,7 @@ def test_users_all_register_and_call_function_one_at_a_time():
             'email': 'gregory@gmail.com',
             'name_first': 'Gregory',
             'name_last': 'Heidelberg',
+            'profile_img_url': '',
             'handle_str': 'gregoryheidelberg'
         },
         {
@@ -175,6 +182,7 @@ def test_users_all_register_and_call_function_one_at_a_time():
             'email': 'edward@gmail.com',
             'name_first': 'Edward',
             'name_last': 'Frankenstein',
+            'profile_img_url': '',
             'handle_str': 'edwardfrankenstein'
         },
         {
@@ -182,6 +190,7 @@ def test_users_all_register_and_call_function_one_at_a_time():
             'email': 'ian@hotmail.com',
             'name_first': 'Ian',
             'name_last': 'Jacobs',
+            'profile_img_url': '',
             'handle_str': 'ianjacobs'
         }
     ]
@@ -203,6 +212,7 @@ def test_users_all_users_remain_when_logout():
             'email': 'gregory@gmail.com',
             'name_first': 'Gregory',
             'name_last': 'Heidelberg',
+            'profile_img_url': '',
             'handle_str': 'gregoryheidelberg'
         },
         {
@@ -210,6 +220,7 @@ def test_users_all_users_remain_when_logout():
             'email': 'edward@gmail.com',
             'name_first': 'Edward',
             'name_last': 'Frankenstein',
+            'profile_img_url': '',
             'handle_str': 'edwardfrankenstein'
         },
         {
@@ -217,6 +228,7 @@ def test_users_all_users_remain_when_logout():
             'email': 'ian@hotmail.com',
             'name_first': 'Ian',
             'name_last': 'Jacobs',
+            'profile_img_url': '',
             'handle_str': 'ianjacobs'
         }
     ]

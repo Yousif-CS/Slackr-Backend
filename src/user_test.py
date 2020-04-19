@@ -49,6 +49,7 @@ def test_access_other_profiles(get_users):
             "email": "joshua@gmail.com",
             "name_first": "Joshua",
             "name_last": "Wang",
+            'profile_img_url': '',
             "handle_str": "joshuawang"
         }
     }
@@ -59,6 +60,7 @@ def test_access_other_profiles(get_users):
             "email": "ken@gmail.com",
             "name_first": "Ken",
             "name_last": "Li",
+            'profile_img_url': '',
             "handle_str": "kenli"
         }
     }
@@ -74,6 +76,7 @@ def test_access_other_logged_out_profiles(get_users):
             "email": "joshua@gmail.com",
             "name_first": "Joshua",
             "name_last": "Wang",
+            'profile_img_url': '',
             "handle_str": "joshuawang"
         }
     }
@@ -86,6 +89,7 @@ def test_access_other_logged_out_profiles(get_users):
             "email": "ken@gmail.com",
             "name_first": "Ken",
             "name_last": "Li",
+            'profile_img_url': '',
             "handle_str": "kenli"
         }
     }
