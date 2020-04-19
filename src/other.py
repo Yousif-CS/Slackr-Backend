@@ -2,6 +2,7 @@
 This file contains implementations of miscellaneous functions
 that do not belong to a specific category
 '''
+#pylint: disable=trailing-whitespace
 
 import pickle
 from standup import get_standup, get_lock
@@ -16,8 +17,21 @@ SLACKR_MEMBER = 2
 
 def userpermission_change(token, u_id, permission_id):
     '''
-    input: a token, a user id and a permission id
-    output: Changes the global permissions of the user to permission_id
+    Sets the user's permission to either owner/admin (1) or normal member (2).
+
+    Args:
+        token (str): of the user authorising this action
+        u_id (int): of the user whose permission is being changed
+        permission_id (int): 1 for owner, 2 for member
+
+    Raises:
+        AccessError: 
+            if token is invalid
+            if the user invoking this action is not an owner/admin of the slackr
+            if the owner/admin attempts to demote themselves to a normal member
+        InputError:
+            if u_id does not correspond to an existent user
+            if permission_id does not correspond to a valid permission
     '''
     # verify the user
     if verify_token(token) is False:
@@ -97,7 +111,11 @@ def user_remove(token, u_id):
     
 def users_all(token):
     '''
-    Returns a list of all users and their associated details.
+    Lists all users on the slackr
+    Args: token (str)
+    Raises: AccessError if token is invalid
+    Returns: a dictionary containing a list of all users and their associated details -
+        u_id, email, name_first, name_last, handle_str
     '''
 
     # verify the token is valid
@@ -113,12 +131,20 @@ def users_all(token):
 
 def search(token, query_str):
     '''
-    Given a query string, return a collection of messages
-    in all of the channels that the user has joined that match the query.
-    Results are sorted from most recent message to least recent message
-    output: a dictionary, which contains a key "messages",
-    which is a list of dictionaries containing types
-    { message_id, u_id, message, time_created, reacts, is_pinned  }
+    Searches all channels which invoking user is part of
+    for messages containing the query string.
+
+    Args:
+        token (str): of the use authorising this action
+
+    Raises:
+        AccessError: if token is invalid
+        InputError: if query_str is over 1000 char long
+
+    Returns:
+        Dictionary: containing a list of message dictionaries containing 
+            information of each message that contains the query_str -
+            {message_id, u_id, message, time_created, reacts, is_pinned}
     '''
     # verify the token is valid
     if verify_token(token) is False:
@@ -144,7 +170,7 @@ def search(token, query_str):
 
 def workspace_reset():
     '''
-    Resets the workspace state. Assumes that the base state of database.p has a Database() instance
+    Resets the workspace state. Assumes that the base state of database.p has a Database() instance.
     '''
     # clear the tokens dictionary
     get_tokens().clear()
