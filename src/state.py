@@ -3,6 +3,7 @@ State variables and functions to deal
 with the server's data when its launched
 '''
 #pylint: disable=trailing-whitespace
+#pylint: disable=too-many-lines
 
 from email.message import EmailMessage
 import threading
@@ -106,15 +107,15 @@ class Users():
             raise InputError('User does not exist')
 
         details = self._users[u_id]
-        global PORT
+        global PORT #pylint: disable=global-statement
         return {
             'u_id': u_id,
             'email': details['email'],
             'name_first': details['name_first'],
             'name_last': details['name_last'],
             'handle_str': details['handle_str'],
-            'profile_img_url': f"{HOST}:{PORT}{ROUTE}?path={details['img_path']}"
-            if details['img_path'] else ""
+            'profile_img_url': f"{HOST}:{PORT}{ROUTE}?path={details['img_path']}" \
+                if details['img_path'] else ""
         }
 
     def all(self):
@@ -273,9 +274,19 @@ class Admins():
 # A timer that sends http requests to update database
 
     def is_admin(self, u_id):
+        '''
+        Input: u_id (int)
+        Return: whether u_id is an admin (bool)
+        '''
         return u_id in self._admins
 
     def is_valid_permission(self, p_id):
+        '''
+        Input: 
+            p_id (int): a permission ID
+        Return:
+            wehther the permission_id is valid (bool)
+        '''
         return p_id in self._valid_permissions
 
 
@@ -310,14 +321,14 @@ class Channels():
                 'bot_token': 'o',
                 'is_enabled': True,
                 'is_running': False,
-                'data': {}
-                # data added here when game begins
-                # target_word
-                # user_guess
-                # letters_to_guess
-                # lives_remaining
-                # game_end
-                # output
+                'data': {
+                    # target_word
+                    # user_guess
+                    # letters_to_guess
+                    # lives_remaining
+                    # game_end
+                    # output
+                }    
             }
         }
         return self._current_id
@@ -368,32 +379,37 @@ class Channels():
     def is_hangman_enabled(self, channel_id):
         '''
         Check if hangman game is enabled
+        Args: channel_id (int)
+        Return: whether hangman is enabled (bool)
         '''
         return bool(self._channels[channel_id]['hangman']['is_enabled'])
 
     def enable_hangman(self, channel_id):
         '''
         Enables hangman game within channel
+        Args: channel_id (int)
         '''
-
         self._channels[channel_id]['hangman']['is_enabled'] = True
 
     def disable_hangman(self, channel_id):
         '''
         Disable hangman game within channel
+        Args: channel_id (int)
         '''
         self._channels[channel_id]['hangman']['is_enabled'] = False
 
     def is_hangman_running(self, channel_id):
         '''
         Check if hangman game is running in channel
+        Args: channel_id (int)
+        Return: whether hangman is running in the channel (bool)
         '''
-
         return bool(self._channels[channel_id]['hangman']['is_running'])
 
     def add_hbot_details(self, channel_id, bot_id, bot_token):
         '''
-        Given bot id and token add the details to the channel dictionary
+        Adds the hangman bot details to the dictionary when it is created
+        Args: channel_id (int), bot_id (int), bot_token (str)
         '''
         self._channels[channel_id]['hangman']['bot_id'] = bot_id
         self._channels[channel_id]['hangman']['bot_token'] = bot_token
@@ -415,7 +431,6 @@ class Channels():
         self._channels[channel_id]['hangman']['is_running'] = True
         # initialising variables to start game
         self._channels[channel_id]['hangman']['data'] = details
-        # TODO: send the message as a bot?
 
     def get_hangman(self, channel_id):
         '''
@@ -425,10 +440,11 @@ class Channels():
 
     # for each turn during the ongoing game
     def edit_hangman(self, channel_id, new_details):
-
-        details = self.get_hangman(channel_id)
+        '''
+        Updates the details in the hangman database given users' interactions
+        with the hangman bot
+        '''
         self._channels[channel_id]['hangman']['data'] = new_details
-        # TODO: what to do with old details
 
     def quit_hangman(self, channel_id):
         '''
@@ -718,7 +734,7 @@ class UserMessage():
         '''
         Fetches all links by channel_id/multiple channel_ids
         '''
-        if (isinstance(container, list)):
+        if isinstance(container, list):
             channel_msgs = list(
                 filter(
                     lambda x: x['channel_id'] in container,
@@ -1034,6 +1050,52 @@ class UserChannel():
 
 
 class Database():
+    '''
+    A class which acts as a centralised base-point from which to access methods
+    that edit or report from the database.
+
+    Attributes:
+    -----------
+    users: class
+    admins: class
+    channels: class
+    codes: class
+    messages: class
+    user_message: class
+    user_channel: class
+
+    Methods:
+    --------
+    reset()
+        Reinitialises the database
+    add_user(details)
+        Adds a user with 'details' to the database
+    user_channels(u_id)
+        Returns details of all the channels user is in
+    add_channel(u_id, details)
+        Adds a channel to the database, 
+        rendering the user who created it its owner
+    channel_members(channel_id)
+        Returns information on all normal members in a channel
+    channel_owners(channel_id)
+        Returns information on all owner members in a channel
+    channel_messages(u_id, details)
+        Returns up to 50 messages from a channel
+    add_message(u_id, channel_id, details)
+        Adds a message sent by user with 'u_id' to channel with 'channel_id'
+    remove_message(message_id)
+        Removes a message with 'message_id'
+    message_search(u_id, query_str)
+        Searches channels which user with 'u_id' is part of
+        for messages which contain the query_str
+    remove_messages(u_id)
+        Removes all messages associated with a user
+    pin(u_id, message_id)
+        Marks a message for special treatment in the frontend
+    unpin(u_id, message_id)
+        Unmarks a message for special treatment in the frontend
+
+    '''
     def __init__(self):
         self.users = Users()
         self.admins = Admins()
@@ -1044,9 +1106,18 @@ class Database():
         self.user_channel = UserChannel()
 
     def reset(self):
+        '''Reinitialises the database'''
         self.__init__()
 
     def add_user(self, details):
+        '''
+        Adds a user with 'details' to the database
+
+        Args: 
+            details (tuple): containing email (str), encrypted password (str),
+                name_first (str), name_last (str), handle (str)
+        Return: u_id (int)
+        '''
         u_id = self.users.add(details)
         # first user is an admin
         if u_id == 1:
@@ -1055,18 +1126,40 @@ class Database():
 
     def user_channels(self, u_id):
         '''
-        Returns details for all the channels user is in
+        Returns details of all the channels user is in
+
+        Args: u_id (int)
+        Return: list of dictionaries each containing
+            channel_id (int)
+            name (str): of channel
         '''
         channels = self.user_channel.user_channels(u_id)
         details = list(map(self.channels.channel_details, channels))
         return list(details)
 
     def add_channel(self, u_id, details):
+        '''
+        Adds a channel to the database, 
+        rendering the user who created it its owner
+        
+        Args: 
+            u_id (int)
+            details (tuple): name of channel (str), is_public (bool)
+        Return:
+            channel_id (int)
+        '''
         channel_id = self.channels.add(details)
         self.user_channel.add_link(u_id, channel_id, is_owner=True)
         return channel_id
 
     def channel_members(self, channel_id):
+        '''
+        Returns information on all normal members in a channel
+
+        Args: channel_id (int)
+        Return: list of dictionaries each containing info about a user:
+            u_id (int), name_first (str), name_last (str), profile_img_url (str)
+        '''
         member_ids = self.user_channel.members(channel_id)
         members_info = list(map(self.users.user_details, member_ids))
         return list([{
@@ -1077,6 +1170,13 @@ class Database():
         } for member in members_info])
 
     def channel_owners(self, channel_id):
+        '''
+        Returns information on all owner members in a channel
+
+        Args: channel_id (int)
+        Return: list of dictionaries each containing info about a user:
+            u_id (int), name_first (str), name_last (str), profile_img_url (str)
+        '''
         member_ids = self.user_channel.owners(channel_id)
         members_info = list(map(self.users.user_details, member_ids))
         return list([{
@@ -1087,6 +1187,23 @@ class Database():
         } for member in members_info])
 
     def channel_messages(self, u_id, details):
+        '''
+        Returns up to 50 messages from a channel
+
+        Args:
+            u_id (int): of the user invoking this action
+            details (tuple):
+                channel_id (int)
+                start (int): starting index 
+        Return:
+            List of up to 50 dictionaries each containing:
+                message_id (int)
+                u_id (int): of the user who sent the message
+                message (str)
+                time_created (time)
+                reacts (List)
+                is_pinned (bool)
+        '''
         channel_id, start = details
         # getting the links between messages, users and channels
         link_info = self.user_message.fetch_links_by_channel(channel_id)
@@ -1123,15 +1240,49 @@ class Database():
         return list(full_info[start:]), False  # means no more to give
 
     def add_message(self, u_id, channel_id, details):
+        '''
+        Adds a message sent by user with 'u_id' to channel with 'channel_id'
+
+        Args:
+            u_id (int)
+            channel_id (int)
+            details (tuple):
+                message (str): typed in by the user
+                time (time): at which the message was sent
+        Return:
+            message_id (int): unique identifier of the message within the channel
+        '''
         message_id = self.messages.add(details)
         self.user_message.add_link(u_id, channel_id, message_id)
         return message_id
 
     def remove_message(self, message_id):
+        '''
+        Removes a message
+
+        Args: message_id (int)
+        '''
         self.messages.remove(message_id)
         self.user_message.remove_link_by_message(message_id)
 
     def message_search(self, u_id, query_str):
+        '''
+        Searches channels which user with 'u_id' is part of
+        for messages which contain the query_str
+
+        Args:
+            u_id (int): of the user invoking the function
+            query_str (str): which the user requests be contained in the search results
+        Return:
+            a list of dictionaries each containing information about a message
+            that contains the query_str, sorted in numerical order by message_id:
+            message_id (int)
+                u_id (int): of the user who sent the message
+                message (str)
+                time_created (time)
+                reacts (List)
+                is_pinned (bool)
+        '''
         # fetching relevant channels
         channel_ids = self.user_channel.user_channels(u_id)
         if not channel_ids:
@@ -1164,7 +1315,8 @@ class Database():
 
     def remove_messages(self, u_id):
         '''
-        Remove all messages associated with a user
+        Removes all messages associated with a user
+        Args: u_id (int)
         '''
         relevant_msg_links = self.user_message.fetch_links_by_user(u_id)
         for link in relevant_msg_links:
@@ -1173,6 +1325,13 @@ class Database():
         self.user_message.remove_link_by_user(u_id)
 
     def pin(self, u_id, message_id):
+        '''
+        Marks a message for special treatment in the frontend
+        Args: u_id (int), message_id (int)
+        Raises:
+            InputError: if message_id does not correspond to a message that exists
+            AccessError: if user with u_id does not have permission to pin
+        '''
         # check message exists
         if not self.messages.message_exists(message_id):
             raise InputError(description='Message does not exist')
@@ -1189,6 +1348,13 @@ class Database():
         self.messages.pin(message_id)
 
     def unpin(self, u_id, message_id):
+        '''
+        Unmarks a message for special treatment in the frontend
+        Args: u_id (int), message_id (int)
+        Raises:
+            InputError: if message_id does not correspond to a message that exists
+            AccessError: if user with u_id does not have permission to unpin
+        '''
         # checking message exists
         if not self.messages.message_exists(message_id):
             raise InputError(description='Message does not exist')
