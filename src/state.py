@@ -568,7 +568,6 @@ class UserMessage():
     Methods:
     --------
     def add_link(self, u_id, channel_id, message_id)
-        adds a tuple containing u_id, channel_id, message_id
     def fetch_links_by_channel(self, container)
         returns list of links filtered by specified channel_id(s)
     def fetch_links_by_user(self, u_id)
@@ -592,6 +591,9 @@ class UserMessage():
 
 
     def add_link(self, u_id, channel_id, message_id):
+        '''
+        Adds a tuple containing u_id, channel_id, message_id
+        '''
         if self.link_exists(message_id):
             raise InputError(description='Message already exists')
         self._user_messages.append({
@@ -606,7 +608,7 @@ class UserMessage():
 
     def fetch_links_by_channel(self, container):
         '''
-        fetches all links by channel_id/multiple channel_ids
+        Fetches all links by channel_id/multiple channel_ids
         '''
         if (isinstance(container, list)):
             channel_msgs = list(filter(lambda x: x['channel_id'] in container, self._user_messages))
@@ -617,26 +619,41 @@ class UserMessage():
 
     def fetch_links_by_user(self, u_id):
         '''
-        fetches all message links that the user has sent
+        Fetches all message links that the user has sent
         '''
         filtered = list(filter(lambda x: x['u_id'] == u_id, self._user_messages))
         return list(filtered)
 
     def remove_link_by_user(self, u_id):
+        '''
+        Removes all tuples from list of links containing u_id
+        '''
         self._user_messages = list(filter(lambda x: x['u_id'] != u_id, self._user_messages))
 
     def remove_link_by_channel(self, channel_id):
+        '''
+        Removes all tuples from list of links containing channel_id
+        '''
         self._user_messages = list(
             filter(lambda x: x['channel_id'] != channel_id, self._user_messages))
 
     def remove_link_by_message(self, message_id):
+        '''
+        Removes all tuples from list of links containing channel_id
+        '''
         self._user_messages = list(
             filter(lambda x: x['message_id'] != message_id, self._user_messages))
 
     def link_exists(self, message_id):
+        '''
+        Checks whether a tuple with message_id exists in user_messages
+        '''
         return message_id in [link['message_id'] for link in self._user_messages]
 
     def react(self, u_id, m_id, react_id):
+        '''
+        Adds react details to the link with u_id, m_id
+        '''
         if not self.link_exists(m_id):
             raise InputError(description='Message does not exist')
 
@@ -663,6 +680,9 @@ class UserMessage():
             })
 
     def unreact(self, u_id, m_id, react_id):
+        '''
+        Removes the react_id from active reacts in the specified link
+        '''
         if not self.link_exists(m_id):
             raise InputError(description='Message does not exist')
 
@@ -680,6 +700,9 @@ class UserMessage():
             raise InputError(description='user does not have an active react')
 
     def fetch_link(self, m_id):
+        '''
+        Returns the link tuple containing message ID of m_id
+        '''
         try:
             [info] = list(filter(lambda x: x['message_id'] == m_id, self._user_messages))
             return info
@@ -687,14 +710,24 @@ class UserMessage():
             return None
 
     def is_valid_react(self, react_id):
+        '''
+        Checks whether the react_id is valid
+        '''
         return react_id in self._react_ids
 
     def is_sender(self, m_id, u_id):
+        '''
+        Checks whether the user with ID u_id sent the message with m_id
+        '''
         return u_id in [link['u_id'] for link in self._user_messages if link['message_id'] == m_id]
 
     def message_channel(self, message_id):
+        '''
+        Returns the channel ID of the message
+        '''
         link = self.fetch_link(message_id)
         return link['channel_id']
+
 
 class UserChannel():
     '''
