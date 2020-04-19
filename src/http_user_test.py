@@ -148,7 +148,7 @@ def test_user_profile_setname_first_over_50(reset):
     j_token = register("joshwang@gmail.com",
                        "cre4t1v3p4s5", "Joshua", "Wang")[1]
     with pytest.raises(HTTPError):
-        user_profile_setname(j_token, "A"*51, "Mercury")
+        user_profile_setname(j_token, "A" * 51, "Mercury")
 
 
 def test_user_profile_setname_last_over_50(reset):
@@ -158,7 +158,7 @@ def test_user_profile_setname_last_over_50(reset):
     j_token = register("joshwang@gmail.com",
                        "cre4t1v3p4s5", "Joshua", "Wang")[1]
     with pytest.raises(HTTPError):
-        user_profile_setname(j_token, "Freddie", "M"*51)
+        user_profile_setname(j_token, "Freddie", "M" * 51)
 
 # data missing
 
@@ -272,7 +272,7 @@ def test_user_profile_sethandle_too_long(reset):
                        "cre4t1v3p4s5", "Joshua", "Wang")[1]
 
     with pytest.raises(HTTPError):
-        user_profile_sethandle(j_token, "j"*21)
+        user_profile_sethandle(j_token, "j" * 21)
 
 # reject if not unique
 

@@ -1,14 +1,14 @@
 '''
 Using urllib module to test channels functions
 '''
-from urllib.error import HTTPError #pylint: disable=missing-module-docstring
-import pytest #pylint: disable=import-error
+from urllib.error import HTTPError  # pylint: disable=missing-module-docstring
+import pytest  # pylint: disable=import-error
 from http_helpers import reset, register, login, logout, channels_list, \
-    channels_create, channels_listall #pylint: disable=unused-import
+    channels_create, channels_listall  # pylint: disable=unused-import
 
 
 # start testing on channels_create
-def test_channels_create_ok(reset): #pylint: disable=unused-argument,redefined-outer-name
+def test_channels_create_ok(reset):  # pylint: disable=unused-argument,redefined-outer-name
     '''
     Testing creating a channel with correct inputs functions correctly
     '''
@@ -30,8 +30,10 @@ def test_channels_create_bad():
     a_token = login('admin@gmail.com', 'pass123456')[1]
     with pytest.raises(HTTPError):
         channels_create(a_token, 225, True)
-    #for next test
+    # for next test
     logout(a_token)
+
+
 def test_channels_create_invalid_token():
     '''
     Testing valid token when attempting to create channel
@@ -41,7 +43,7 @@ def test_channels_create_invalid_token():
         channels_create(a_token + 'bad', 'test_name', True)
 
 
-def test_channels_list_empty(reset): #pylint: disable=unused-argument,redefined-outer-name
+def test_channels_list_empty(reset):  # pylint: disable=unused-argument,redefined-outer-name
     '''
     no channels created yet
     '''
@@ -50,6 +52,7 @@ def test_channels_list_empty(reset): #pylint: disable=unused-argument,redefined-
     # check the list is empty
     assert payload == []
     logout(a_token)
+
 
 def test_channels_list_ok():
     '''
@@ -64,6 +67,7 @@ def test_channels_list_ok():
         'name': 'test_public',
     }]
     logout(a_token)
+
 
 def test_channels_list_multiple():
     '''
@@ -91,6 +95,7 @@ def test_channels_list_multiple():
     logout(k_token)
     logout(a_token)
 
+
 def test_channels_list_invalid_token():
     '''
     Testing invalid token
@@ -100,6 +105,7 @@ def test_channels_list_invalid_token():
     with pytest.raises(HTTPError):
         channels_list(a_token + 'invalid')
     logout(a_token)
+
 
 def test_channels_listall_ok():
     '''
@@ -127,7 +133,7 @@ def test_channels_listall_ok():
     logout(k_token)
 
 
-def test_channels_listall_empty(reset): #pylint: disable=unused-argument,redefined-outer-name
+def test_channels_listall_empty(reset):  # pylint: disable=unused-argument,redefined-outer-name
     '''
     Testing return of empty payload when no channels exist
     '''

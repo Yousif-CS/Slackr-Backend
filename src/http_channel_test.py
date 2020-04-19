@@ -20,14 +20,16 @@ from http_helpers import (reset, register, login, logout,
 
 MESSAGE_BLOCK = 50
 
-#Testing channel_invite 
+# Testing channel_invite
+
 
 def test_channel_invite_public_ok(reset):
     '''
     Test inviting a user to a public channel places that user immediately in the channel
     '''
     _, owner_token = register('max.d@gmail.com', 'wubbalubba', 'Max', 'Smith')
-    user_id, user_token = register('bob@gmail.com', 'wubbalubba', 'Bob', 'Smith')
+    user_id, user_token = register(
+        'bob@gmail.com', 'wubbalubba', 'Bob', 'Smith')
     channel_id = channels_create(owner_token, 'Maxs Channel', is_public=True)
 
     channel_invite(owner_token, channel_id, user_id)
@@ -35,14 +37,15 @@ def test_channel_invite_public_ok(reset):
     u_ids = [member['u_id'] for member in all_membs]
 
     assert user_id in u_ids
-    
+
 
 def test_channel_invite_private_ok(reset):
     '''
     Test inviting a user to a public channel places that user immediately in the channel
     '''
     _, owner_token = register('max.d@gmail.com', 'wubbalubba', 'Max', 'Smith')
-    user_id, user_token = register('bob@gmail.com', 'wubbalubba', 'Bob', 'Smith')
+    user_id, user_token = register(
+        'bob@gmail.com', 'wubbalubba', 'Bob', 'Smith')
     channel_id = channels_create(owner_token, 'Maxs Channel', is_public=False)
 
     channel_invite(owner_token, channel_id, user_id)
@@ -50,97 +53,103 @@ def test_channel_invite_private_ok(reset):
     u_ids = [member['u_id'] for member in all_membs]
 
     assert user_id in u_ids
-    
+
+
 def test_channel_invite_no_u_id(reset):
-    ''' 
-	Test inviting an invalid user id raises an HTTP error
-	'''
+    '''
+        Test inviting an invalid user id raises an HTTP error
+        '''
     owner_token = register('max.d@gmail.com', 'wubbalubba', 'Max', 'Smith')[1]
     channel_id = channels_create(owner_token, 'Maxs Channel', is_public=False)
     user_id = register('max.d.s@gmail.com', 'wubbalubba', 'Max', 'Smith')[0]
 
-    rand_id = user_id + 1 
+    rand_id = user_id + 1
     with pytest.raises(HTTPError):
-	    channel_invite(owner_token, channel_id, rand_id)
-	
+        channel_invite(owner_token, channel_id, rand_id)
+
 
 def test_channel_invite_as_non_member(reset):
-	''' 
-	Testing inviting a user to a channel using an invalid token 
-	'''
+    '''
+    Testing inviting a user to a channel using an invalid token
+    '''
 
-	owner_token = register('max.d@gmail.com', 'wubbalubba', 'Max', 'Smith')[1]
-	channel_id = channels_create(owner_token, 'Maxs Channel', is_public=False)
-	user_id = register('max.d.s@gmail.com', 'wubbalubba', 'Max', 'Smith')[0]
-	rand_token = owner_token + 'a'
+    owner_token = register('max.d@gmail.com', 'wubbalubba', 'Max', 'Smith')[1]
+    channel_id = channels_create(owner_token, 'Maxs Channel', is_public=False)
+    user_id = register('max.d.s@gmail.com', 'wubbalubba', 'Max', 'Smith')[0]
+    rand_token = owner_token + 'a'
 
-	with pytest.raises(HTTPError):
-		channel_invite(rand_token, channel_id, user_id)
-	
+    with pytest.raises(HTTPError):
+        channel_invite(rand_token, channel_id, user_id)
+
 
 def test_channel_invite_no_channel_id(reset):
-	''' 
-	Testing inviting a user to a channel with an invalid channel_id 
-	'''
+    '''
+    Testing inviting a user to a channel with an invalid channel_id
+    '''
 
-	owner_token = register('max.d@gmail.com', 'wubbalubba', 'Max', 'Smith')[1]
-	channel_id = channels_create(owner_token, 'Maxs Channel', is_public=False)
-	user_id = register('max.d.s@gmail.com', 'wubbalubba', 'Max', 'Smith')[0]
-	rand_channel_id = channel_id + 1
-	with pytest.raises(HTTPError):
-		channel_invite(owner_token, rand_channel_id, user_id)
+    owner_token = register('max.d@gmail.com', 'wubbalubba', 'Max', 'Smith')[1]
+    channel_id = channels_create(owner_token, 'Maxs Channel', is_public=False)
+    user_id = register('max.d.s@gmail.com', 'wubbalubba', 'Max', 'Smith')[0]
+    rand_channel_id = channel_id + 1
+    with pytest.raises(HTTPError):
+        channel_invite(owner_token, rand_channel_id, user_id)
 
-# Testing channel_details 
+# Testing channel_details
+
 
 def test_channel_details_correct_info(reset):
-	''' 
-	Test channel_details provides correct information regarding 
-    a channel's name, its owner members, and all of its members
-	'''
+    '''
+    Test channel_details provides correct information regarding
+a channel's name, its owner members, and all of its members
+    '''
 
-	owner_id, owner_token = register('max.d@gmail.com', 'wubbalubba', 'Max', 'Smith')
-	user_id, user_token = register('bob@gmail.com', 'wubbalubba', 'Bob', 'Smith')
-	channel_id = channels_create(owner_token, 'Maxs Channel', is_public=False)
+    owner_id, owner_token = register(
+        'max.d@gmail.com', 'wubbalubba', 'Max', 'Smith')
+    user_id, user_token = register(
+        'bob@gmail.com', 'wubbalubba', 'Bob', 'Smith')
+    channel_id = channels_create(owner_token, 'Maxs Channel', is_public=False)
 
-	channel_invite(owner_token, channel_id, user_id)
- 
-	name, owner_membs, all_membs = channel_details(user_token, channel_id)
-	members_ids = [member['u_id'] for member in all_membs]
-	owners_ids = [owner['u_id'] for owner in owner_membs]
+    channel_invite(owner_token, channel_id, user_id)
 
-	assert user_id in members_ids
-	assert owner_id in members_ids 
-	assert len(all_membs) == 3 # we have a hangman bot as well...
+    name, owner_membs, all_membs = channel_details(user_token, channel_id)
+    members_ids = [member['u_id'] for member in all_membs]
+    owners_ids = [owner['u_id'] for owner in owner_membs]
 
-	assert owner_id in owners_ids
-	assert len(owner_membs) == 2 # hangman bot..
+    assert user_id in members_ids
+    assert owner_id in members_ids
+    assert len(all_membs) == 3  # we have a hangman bot as well...
 
-	assert name == 'Maxs Channel'
+    assert owner_id in owners_ids
+    assert len(owner_membs) == 2  # hangman bot..
+
+    assert name == 'Maxs Channel'
+
 
 def test_channel_details_no_channel_id(reset):
-	''' 
-	Testing channel_details raises an exception when an invalid channel_id is given
-	'''
+    '''
+    Testing channel_details raises an exception when an invalid channel_id is given
+    '''
 
-	owner_token = register('max.d@gmail.com', 'wubbalubba', 'Max', 'Smith')[1]
-	channel_id = channels_create(owner_token, 'Maxs Channel', is_public=False)
-	rand_channel_id = channel_id + 1
+    owner_token = register('max.d@gmail.com', 'wubbalubba', 'Max', 'Smith')[1]
+    channel_id = channels_create(owner_token, 'Maxs Channel', is_public=False)
+    rand_channel_id = channel_id + 1
 
-	with pytest.raises(HTTPError):
-		channel_details(owner_token, rand_channel_id)
+    with pytest.raises(HTTPError):
+        channel_details(owner_token, rand_channel_id)
 
-def	test_channel_details_not_a_member(reset):
-	'''
-	Testing channel_details raises an exception 
-    when a non-member of a channel tries to retrieve its details
-	'''
-	
-	owner_token = register('max.d@gmail.com', 'wubbalubba', 'Max', 'Smith')[1]
-	channel_id = channels_create(owner_token, 'Maxs Channel', is_public=False)
-	new_user_token = register('bob@gmail.com', 'wubbalubba', 'Bob', 'Smith')[1]
 
-	with pytest.raises(HTTPError):
-		channel_details(new_user_token, channel_id)
+def test_channel_details_not_a_member(reset):
+    '''
+    Testing channel_details raises an exception
+when a non-member of a channel tries to retrieve its details
+    '''
+
+    owner_token = register('max.d@gmail.com', 'wubbalubba', 'Max', 'Smith')[1]
+    channel_id = channels_create(owner_token, 'Maxs Channel', is_public=False)
+    new_user_token = register('bob@gmail.com', 'wubbalubba', 'Bob', 'Smith')[1]
+
+    with pytest.raises(HTTPError):
+        channel_details(new_user_token, channel_id)
 
 
 # Testing channel_messages
@@ -159,6 +168,7 @@ def test_channel_messages_out_of_range(reset):
         # the reason we provide 2 as a start is because hangman bot sends a message
         # at the creation of the channel
         channel_messages(my_token, channel_id, start=2)
+
 
 def test_channel_messages_one_message(reset):
     '''
@@ -346,6 +356,7 @@ def test_channel_leave_not_a_member(reset):
         owner_token, 'Yousifs Channel', is_public=True)
     with pytest.raises(HTTPError):
         channel_leave(user_token, channel_id)
+
 
 def test_channel_leave_invalid_token(reset):
     '''

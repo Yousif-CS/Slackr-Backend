@@ -17,16 +17,14 @@ from user import user_profile
 from other import workspace_reset
 
 
-
-#def test_passwordreset_valid():
-    #data = get_store()
-    #print(data.codes.return_dict())
-
-
+# def test_passwordreset_valid():
+#data = get_store()
+# print(data.codes.return_dict())
 
 
 '''------------------testing auth_register--------------------'''
-# Test valid registration details successfully registers a user     
+# Test valid registration details successfully registers a user
+
 
 def test_auth_register_correct_details():
     workspace_reset()
@@ -44,7 +42,8 @@ def test_auth_register_correct_details():
     }
 
 
-# Test that a long name (over 20 characters for first and last) sets the correct handle
+# Test that a long name (over 20 characters for first and last) sets the
+# correct handle
 def test_auth_register_long_name():
     workspace_reset()
     user_ms_long = auth_register(
@@ -234,7 +233,11 @@ def test_login_invalid_email():
 def test_login_password():
     workspace_reset()
 
-    user = auth_register('max.smith@gmail.com', 'great_password101', 'Max', 'Smith')
+    user = auth_register(
+        'max.smith@gmail.com',
+        'great_password101',
+        'Max',
+        'Smith')
     auth_logout(user['token'])
     with pytest.raises(InputError):
         auth_login('max.smith@gmail.com', 'poor_password')
@@ -245,7 +248,11 @@ def test_login_password():
 def test_login_no_user():
     workspace_reset()
 
-    u_1 = auth_register('max.smith@gmail.com', 'great_password101', 'Max', 'Smith')
+    u_1 = auth_register(
+        'max.smith@gmail.com',
+        'great_password101',
+        'Max',
+        'Smith')
     u_2 = auth_register('bob99@unsw.edu.au', '45&*ght', 'Bob', 'Johnson')
     u_3 = auth_register('kate58@bigpond.com', 'secret101', 'Kate', 'Perkins')
 
@@ -254,6 +261,7 @@ def test_login_no_user():
     auth_logout(u_1['token'])
     auth_logout(u_2['token'])
     auth_logout(u_3['token'])
+
 
 '''------------------testing auth_logout--------------------'''
 
@@ -289,6 +297,7 @@ def test_logout_unsuccessful():
 
 # A logged out user trying to join a channel
 
+
 def test_logout_join_fails():
     workspace_reset()
 
@@ -305,15 +314,21 @@ def test_logout_join_fails():
     with pytest.raises(AccessError):
         channel_join(user2["token"], ch_id)
 
+
 def test_passwordreset_request():
     workspace_reset()
     auth_register('comp1531resetpass@gmail.com', 'password123', 'Max', 'Smith')
     auth_passwordreset_request('comp1531resetpass@gamil.com')
 
+
 def test_reseting_password():
     workspace_reset()
     data = get_store()
-    reg_dict = auth_register('comp1531resetpass@gmail.com', 'password123', 'Max', 'Smith')
+    reg_dict = auth_register(
+        'comp1531resetpass@gmail.com',
+        'password123',
+        'Max',
+        'Smith')
     auth_logout(reg_dict['token'])
     data.users.set_password(reg_dict['u_id'], 'wubbalubba')
     auth_login('comp1531resetpass@gmail.com', 'wubbalubba')
@@ -328,9 +343,21 @@ def test_passwordreset_request_wrong_email():
 def test_reseting_multiple_passwords():
     workspace_reset()
     data = get_store()
-    reg_dict = auth_register('comp1531resetpass@gmail.com', 'password123', 'Max', 'Smith')
-    reg_dict2 = auth_register('comp2521resetpass@gmail.com', 'password123', 'Max', 'Smith')
-    reg_dict3 = auth_register('comp3521resetpass@gmail.com', 'password123', 'Bob', 'Smith')
+    reg_dict = auth_register(
+        'comp1531resetpass@gmail.com',
+        'password123',
+        'Max',
+        'Smith')
+    reg_dict2 = auth_register(
+        'comp2521resetpass@gmail.com',
+        'password123',
+        'Max',
+        'Smith')
+    reg_dict3 = auth_register(
+        'comp3521resetpass@gmail.com',
+        'password123',
+        'Bob',
+        'Smith')
     data.users.set_password(reg_dict['u_id'], 'wubbalubba')
     data.users.set_password(reg_dict2['u_id'], 'poorpassword')
     data.users.set_password(reg_dict3['u_id'], 'great_password')

@@ -13,13 +13,13 @@ import smtplib
 import hashlib
 from error import InputError, AccessError
 
-#a constant to show a user is an admin
+# a constant to show a user is an admin
 ADMIN = 1
-#a constant to show a user is a regular member
+# a constant to show a user is a regular member
 MEMBER = 2
-#a constant defining the size of a message block
+# a constant defining the size of a message block
 MSG_BLOCK = 50
-#A LOCK for concurrently updating the database
+# A LOCK for concurrently updating the database
 DATABASE_LOCK = threading.Lock()
 
 # needed for generating the image_url
@@ -28,23 +28,25 @@ HOST = 'http://127.0.0.1'
 IMAGE_DIR = './images'
 PORT = 5000
 
+
 def is_this_user_reacted(u_id, link_info):
     '''
     Updates whether the user has reacted given a link which contains message info
-    Output: a link_info which has been updated with a new key added to one of its dictionaries 
+    Output: a link_info which has been updated with a new key added to one of its dictionaries
     '''
-    #updating is_this_user_reacted based on the authorized user
+    # updating is_this_user_reacted based on the authorized user
     reacts_lists = [msg['reacts'] for msg in link_info]
 
     for reacts_list in reacts_lists:
         for react in reacts_list:
             react['is_this_user_reacted'] = u_id in react['u_ids']
 
+
 class Users():
     '''
     A class that contains and manages user information, excluding the links between those users
     and the channels and messages related to them.
-    
+
     Attributes:
     -----------
     _users : list
@@ -58,11 +60,13 @@ class Users():
 
 
     '''
+
     def __init__(self):
         self._users = dict()
         self._num_users = 0
         self._current_id = 0
         self._img_dir = IMAGE_DIR
+
     def add(self, details):
         '''
         adds user with given details to the database
@@ -96,7 +100,7 @@ class Users():
 
     def user_details(self, u_id):
         '''
-        Produce a dictionary with the required keys for detail in 
+        Produce a dictionary with the required keys for detail in
         '''
         if not self.user_exists(u_id):
             raise InputError('User does not exist')
@@ -109,8 +113,8 @@ class Users():
             'name_first': details['name_first'],
             'name_last': details['name_last'],
             'handle_str': details['handle_str'],
-            'profile_img_url': f"{HOST}:{PORT}{ROUTE}?path={details['img_path']}"\
-                if details['img_path'] else ""
+            'profile_img_url': f"{HOST}:{PORT}{ROUTE}?path={details['img_path']}"
+            if details['img_path'] else ""
         }
 
     def all(self):
@@ -139,7 +143,7 @@ class Users():
         if email in [user['email'] for user in self._users.values()]:
             return True
         return False
-    
+
     def find_u_id(self, email):
         '''
         Input: email: string
@@ -151,7 +155,7 @@ class Users():
             if email == user['email']:
                 return u_id
             u_id += 1
-        
+
         return None
 
     def handle_unique(self, handle):
@@ -164,7 +168,7 @@ class Users():
             return False
 
         return True
-    
+
     def set_first_name(self, u_id, name):
         '''
         Input: u_id: int, name: string
@@ -180,7 +184,7 @@ class Users():
         Resets the last name of user with u_id
         '''
         self._users[u_id]['name_last'] = name
-    
+
     def get_handle(self, u_id):
         '''
         Input: u_id: int
@@ -204,12 +208,12 @@ class Users():
         Resets the email of user u_id with new email
         '''
         self._users[u_id]['email'] = email
-    
+
     def set_password(self, u_id, password):
         '''
         Input: u_id: int, password: string
         Returns: nothing
-        Resets the password of user u_id with an encrypted `password` 
+        Resets the password of user u_id with an encrypted `password`
         '''
         encrypt_pass = hashlib.sha256(password.encode()).hexdigest()
         self._users[u_id]['password'] = encrypt_pass
@@ -229,7 +233,9 @@ class Users():
         Makes sure the email exist and the given password is correct
         '''
         try:
-            [u_id] = [key for key, value in self._users.items() if value['email'] == email]
+            [u_id] = [
+                key for key,
+                value in self._users.items() if value['email'] == email]
         except ValueError:
             raise InputError('Email does not exist')
 
@@ -237,14 +243,16 @@ class Users():
             raise InputError(description='Password incorrect')
         return u_id
 
+
 class Admins():
     '''
     A special class for users who are admins
     '''
+
     def __init__(self):
         self._admins = list()
         self._valid_permissions = [ADMIN, MEMBER]
-    
+
     def add(self, u_id):
         '''
         Input: u_id: int
@@ -262,13 +270,14 @@ class Admins():
         '''
         if self.is_admin(u_id):
             self._admins.remove(u_id)
-#A timer that sends http requests to update database
+# A timer that sends http requests to update database
 
     def is_admin(self, u_id):
         return u_id in self._admins
 
     def is_valid_permission(self, p_id):
         return p_id in self._valid_permissions
+
 
 class Channels():
     '''
@@ -277,6 +286,7 @@ class Channels():
     Also store information about the hangman game within
     each channel
     '''
+
     def __init__(self):
         self._channels = dict()
         self._num_channels = 0
@@ -354,6 +364,7 @@ class Channels():
 
 
 # methods relating to hangman game
+
     def is_hangman_enabled(self, channel_id):
         '''
         Check if hangman game is enabled
@@ -395,6 +406,7 @@ class Channels():
             self._channels[channel_id]['hangman']['bot_id'],
             self._channels[channel_id]['hangman']['bot_token']
         )
+
     def start_hangman(self, channel_id, details):
         '''
         Changes the state of hangman in specified channel to True
@@ -413,7 +425,7 @@ class Channels():
 
     # for each turn during the ongoing game
     def edit_hangman(self, channel_id, new_details):
-        
+
         details = self.get_hangman(channel_id)
         self._channels[channel_id]['hangman']['data'] = new_details
         # TODO: what to do with old details
@@ -425,25 +437,27 @@ class Channels():
         self._channels[channel_id]['hangman']['data'].clear()
         self._channels[channel_id]['hangman']['is_running'] = False
 
+
 class Codes():
     '''
     A class to store reset codes in a dictionary with a user's email
     as the key to allow users to reset their passwords
     '''
+
     def __init__(self):
         self._codes_dict = dict()
         self._num_codes = 0
-    
+
     def _generate_reset_code(self):
         '''
         Generate a reset_code to reset a user's password
         Input: None
         Returns: Reset_code
         '''
-        #String length ranges from 8 to 10 characters
+        # String length ranges from 8 to 10 characters
         str_len = random.randint(8, 10)
-    
-        #Generate a unique and secure reset code
+
+        # Generate a unique and secure reset code
         reset_code = uuid.uuid4().hex
         reset_code = reset_code.upper()[0:str_len]
         return reset_code
@@ -471,7 +485,7 @@ class Codes():
         self._codes_dict[email] = reset_code
         self._num_codes += 1
         self._send_email(email)
-    
+
     def delete(self, email):
         '''
         Delete reset code from dicitonary
@@ -487,13 +501,15 @@ class Codes():
             if reset_code in values:
                 return True
         raise InputError(description="Reset code is not valid")
-    
+
     def find_email(self, reset_code):
         '''
         Returns email within codes dictionary if reset code matches one within dicitonary
         else return None
         '''
-        return [key for (key, value) in self._codes_dict.items() if value == reset_code]
+        return [key for (key, value) in self._codes_dict.items()
+                if value == reset_code]
+
 
 class Messages():
     '''
@@ -568,13 +584,17 @@ class Messages():
 
     def message_details(self, message_id):
         try:
-            [message] = list(filter(lambda x: x['message_id'] == message_id, self._messages))
+            [message] = list(
+                filter(
+                    lambda x: x['message_id'] == message_id,
+                    self._messages))
             return dict(message)
         except ValueError:
             return None
 
     def message_exists(self, message_id):
-        return message_id in [message['message_id'] for message in self._messages]
+        return message_id in [message['message_id']
+                              for message in self._messages]
 
     def fetch_messages(self, start):
         if start < 0 or start > self._num_messages:
@@ -586,7 +606,10 @@ class Messages():
     def remove(self, message_id):
         if not self.message_exists(message_id):
             raise InputError(description='Message does not exist')
-        self._messages[:] = list(filter(lambda x: x['message_id'] != message_id, self._messages))
+        self._messages[:] = list(
+            filter(
+                lambda x: x['message_id'] != message_id,
+                self._messages))
         self._num_messages -= 1
 
     def find(self, message_id):
@@ -598,6 +621,7 @@ class Messages():
 
     def next_id(self):
         return int(self._current_id + 1)
+
 
 class UserMessage():
     '''
@@ -637,7 +661,6 @@ class UserMessage():
         self._user_messages = list()
         self._react_ids = [1]
 
-
     def add_link(self, u_id, channel_id, message_id):
         if self.link_exists(message_id):
             raise InputError(description='Message already exists')
@@ -656,9 +679,15 @@ class UserMessage():
         fetches all links by channel_id/multiple channel_ids
         '''
         if (isinstance(container, list)):
-            channel_msgs = list(filter(lambda x: x['channel_id'] in container, self._user_messages))
+            channel_msgs = list(
+                filter(
+                    lambda x: x['channel_id'] in container,
+                    self._user_messages))
         else:
-            channel_msgs = list(filter(lambda x: x['channel_id'] == container, self._user_messages))
+            channel_msgs = list(
+                filter(
+                    lambda x: x['channel_id'] == container,
+                    self._user_messages))
 
         return list(channel_msgs)
 
@@ -666,11 +695,17 @@ class UserMessage():
         '''
         fetches all message links that the user has sent
         '''
-        filtered = list(filter(lambda x: x['u_id'] == u_id, self._user_messages))
+        filtered = list(
+            filter(
+                lambda x: x['u_id'] == u_id,
+                self._user_messages))
         return list(filtered)
 
     def remove_link_by_user(self, u_id):
-        self._user_messages = list(filter(lambda x: x['u_id'] != u_id, self._user_messages))
+        self._user_messages = list(
+            filter(
+                lambda x: x['u_id'] != u_id,
+                self._user_messages))
 
     def remove_link_by_channel(self, channel_id):
         self._user_messages = list(
@@ -681,7 +716,8 @@ class UserMessage():
             filter(lambda x: x['message_id'] != message_id, self._user_messages))
 
     def link_exists(self, message_id):
-        return message_id in [link['message_id'] for link in self._user_messages]
+        return message_id in [link['message_id']
+                              for link in self._user_messages]
 
     def react(self, u_id, m_id, react_id):
         if not self.link_exists(m_id):
@@ -728,7 +764,10 @@ class UserMessage():
 
     def fetch_link(self, m_id):
         try:
-            [info] = list(filter(lambda x: x['message_id'] == m_id, self._user_messages))
+            [info] = list(
+                filter(
+                    lambda x: x['message_id'] == m_id,
+                    self._user_messages))
             return info
         except ValueError:
             return None
@@ -737,11 +776,13 @@ class UserMessage():
         return react_id in self._react_ids
 
     def is_sender(self, m_id, u_id):
-        return u_id in [link['u_id'] for link in self._user_messages if link['message_id'] == m_id]
+        return u_id in [link['u_id']
+                        for link in self._user_messages if link['message_id'] == m_id]
 
     def message_channel(self, message_id):
         link = self.fetch_link(message_id)
         return link['channel_id']
+
 
 class UserChannel():
     '''
@@ -752,7 +793,7 @@ class UserChannel():
     user_channels : list
         Contains tuples linking u_id's to channel_id's, as well as
         whether the user with u_id is an owner of that channel
-    
+
     Methods:
     --------
     add_link(u_id, channel_id, is_owner)
@@ -784,12 +825,13 @@ class UserChannel():
     user_channels(self, given_u_id)
         returns a list of channels which user with 'given_u_id' is part of
     '''
+
     def __init__(self):
         self._user_channels = list()
 
     def add_link(self, u_id, channel_id, is_owner):
         '''
-        Forms a link between a user and a channel, making a note of 
+        Forms a link between a user and a channel, making a note of
         whether the user is an owner of that channel.
 
         Params: u_id (int), channel_id (int), is_owner (bool)
@@ -806,7 +848,10 @@ class UserChannel():
 
         Params: u_id (int)
         '''
-        self._user_channels = list(filter(lambda x: x[0] != u_id, self._user_channels))
+        self._user_channels = list(
+            filter(
+                lambda x: x[0] != u_id,
+                self._user_channels))
 
     def remove_link_by_channel(self, channel_id):
         '''
@@ -814,7 +859,10 @@ class UserChannel():
 
         Params: channel_id (int)
         '''
-        self._user_channels = list(filter(lambda x: x[1] != channel_id, self._user_channels))
+        self._user_channels = list(
+            filter(
+                lambda x: x[1] != channel_id,
+                self._user_channels))
 
     def remove_user(self, u_id, channel_id):
         '''
@@ -830,7 +878,6 @@ class UserChannel():
         except ValueError:
             pass
 
-    
     def add_owner(self, u_id, channel_id):
         '''
         Adds user with 'u_id' to the list of owners for channel with 'channel_id'
@@ -840,14 +887,14 @@ class UserChannel():
         '''
         if self.is_owner(u_id, channel_id):
             raise InputError(description='user is already an owner')
-        #tuples cannot allow modification; therefore delete then add
+        # tuples cannot allow modification; therefore delete then add
         self.remove_user(u_id, channel_id)
         self.add_link(u_id, channel_id, is_owner=True)
 
     def remove_owner(self, u_id, channel_id):
         '''
         Removes user with 'u_id' from the list of owners for channel with 'channel_id'
-        
+
         Params: u_id (int), channel_id (int)
         Raises: InputError if user is not an owner of the channel in the first place
         '''
@@ -901,14 +948,15 @@ class UserChannel():
         Params: channel_id (int)
         Returns: all users who are normal members of channel with 'channel_id' (List)
         '''
-        return [u_id for u_id, ch_id, _ in self._user_channels if channel_id == ch_id]
+        return [u_id for u_id, ch_id,
+                _ in self._user_channels if channel_id == ch_id]
 
     def owners(self, channel_id):
         '''
         Params: channel_id (int)
         Returns: all users who are owner members of channel with 'channel_id' (List)
         '''
-        return  [u_id for u_id, ch_id, is_owner in self._user_channels if \
+        return [u_id for u_id, ch_id, is_owner in self._user_channels if
                 ch_id == channel_id and is_owner]
 
     def user_channels(self, given_u_id):
@@ -916,7 +964,8 @@ class UserChannel():
         Params: given_u_id (int)
         Returns: all channels which user with 'given_u_id' is part of (List)
         '''
-        return list([ch_id for u_id, ch_id, _ in self._user_channels if u_id == given_u_id])
+        return list(
+            [ch_id for u_id, ch_id, _ in self._user_channels if u_id == given_u_id])
 
 
 class Database():
@@ -931,14 +980,14 @@ class Database():
 
     def reset(self):
         self.__init__()
-        
+
     def add_user(self, details):
         u_id = self.users.add(details)
-        #first user is an admin
+        # first user is an admin
         if u_id == 1:
             self.admins.add(u_id)
         return u_id
-    
+
     def user_channels(self, u_id):
         '''
         Returns details for all the channels user is in
@@ -974,23 +1023,23 @@ class Database():
 
     def channel_messages(self, u_id, details):
         channel_id, start = details
-        #getting the links between messages, users and channels
+        # getting the links between messages, users and channels
         link_info = self.user_message.fetch_links_by_channel(channel_id)
-        #not enough messages to retrieve
+        # not enough messages to retrieve
         if start > len(link_info):
             raise InputError('Invalid start index')
-        
-        #no relevant messages
+
+        # no relevant messages
         if not link_info:
-            return [], False # False means no more messages to return
-        
-        #getting message details given the message id
+            return [], False  # False means no more messages to return
+
+        # getting message details given the message id
         msgs_info = list(
             map(lambda x: self.messages.message_details(x['message_id']), link_info))
-        
-        #updating the is_this_user_reacted field for the reacts
+
+        # updating the is_this_user_reacted field for the reacts
         is_this_user_reacted(u_id, link_info)
-        #constructing the full details
+        # constructing the full details
         full_info = list(map(lambda x, y: {
             'message_id': y['message_id'],
             'u_id': x['u_id'],
@@ -1000,12 +1049,13 @@ class Database():
             'is_pinned': y['is_pinned']
         }, link_info, msgs_info))
 
-        #sorting based on timestamp
+        # sorting based on timestamp
         full_info.sort(key=lambda x: x['time_created'], reverse=True)
-        #chopping messages
+        # chopping messages
         if start + MSG_BLOCK < len(full_info):
-            return list(full_info[start: start + MSG_BLOCK]), True # means more to give
-        return list(full_info[start:]), False # means no more to give
+            # means more to give
+            return list(full_info[start: start + MSG_BLOCK]), True
+        return list(full_info[start:]), False  # means no more to give
 
     def add_message(self, u_id, channel_id, details):
         message_id = self.messages.add(details)
@@ -1017,22 +1067,25 @@ class Database():
         self.user_message.remove_link_by_message(message_id)
 
     def message_search(self, u_id, query_str):
-        #fetching relevant channels
+        # fetching relevant channels
         channel_ids = self.user_channel.user_channels(u_id)
         if not channel_ids:
             return []
 
-        #fetching relevant message links to those channels
+        # fetching relevant message links to those channels
         filtered_links = self.user_message.fetch_links_by_channel(channel_ids)
-        #getting the relevant message ids
+        # getting the relevant message ids
         filtered_mids = list(map(lambda x: x['message_id'], filtered_links))
-        #getting all messages with a query string
+        # getting all messages with a query string
         msgs = self.messages.search(query_str)
-        #filtering those messages based on the message ids
-        relevant_msgs = list(filter(lambda x: x['message_id'] in filtered_mids, msgs))
-        #updating the is_this_user_reacted key for all the reacts
+        # filtering those messages based on the message ids
+        relevant_msgs = list(
+            filter(
+                lambda x: x['message_id'] in filtered_mids,
+                msgs))
+        # updating the is_this_user_reacted key for all the reacts
         is_this_user_reacted(u_id, filtered_links)
-        #constructing the full details
+        # constructing the full details
         relevant_msgs = list(map(lambda x, y: {
             'message_id': y['message_id'],
             'u_id': x['u_id'],
@@ -1041,7 +1094,8 @@ class Database():
             'reacts': x['reacts'],
             'is_pinned': y['is_pinned']
         }, filtered_links, relevant_msgs))
-        return sorted(relevant_msgs, key=lambda x: x['time_created'], reverse=True)
+        return sorted(
+            relevant_msgs, key=lambda x: x['time_created'], reverse=True)
 
     def remove_messages(self, u_id):
         '''
@@ -1052,33 +1106,39 @@ class Database():
             self.remove_message(link['message_id'])
 
         self.user_message.remove_link_by_user(u_id)
+
     def pin(self, u_id, message_id):
-        #check message exists
+        # check message exists
         if not self.messages.message_exists(message_id):
             raise InputError(description='Message does not exist')
 
-        #getting the channel_id in which the message was sent
+        # getting the channel_id in which the message was sent
         channel_id = self.user_message.message_channel(message_id)
 
-        #validate the user is an owner or an admin of the channel
-        if not self.user_channel.is_owner(u_id, channel_id) and not self.admins.is_admin(u_id):
-            raise AccessError(description='You do not have access to pin message')
+        # validate the user is an owner or an admin of the channel
+        if not self.user_channel.is_owner(
+                u_id, channel_id) and not self.admins.is_admin(u_id):
+            raise AccessError(
+                description='You do not have access to pin message')
 
         self.messages.pin(message_id)
 
     def unpin(self, u_id, message_id):
-        #checking message exists
+        # checking message exists
         if not self.messages.message_exists(message_id):
             raise InputError(description='Message does not exist')
 
-        #getting the channel_id in which the message was sent
+        # getting the channel_id in which the message was sent
         channel_id = self.user_message.message_channel(message_id)
 
-        #user should be an owner or an admin
-        if not self.user_channel.is_owner(u_id, channel_id) and not self.admins.is_admin(u_id):
-            raise AccessError(description='You do not have access to pin message')
+        # user should be an owner or an admin
+        if not self.user_channel.is_owner(
+                u_id, channel_id) and not self.admins.is_admin(u_id):
+            raise AccessError(
+                description='You do not have access to pin message')
 
         self.messages.unpin(message_id)
+
 
 STORE = Database()
 # this dictionary contains the session tokens that
@@ -1102,6 +1162,7 @@ def image_config():
         'port': PORT,
         'route': ROUTE,
     }
+
 
 def get_store():
     '''
@@ -1145,6 +1206,7 @@ def initialize_state():
 
 # A constant to update the database every hour
 SECONDS_TO_UPDATE = 3000
+
 
 def update_database():
     '''
