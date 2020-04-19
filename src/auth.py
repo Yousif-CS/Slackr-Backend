@@ -3,6 +3,8 @@ This file contains implementations for
 authentication functions: register, login and logout, token generation
 along with helper functions used in other files as well
 '''
+#pylint: disable=trailing-whitespace
+
 import hashlib
 import jwt
 
@@ -18,33 +20,28 @@ MAX_HANDLE_LEN = 20
 MIN_HANDLE_LEN = 2
 MIN_PASS_LEN = 6
 
-# checks that the token given is in the TOKENS dictionary as described in server.py
-
-
 def verify_token(token):
     '''
-    A function that validates a token
+    Checks that the token given is in the TOKENS dictionary as described in server.py
+    Args: token (str)
+    Return: (bool)
     '''
     token_dict = get_tokens()
     if token not in token_dict.keys():
         return False
     return True
 
-# generates a token for a user and adds him to the global tokens dictionary
-
-
 def generate_token(u_id):
     '''
-    use jwt to generate a token
+    Uses jwt to generate a token
+    Args: u_id (int)
+    Return: token (str)
     '''
     return jwt.encode({"u_id": u_id}, SECRET, algorithm="HS256").decode('utf-8')
 
-
-# retrieves token given a user id, returns None if the user is logged out FOR AUTH_LOGOUT
 def get_token(u_id):
     '''
-    Returns the token of a user if he is logged on.
-    Otherwise returns None
+    Retrieves token given a user id, returns None if the user is logged out FOR AUTH_LOGOUT
     '''
     tokens = get_tokens()
     for token, logged_uid in tokens.items():
