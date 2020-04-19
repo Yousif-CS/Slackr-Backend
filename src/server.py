@@ -7,9 +7,8 @@ import time
 from multiprocessing import Process
 import json
 import requests
-from flask import Flask, request
+from flask import Flask
 from flask_cors import CORS
-from error import InputError
 
 # Has database classes and functions that handle server's state and data
 import state
