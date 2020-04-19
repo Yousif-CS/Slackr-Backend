@@ -11,7 +11,7 @@ from flask import Flask, request
 from flask_cors import CORS
 from error import InputError
 
-# handles the database and server's state and data
+#Has database classes and functions that handle server's state and data
 import state
 
 # these are routes imports
@@ -28,7 +28,7 @@ from channel_routes import CHANNEL
 class CustomFlask(Flask):
     '''
     A simple abstraction over Flask that allows to add a callback after
-    the the initialization of the APP
+    the initialization of the APP
     '''
     def run(self, host=None, port=None, debug=None, load_dotenv=True, **options):
         try:
@@ -85,12 +85,11 @@ def echo():
 @APP.route("/update", methods=['PUT'])
 def update():
     '''
-    A regular database updater that is invoked via a seperate process request
+    A regular database updater that is invoked via a seperate process http request
     '''
     state.update_database()
     return json.dumps({})
 
-#A timer that sends http requests to update database
 def update_timer():
     '''
     An HTTP request to update the database every n seconds
@@ -105,6 +104,9 @@ def update_timer():
 UPDATE_PROCESS = Process(target=update_timer)
 
 def main():
+    '''
+    The main function that runs on the command `pytest3 server.py [PORT]`
+    '''
     print('Server Initiated!')
     state.PORT = int(sys.argv[1]) if len(sys.argv) == 2 else 8080
     APP.run(port=state.PORT)
