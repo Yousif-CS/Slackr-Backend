@@ -89,8 +89,7 @@ The app should use words and phrases from an external source, not just a small h
 
 ### profile_img_url & image uploads
 
-For outputs with data pertaining to a user, a profile_img_url is present. When images are uploaded for a user profile, after processing them we should store them on the server such that the server now locally has a copy of the cropped image of the original file linked. Then, the profile_img_url should be a URL to the server, such as http://localhost:5001/imgurl/adfnajnerkn23k4234.jpg (a unique url you generate).
-
+For outputs with data pertaining to a user, a profile_img_url is present. When images are uploaded for a user profile, after processing them we should store them on the server such that the server now locally has a copy of the cropped image of the original file linked. Then, the profile_img_url should be a URL to the server, such as http://localhost:5001/imgurl/adfnajnerkn23k4234.jpg (a unique url)
 ### Token
 
 Many of these functions (nearly all of them) need to be called from the perspective of a user who is logged in already. When calling these "authorised" functions, we need to know:
