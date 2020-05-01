@@ -28,21 +28,15 @@
 10. Ability to modify a user's privileges: (MEMBER, OWNER)
 11. Ability to begin a "standup", which is an X minute period where users can send messages that at the end of the period will automatically be collated and summarised to all users
 
-To get further information about the requirements, Lit Pty Ltd has provided a pre-recorded video briefing (with verbal and visual descriptions) of what UNSW would like to see in the Slackr product. This can be found [HERE](https://youtu.be/0_jaxpOSoj4). Hint: **This video should be the main source of information from which you derive your user stories**
-
-## Progress check-in
-
-During your lab class, in weeks without demonstrations (see below), you and your team will conduct a short stand-up in the presence of your tutor. Each member of the team will briefly state what they have done in the past week, what they intend to do over the next week, and what issues they faced or are currently facing. This is so your tutor, who is acting as a representative of the client, is kept informed of your progress. They will make note of your presence and may ask you to elaborate on the work you've done.
-
-## Iteration 1: Test Driven Development
+## Sprint 1: Test Driven Development
 
 **Completed**
 
-## Iteration 2: Design and Implementation
+## Sprint 2: Design and Implementation
 
 **Completed**
 
-## Iteration 3: Maintenance and Extensions
+## Sprint 3: Maintenance and Extensions
 
 **Completed**
 
