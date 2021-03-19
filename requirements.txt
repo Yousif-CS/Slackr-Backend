@@ -36,7 +36,7 @@ more-itertools==8.2.0
 packaging==20.3
 PIL==1.1.7
 pilkit==2.0
-Pillow==7.1.1
+Pillow==8.1.1
 pillowcase==2.0.0
 pluggy==0.13.1
 py==1.8.1
