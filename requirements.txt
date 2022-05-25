@@ -43,7 +43,7 @@ py==1.8.1
 pycodestyle==2.5.0
 pycparser==2.20
 pycycle==0.0.8
-PyJWT==1.7.1
+PyJWT==2.4.0
 pylint==2.4.4
 pyparsing==2.4.6
 pytest==5.4.1
